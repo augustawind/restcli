@@ -3,7 +3,7 @@ auth:
     login:
         method: post
         url: '{{ host }}/auth/login'
-        headers:
+        headers: |
             Content-Type: application/json
             Accept: application/json
         body: |
@@ -12,26 +12,28 @@ auth:
         scripts:
             post_request: |
                 if response.status_code == 200:
-                    env['jwt-token'] = response.json()['token']
+                    env['jwt_token'] = response.json()['token']
 partners:
     list:
         method: get
         url: '{{ host }}/partners'
-        headers:
+        headers: |
             Content-Type: application/json
             Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
         scripts:
             post_request: |
                 if response.status_code == 200:
                     partners = response.json()
                     if partners:
-                        env['partner_id'] = partners[0]
+                        env['partner_id'] = partners[0]['id']
     retrieve:
         method: get
         url: '{{ host }}/partners/{{ partner_id }}'
-        headers:
+        headers: |
             Content-Type: application/json
             Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
         scripts:
             post_request: |
                 if response.status_code == 200:
@@ -42,6 +44,7 @@ partners:
         headers:
             Content-Type: application/json
             Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
         body: |
             name: Test Partner
             description: A Partner that doesn't really exist.

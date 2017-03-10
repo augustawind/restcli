@@ -2,7 +2,6 @@ import cmd
 import json
 import readline
 from string import Template
-from pprint import pformat
 
 from restcli import Requestor
 
@@ -58,6 +57,9 @@ class Program(cmd.Cmd):
         output = '\n'.join(['{}: {}'.format(k, v)
                             for k, v in self.r.env.items()])
         print(output)
+
+    def save(self, arg):
+        self.r.save_env()
 
 if __name__ == '__main__':
     program = Program('examples/requests.yaml', 'examples/env.yaml')

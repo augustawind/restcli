@@ -59,12 +59,12 @@ class Requestor:
     @classmethod
     def parse_request(cls, request, env):
         body = request.get('body')
-        json = cls.interpolate(body, env) if body else None
+        headers = request.get('headers')
         return {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),
-            'headers': request.get('headers', None),
-            'json': json,
+            'headers': cls.interpolate(headers, env) if headers else None,
+            'json': cls.interpolate(body, env) if body else None,
         }
 
     @staticmethod
