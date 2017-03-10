@@ -9,10 +9,27 @@ class Requestor:
     """Thing that reads config and makes requests."""
 
     def __init__(self, groups_file, env_file):
-        # TODO: validate input
         # TODO: split this out into one or two "load" functions
-        self.groups = self.load_config(groups_file)
+        groups = self.load_config(groups_file)
+        self.validate_groups(groups)
+
+        self.groups = groups
         self.env = self.load_config(env_file)
+
+    @staticmethod
+    def validate_groups(groups):
+        """Validate that the given groups are valid."""
+        # TODO: Add more validation
+        for group_name, group in groups.items():
+            for req_name, request in group.items():
+                assert 'method' in request, (
+                    'Missing required field: "method"\n'
+                    'Group "{}", Request "{}"'.format(group_name, req_name)
+                )
+                assert 'url' in request, (
+                    'Missing required field: "url"\n'
+                    'Group "{}", Request "{}"'.format(group_name, req_name)
+                )
 
     @staticmethod
     def load_config(path):
