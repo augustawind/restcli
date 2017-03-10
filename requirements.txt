@@ -1,3 +1,4 @@
 jinja2==2.9.5
+pytest==3.0.6
 PyYAML==3.12
 requests==2.13.0

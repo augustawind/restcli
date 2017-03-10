@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# User config
+export BASE_DIR=
+export RESTCLI_VIRTUALENV=
+
+# Environment setup
+export PYTHONPATH="$PYTHONPATH:$BASE_DIR"
+workon $RESTCLI_VIRTUALENV
