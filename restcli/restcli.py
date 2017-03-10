@@ -63,7 +63,8 @@ class Requestor:
             'json': json,
         }
 
-    def run_script(self, script, response, env):
+    @staticmethod
+    def run_script(script, response, env):
         exec(script, {'response': response, 'env': env})
 
     def request(self, group, name):
@@ -75,7 +76,19 @@ class Requestor:
 
         post_request = scripts.get('post_request')
         if post_request:
-            print(post_request)
             self.run_script(post_request, response, self.env)
 
         return response
+
+    def save_env(self):
+        """Save ``self.env`` to ``self.env_path``."""
+        _, ext = os.path.splitext(self.env_file)
+        if ext == '.yaml':
+            dumper = yaml.safe_dump
+        else:
+            raise ValueError("Invalid file extension '{}'. Supported"
+                             " extensions are .yaml.".format(ext))
+
+        with open(self.env_file, 'w') as handle:
+            return dumper(self.env, handle)
+
