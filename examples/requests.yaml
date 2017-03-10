@@ -10,26 +10,31 @@ Authorization:
             username: '{{ username }}'
             password: '{{ password }}'
         scripts:
-            post-request: |
-                if RESPONSE.status == 201:
-                    ENV['jwt-token'] = RESPONSE.body['token']
-Buildings:
-    GET /buildings:
+            post_request: |
+                if response.status_code == 200:
+                    env['jwt-token'] = response.json()['token']
+Partners:
+    GET /partners:
         method: get
-        url: '{{ host }}/buildings'
+        url: '{{ host }}/partners'
         headers:
             Content-Type: application/json
             Accept: application/json
-    POST /buildings:
+    GET /partners/(id):
+        method: get
+        url: '{{ host }}/partners/{{ partner_id }}'
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+    POST /partners:
         method: post
-        url: '{{ host }}/buildings'
+        url: '{{ host }}/partners'
         headers:
             Content-Type: application/json
             Accept: application/json
         body: |
-            name: Test Building
-            description: A Building that doesn't really exist.
-            customer: '{{ customer }}'
+            name: Test Partner
+            description: A Partner that doesn't really exist.
             location:
                 addr1: 123 Foo St.
                 city: Jupiter
@@ -37,6 +42,6 @@ Buildings:
                 country: United States
                 postal_code: 33713
         scripts:
-            post-request: |
-                if RESPONSE.status == 201:
-                    ENV['building'] = RESPONSE.body['id']
+            post_request: |
+                if response.status_code == 201:
+                    env['partner_id'] = response.json()['id']

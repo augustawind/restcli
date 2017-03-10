@@ -8,7 +8,9 @@ class Requestor:
     """Thing that reads config and makes requests."""
 
     def __init__(self, groups_file, env_file):
-        # TODO: split this out into one or two "load" functions
+        self.groups_file = groups_file
+        self.env_file = env_file
+
         groups = self.load_config(groups_file)
         self.validate_groups(groups)
 
@@ -61,12 +63,19 @@ class Requestor:
             'json': json,
         }
 
+    def run_script(self, script, response, env):
+        exec(script, {'response': response, 'env': env})
+
     def request(self, group, name):
         """Execute the request with the given ``name`` in the given ``group``."""
         request = self.groups[group][name]
+        scripts = request.get('scripts', {})
         request_kwargs = self.parse_request(request, self.env)
         response = requests.request(**request_kwargs)
 
-        # TODO: Run scripts here
+        post_request = scripts.get('post_request')
+        if post_request:
+            print(post_request)
+            self.run_script(post_request, response, self.env)
 
         return response
