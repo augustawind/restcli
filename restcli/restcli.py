@@ -64,7 +64,7 @@ class Requestor:
     def request(self, group, name):
         """Execute the request with the given ``name`` in the given ``group``."""
         request = self.groups[group][name]
-        request_kwargs = self.parse_request(request)
+        request_kwargs = self.parse_request(request, self.env)
         response = requests.request(**request_kwargs)
 
         # TODO: Run scripts here

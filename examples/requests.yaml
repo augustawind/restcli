@@ -6,7 +6,7 @@ Authorization:
         headers:
             Content-Type: application/json
             Accept: application/json
-        body:
+        body: |
             username: '{{ username }}'
             password: '{{ password }}'
         scripts:
@@ -26,7 +26,7 @@ Buildings:
         headers:
             Content-Type: application/json
             Accept: application/json
-        body:
+        body: |
             name: Test Building
             description: A Building that doesn't really exist.
             customer: '{{ customer }}'
