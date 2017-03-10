@@ -33,6 +33,10 @@ class Program(cmd.Cmd):
         print(msg)
         print(self.usage_info[command])
 
+    @staticmethod
+    def key_value_pairs(obj):
+        return '\n'.join(['{}: {}'.format(k, v) for k, v in obj.items()])
+
     def do_run(self, arg):
         args = arg.split()
         if len(args) != 2:
@@ -51,8 +55,7 @@ class Program(cmd.Cmd):
 
         output = HTTP_TPL.substitute(
             status_code=response.status_code,
-            headers='\n'.join(['{}: {}'.format(k, v)
-                               for k, v in response.headers.items()]),
+            headers=self.key_value_pairs(response.headers),
         )
         highlight(output, self.http_lexer, self.formatter, outfile=self.stdout)
 
@@ -65,11 +68,9 @@ class Program(cmd.Cmd):
         self.r.load_config()
 
     def do_env(self, arg):
-        output = '\n'.join(['{}: {}'.format(k, v)
-                            for k, v in self.r.env.items()])
-        print(output)
+        print(self.key_value_pairs(self.r.env))
 
-    def save(self, arg):
+    def do_save(self, arg):
         self.r.save_env()
 
 if __name__ == '__main__':
