@@ -1,4 +1,3 @@
-import json
 import os
 
 import jinja2
@@ -35,13 +34,11 @@ class Requestor:
     def load_config(path):
         """Load a JSON or YAML config file with the given ``path``."""
         _, ext = os.path.splitext(path)
-        if ext == '.json':
-            loader = json.load
-        elif ext == '.yaml':
+        if ext == '.yaml':
             loader = yaml.safe_load
         else:
             raise ValueError("Invalid file extension '{}'. Supported"
-                             " extensions are .yaml and .json.".format(ext))
+                             " extensions are .yaml.".format(ext))
 
         with open(path) as handle:
             return loader(handle)
@@ -49,21 +46,26 @@ class Requestor:
     @staticmethod
     def interpolate(data, env):
         """Given some ``data``, render it with the given ``env``."""
-        raw = json.dumps(data)
-        tpl = jinja2.Template(raw)
+        tpl = jinja2.Template(data)
         rendered = tpl.render(env)
-        return json.loads(rendered)
+        return yaml.load(rendered)
+
+    @classmethod
+    def parse_request(cls, request, env):
+        body = request.get('body')
+        json = cls.interpolate(body, env) if body else None
+        return {
+            'method': request['method'],
+            'url': cls.interpolate(request['url'], env),
+            'headers': request.get('headers', None),
+            'json': json,
+        }
 
     def request(self, group, name):
         """Execute the request with the given ``name`` in the given ``group``."""
         request = self.groups[group][name]
-
-        method = request['method']
-        headers = request['headers']
-        url = self.interpolate(request['url'], self.env)
-        body = self.interpolate(request['body'], self.env)
-
-        response = requests.request(method, url, headers=headers, json=body)
+        request_kwargs = self.parse_request(request)
+        response = requests.request(**request_kwargs)
 
         # TODO: Run scripts here
 

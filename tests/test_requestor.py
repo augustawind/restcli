@@ -12,19 +12,19 @@ def requestor():
 
 def test_interpolate():
     actual = Requestor.interpolate(
-        data={
-            'number': 3,
-            'string': '{{ val0 }}',
-            'boolean': True,
-            'null': None,
-            'object': {'foo': 5, '{{ key1 }}': ['{{ val1 }}', None]},
-            'array': ['foo', True, 5, None, {'key': '{{ val2 }}'}],
-        },
+        data="""
+            number: 3
+            string: '{{ val0 }}'
+            boolean: True
+            'null': null
+            object: {'foo': 5, '{{ key1 }}': ['{{ val1 }}', null]}
+            array: ['foo', True, 5, null, {'key': {{ val2 }}}]
+        """,
         env={
             'val0': 'xyz',
             'val1': 'abc',
             'key1': 'def',
-            'val2': 'ghi',
+            'val2': 89,
         },
     )
     expected = {
@@ -33,6 +33,40 @@ def test_interpolate():
         'boolean': True,
         'null': None,
         'object': {'foo': 5, 'def': ['abc', None]},
-        'array': ['foo', True, 5, None, {'key': 'ghi'}],
+        'array': ['foo', True, 5, None, {'key': 89}],
+    }
+    assert actual == expected
+
+
+def test_parse_request():
+    request = {
+        'method': 'post',
+        'url': '{{ server }}/authors',
+        'headers': {
+            'Content-Type': 'application/json',
+        },
+        'body': '''
+            id: 1
+            name: Bartholomew McNozzleWafer
+            date_of_birth: {{ birthday }}
+        ''',
+    }
+    env = {
+        'server': 'http://foobar.org',
+        'birthday': '11/14/1991',
+    }
+
+    actual = Requestor.parse_request(request, env)
+    expected = {
+        'method': 'post',
+        'headers': {
+            'Content-Type': 'application/json',
+        },
+        'url': "http://foobar.org/authors",
+        'json': {
+            'id': 1,
+            'name': 'Bartholomew McNozzleWafer',
+            'date_of_birth': '11/14/1991',
+        }
     }
     assert actual == expected
