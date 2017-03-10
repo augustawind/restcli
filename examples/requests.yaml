@@ -1,6 +1,6 @@
 ---
-Authorization:
-    POST /auth/login:
+auth:
+    login:
         method: post
         url: '{{ host }}/auth/login'
         headers:
@@ -13,20 +13,30 @@ Authorization:
             post_request: |
                 if response.status_code == 200:
                     env['jwt-token'] = response.json()['token']
-Partners:
-    GET /partners:
+partners:
+    list:
         method: get
         url: '{{ host }}/partners'
         headers:
             Content-Type: application/json
             Accept: application/json
-    GET /partners/(id):
+        scripts:
+            post_request: |
+                if response.status_code == 200:
+                    partners = response.json()
+                    if partners:
+                        env['partner_id'] = partners[0]
+    retrieve:
         method: get
         url: '{{ host }}/partners/{{ partner_id }}'
         headers:
             Content-Type: application/json
             Accept: application/json
-    POST /partners:
+        scripts:
+            post_request: |
+                if response.status_code == 200:
+                    env['partner_id'] = response.json()['id']
+    create:
         method: post
         url: '{{ host }}/partners'
         headers:

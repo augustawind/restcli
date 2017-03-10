@@ -1,1 +1,1 @@
-from .restcli import Requestor
+from .requestor import Requestor

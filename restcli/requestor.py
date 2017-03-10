@@ -1,4 +1,5 @@
 import os
+import http
 
 import jinja2
 import requests
@@ -10,12 +11,15 @@ class Requestor:
     def __init__(self, groups_file, env_file):
         self.groups_file = groups_file
         self.env_file = env_file
+        self.load_config()
 
-        groups = self.load_config(groups_file)
+    def load_config(self):
+        """Load all the config files."""
+        groups = self.load_file(self.groups_file)
         self.validate_groups(groups)
 
         self.groups = groups
-        self.env = self.load_config(env_file)
+        self.env = self.load_file(self.env_file)
 
     @staticmethod
     def validate_groups(groups):
@@ -33,7 +37,7 @@ class Requestor:
                 )
 
     @staticmethod
-    def load_config(path):
+    def load_file(path):
         """Load a JSON or YAML config file with the given ``path``."""
         _, ext = os.path.splitext(path)
         if ext == '.yaml':
