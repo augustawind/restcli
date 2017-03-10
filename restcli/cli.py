@@ -3,13 +3,16 @@ import json
 import readline
 from string import Template
 
+from pygments import highlight
+from pygments.lexers.data import JsonLexer
+from pygments.lexers.textfmts import HttpLexer
+from pygments.formatters.terminal import TerminalFormatter
+
 from restcli import Requestor
 
-RESPONSE_TPL = Template('\n'.join([
+HTTP_TPL = Template('\n'.join([
     'HTTP ${status_code}',
     '${headers}',
-    '',
-    '${body}',
 ]))
 
 class Program(cmd.Cmd):
@@ -17,6 +20,10 @@ class Program(cmd.Cmd):
     def __init__(self, groups_file, env_file):
         super().__init__()
         self.r = Requestor(groups_file, env_file)
+
+        self.http_lexer = HttpLexer()
+        self.json_lexer = JsonLexer()
+        self.formatter = TerminalFormatter()
 
         self.usage_info = {
             'run': 'Usage: run GROUP REQUEST'
@@ -42,13 +49,17 @@ class Program(cmd.Cmd):
 
         response = self.r.request(group_name, request_name)
 
-        output = RESPONSE_TPL.substitute(
+        output = HTTP_TPL.substitute(
             status_code=response.status_code,
             headers='\n'.join(['{}: {}'.format(k, v)
                                for k, v in response.headers.items()]),
-            body=json.dumps(response.json(), indent=2),
         )
-        print(output)
+        highlight(output, self.http_lexer, self.formatter, outfile=self.stdout)
+
+        print()
+
+        output = json.dumps(response.json(), indent=2)
+        highlight(output, self.json_lexer, self.formatter, outfile=self.stdout)
 
     def do_reload(self, arg):
         self.r.load_config()
