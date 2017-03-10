@@ -1,0 +1,41 @@
+---
+authors:
+    create:
+        method: post
+        url: "{{ server }}/authors"
+        body: |
+            id: 1
+            name: Bartholomew McNozzleWafer
+            date_of_birth: {{ birthday }}
+    edit:
+        method: put
+        url: "{{ server }}/authors/{{ author_id }}"
+        body: |
+            id: 2
+            name: Harold BigglesWorth
+            date_of_birth: 9/14/1989
+    delete:
+        method: delete
+        url: "{{ server }}/authors/{{ author_id }}"
+books:
+    create:
+        method: post
+        url: "{{ server }}/books"
+        body: |
+            id: 1
+            title: The Chronicles of Narnia
+            published: true
+            authors:
+                - {{ favorite_author }}
+    edit:
+        method: put
+        url: "{{ server }}/books/{{ book_id }}"
+        body: |
+            id: 1
+            title: Kyle and his Kooky Coconuts
+            published: false
+            authors:
+                - 2
+    delete:
+        method: delete
+        url: "{{ server }}/books/{{ book_id }}"

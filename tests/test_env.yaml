@@ -1,0 +1,6 @@
+---
+server: http://foobar.org
+author_id: 1
+book_id: 1
+favorite_author: 2
+birthday: 11/14/1991

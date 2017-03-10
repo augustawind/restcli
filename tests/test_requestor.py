@@ -1,9 +1,10 @@
 import pytest
+import pytest_mock
 
 from restcli import Requestor
 
-TEST_GROUPS_PATH = 'test_groups.yaml'
-TEST_ENV_PATH = 'test_env.yaml'
+TEST_GROUPS_PATH = 'tests/test_groups.yaml'
+TEST_ENV_PATH = 'tests/test_env.yaml'
 
 @pytest.fixture
 def requestor():
@@ -11,6 +12,7 @@ def requestor():
 
 
 def test_interpolate():
+    """Test Requestor#interpolate()."""
     actual = Requestor.interpolate(
         data="""
             number: 3
@@ -39,6 +41,7 @@ def test_interpolate():
 
 
 def test_parse_request():
+    """Test Requestor#parse_request()."""
     request = {
         'method': 'post',
         'url': '{{ server }}/authors',
@@ -70,3 +73,10 @@ def test_parse_request():
         }
     }
     assert actual == expected
+
+
+def test_request(requestor, mocker):
+    """Test Requestor()#request()."""
+    mock = mocker.patch('requests.request')
+    requestor.request('books', 'edit')
+    assert mock.call_count == 1
