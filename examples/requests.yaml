@@ -1,0 +1,42 @@
+---
+Authorization:
+    POST /auth/login:
+        method: post
+        url: '{{ host }}/auth/login'
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        body:
+            username: '{{ username }}'
+            password: '{{ password }}'
+        scripts:
+            post-request: |
+                if RESPONSE.status == 201:
+                    ENV['jwt-token'] = RESPONSE.body['token']
+Buildings:
+    GET /buildings:
+        method: get
+        url: '{{ host }}/buildings'
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+    POST /buildings:
+        method: post
+        url: '{{ host }}/buildings'
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        body:
+            name: Test Building
+            description: A Building that doesn't really exist.
+            customer: '{{ customer }}'
+            location:
+                addr1: 123 Foo St.
+                city: Jupiter
+                state: Florida
+                country: United States
+                postal_code: 33713
+        scripts:
+            post-request: |
+                if RESPONSE.status == 201:
+                    ENV['building'] = RESPONSE.body['id']
