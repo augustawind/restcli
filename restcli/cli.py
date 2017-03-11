@@ -94,6 +94,7 @@ class Program(cmd.Cmd):
         self.print_response(response)
 
     def do_inspect(self, arg):
+        """Inspect a Group, Request, or Attribute."""
         args = arg.split()
         if len(args) == 0:
             self.usage('inspect', 'Invalid input.')
