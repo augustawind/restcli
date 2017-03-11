@@ -5,6 +5,7 @@ from string import Template
 
 from pygments import highlight
 from pygments.lexers.data import JsonLexer
+from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 from pygments.formatters.terminal import TerminalFormatter
 
@@ -23,10 +24,12 @@ class Program(cmd.Cmd):
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
+        self.python_lexer = Python3Lexer()
         self.formatter = TerminalFormatter()
 
         self.usage_info = {
-            'run': 'Usage: run GROUP REQUEST'
+            'run': 'Usage: run GROUP REQUEST',
+            'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]'
         }
 
     def usage(self, command, msg):
@@ -49,6 +52,29 @@ class Program(cmd.Cmd):
         output = json.dumps(response.json(), indent=2)
         highlight(output, self.json_lexer, self.formatter, outfile=self.stdout)
 
+    def get_group(self, command, group_name):
+        group = self.r.groups.get(group_name)
+        if not group:
+            self.usage(command, "Group '{}' not found.".format(group_name))
+        return group
+
+    def get_request(self, command, group, group_name, request_name):
+        request = group.get(request_name)
+        if not request:
+            self.usage(command, "Request '{}' not found in Group '{}'."
+                       .format(request_name, group_name))
+        return request
+
+    def get_request_attr(self, command, request, group_name, request_name,
+                         attr_name):
+        attr = request.get(attr_name)
+        if not attr:
+            self.usage(command,
+                       "Attribute '{}' not found in Request '{}'"
+                       " of Group '{}'.".format(attr_name, request_name,
+                                                group_name))
+        return attr
+
     def do_run(self, arg):
         """Run an HTTP request."""
         args = arg.split()
@@ -56,16 +82,63 @@ class Program(cmd.Cmd):
             return self.usage('run', 'Invalid input.')
 
         group_name, request_name = args
-        group = self.r.groups.get(group_name)
+
+        group = self.get_group('run', group_name)
         if not group:
-            return self.usage('run', "Group '{}' not found.".format(group_name))
-        request = group.get(request_name)
+            return
+        request = self.get_request('run', group, group_name, request_name)
         if not request:
-            return self.usage('run', "Request '{}' not found in Group '{}'."
-                              .format(request_name, group_name))
+            return
 
         response = self.r.request(group_name, request_name)
         self.print_response(response)
+
+    def do_inspect(self, arg):
+        args = arg.split()
+        if len(args) == 0:
+            self.usage('inspect', 'Invalid input.')
+        if len(args) > 3:
+            self.usage('inspect', 'Invalid input.')
+
+        output_obj = None
+        if len(args) > 0:
+            group_name = args[0]
+            group = self.get_group('inspect', group_name)
+            if not group:
+                return
+            output_obj = group
+        if len(args) > 1:
+            output_obj = None
+            request_name = args[1]
+            request = self.get_request('inspect', group, group_name, request_name)
+            if not request:
+                return
+            output_obj = request
+        if len(args) > 2:
+            output_obj = None
+            attr_name = args[2]
+            attr = self.get_request_attr('inspect', request, group_name,
+                                         request_name, attr_name)
+            if not attr:
+                return
+            if attr_name == 'scripts':
+                for name, script in attr.items():
+                    print('{}:'.format(name))
+                    highlight(script, self.python_lexer, self.formatter,
+                              outfile=self.stdout)
+                    print()
+            elif attr_name == 'headers':
+                headers = dict(l.split(':') for l in attr.strip().split('\n'))
+                output = self.key_value_pairs(headers)
+                highlight(output, self.http_lexer, self.formatter,
+                          outfile=self.stdout)
+            else:
+                output_obj = attr
+
+        if output_obj:
+            output = json.dumps(output_obj, indent=2)
+            highlight(output, self.json_lexer, self.formatter,
+                      outfile=self.stdout)
 
     def do_reload(self, arg):
         """Reload the collection and environment from disk."""
