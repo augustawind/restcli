@@ -6,6 +6,7 @@ from restcli import Requestor
 TEST_GROUPS_PATH = 'tests/test_groups.yaml'
 TEST_ENV_PATH = 'tests/test_env.yaml'
 
+
 @pytest.fixture
 def requestor():
     return Requestor(TEST_GROUPS_PATH, TEST_ENV_PATH)

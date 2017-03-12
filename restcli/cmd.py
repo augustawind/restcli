@@ -5,7 +5,7 @@ from restcli.app import App
 
 class Cmd(cmd.Cmd):
 
-    def __init__(self, groups_file=None, env_file=None):
+    def __init__(self, groups_file, env_file=None):
         super().__init__()
         self.app = App(groups_file, env_file, self.stdout)
 
