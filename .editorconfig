@@ -1,0 +1,21 @@
+[*]
+root = true
+# Unix-style newlines
+end_of_line = lf
+# Newline ending every file
+insert_final_newline = true
+# Set max line length to 79
+max_line_length = 79
+
+[*.{py,yaml}]
+# Set default charset
+charset = utf-8
+# 4 space indentation
+indent_style = space
+indent_size = 4
+# Remove trailing whitespace
+trim_trailing_whitespace = true
+
+[Makefile]
+# Tab indentation
+indent_style = tab
