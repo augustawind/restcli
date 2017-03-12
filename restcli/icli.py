@@ -4,6 +4,7 @@ from restcli.app import App
 
 
 class Cmd(cmd.Cmd):
+    """Interactive command prompt for restcli."""
 
     def __init__(self, groups_file, env_file=None):
         super().__init__()
