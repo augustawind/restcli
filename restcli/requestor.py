@@ -1,5 +1,4 @@
 import os
-import http
 
 import jinja2
 import requests
@@ -8,18 +7,21 @@ import yaml
 class Requestor:
     """Thing that reads config and makes requests."""
 
-    def __init__(self, groups_file, env_file):
+    def __init__(self, groups_file, env_file=None):
         self.groups_file = groups_file
         self.env_file = env_file
+        self.groups = {}
+        self.env = {}
         self.load_config()
 
     def load_config(self):
         """Load all the config files."""
         groups = self.load_file(self.groups_file)
         self.validate_groups(groups)
-
         self.groups = groups
-        self.env = self.load_file(self.env_file)
+
+        if self.env_file:
+            self.env = self.load_file(self.env_file)
 
     @staticmethod
     def validate_groups(groups):

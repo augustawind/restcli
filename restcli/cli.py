@@ -111,7 +111,8 @@ class Program(cmd.Cmd):
         if len(args) > 1:
             output_obj = None
             request_name = args[1]
-            request = self.get_request('inspect', group, group_name, request_name)
+            request = self.get_request('inspect', group, group_name,
+                                       request_name)
             if not request:
                 return
             output_obj = request
@@ -147,12 +148,12 @@ class Program(cmd.Cmd):
 
     def do_env(self, arg):
         """Display the current environment."""
-        print(self.key_value_pairs(self.r.env))
+        env = self.r.env
+        if env:
+            print(self.key_value_pairs(env))
+        else:
+            print('No Environment loaded.')
 
     def do_save(self, arg):
         """Save the current environment to disk."""
         self.r.save_env()
-
-if __name__ == '__main__':
-    program = Program('examples/requests.yaml', 'examples/env.yaml')
-    program.cmdloop()

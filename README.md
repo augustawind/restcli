@@ -9,8 +9,8 @@ from a YAML file and supports scripting and environment variables.
 
 ## Config Format
 
-Requests are organized into Groups, which are like folders of Requests. The
-file should contain an object mapping Group names to Groups. Each Group object should
+Requests are organized into Groups, which are like folders of Requests. The file
+should contain an object mapping Group names to Groups. Each Group object should
 contain an object mapping Request names to Requests.
 
 ### Request Objects
