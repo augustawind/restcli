@@ -17,6 +17,7 @@ HTTP_TPL = Template('\n'.join([
 
 
 class App:
+    """Application interface for restcli."""
 
     def __init__(self, groups_file, env_file, outfile=sys.stdout):
         self.r = Requestor(groups_file, env_file)
@@ -35,25 +36,60 @@ class App:
             'reload': 'Usage: reload [collection, env]',
         }
 
-    def usage(self, command, msg):
-        print(msg)
-        print(self.usage_info[command])
+    def run(self, group_name, request_name):
+        """Run a Request."""
+        group = self.get_group('run', group_name)
+        if not group:
+            return
+        request = self.get_request('run', group, group_name, request_name)
+        if not request:
+            return
 
-    @staticmethod
-    def key_value_pairs(obj):
-        return '\n'.join(['{}: {}'.format(k, v) for k, v in obj.items()])
+        response = self.r.request(group_name, request_name)
+        self.print_response(response)
 
-    def print_response(self, response):
-        output = HTTP_TPL.substitute(
-            status_code=response.status_code,
-            headers=self.key_value_pairs(response.headers),
-        )
-        highlight(output, self.http_lexer, self.formatter, outfile=self.outfile)
+    def inspect(self, group_name, request_name=None, attr_name=None):
+        """Inspect a Group, Request, or Request Attribute."""
+        group = self.get_group('inspect', group_name)
+        if not group:
+            return
+        output_obj = group
 
-        print()
+        if request_name:
+            request = self.get_request('inspect', group, group_name,
+                                       request_name)
+            if not request:
+                return
+            output_obj = request
 
-        output = json.dumps(response.json(), indent=2)
-        highlight(output, self.json_lexer, self.formatter, outfile=self.outfile)
+        if attr_name:
+            attr = self.get_request_attr('inspect', request, group_name,
+                                         request_name, attr_name)
+            if not attr:
+                return
+
+            if attr_name == 'scripts':
+                for name, script in attr.items():
+                    print('{}:'.format(name))
+                    highlight(script, self.python_lexer, self.formatter,
+                              self.outfile)
+                    print()
+                    return
+
+            if attr_name == 'headers':
+                headers = dict(l.split(':') for l in attr.strip().split('\n'))
+                output = self.key_value_pairs(headers)
+                highlight(output, self.http_lexer, self.formatter,
+                          self.outfile)
+                return
+
+            output_obj = attr
+
+        output = json.dumps(output_obj, indent=2)
+        highlight(output, self.json_lexer, self.formatter, self.outfile)
+
+    def save(self):
+        self.r.save_env()
 
     def get_group(self, command, group_name):
         group = self.r.collection.get(group_name)
@@ -78,60 +114,17 @@ class App:
                                                 group_name))
         return attr
 
-    def run(self, *args):
-        group_name, request_name = args
+    def print_response(self, response):
+        output = HTTP_TPL.substitute(
+            status_code=response.status_code,
+            headers=self.key_value_pairs(response.headers),
+        )
+        highlight(output, self.http_lexer, self.formatter, self.outfile)
 
-        group = self.get_group('run', group_name)
-        if not group:
-            return
-        request = self.get_request('run', group, group_name, request_name)
-        if not request:
-            return
+        print()
 
-        response = self.r.request(group_name, request_name)
-        self.print_response(response)
-
-    def inspect(self, *args):
-        output_obj = None
-        if len(args) > 0:
-            group_name = args[0]
-            group = self.get_group('inspect', group_name)
-            if not group:
-                return
-            output_obj = group
-        if len(args) > 1:
-            output_obj = None
-            request_name = args[1]
-            request = self.get_request('inspect', group, group_name,
-                                       request_name)
-            if not request:
-                return
-            output_obj = request
-        if len(args) > 2:
-            output_obj = None
-            attr_name = args[2]
-            attr = self.get_request_attr('inspect', request, group_name,
-                                         request_name, attr_name)
-            if not attr:
-                return
-            if attr_name == 'scripts':
-                for name, script in attr.items():
-                    print('{}:'.format(name))
-                    highlight(script, self.python_lexer, self.formatter,
-                              outfile=self.outfile)
-                    print()
-            elif attr_name == 'headers':
-                headers = dict(l.split(':') for l in attr.strip().split('\n'))
-                output = self.key_value_pairs(headers)
-                highlight(output, self.http_lexer, self.formatter,
-                          outfile=self.outfile)
-            else:
-                output_obj = attr
-
-        if output_obj:
-            output = json.dumps(output_obj, indent=2)
-            highlight(output, self.json_lexer, self.formatter,
-                      outfile=self.outfile)
+        output = json.dumps(response.json(), indent=2)
+        highlight(output, self.json_lexer, self.formatter, self.outfile)
 
     def print_env(self):
         env = self.r.env
@@ -140,5 +133,10 @@ class App:
         else:
             print('No Environment loaded.')
 
-    def save(self):
-        self.r.save_env()
+    def usage(self, command, msg):
+        print(msg)
+        print(self.usage_info[command])
+
+    @staticmethod
+    def key_value_pairs(obj):
+        return '\n'.join(['{}: {}'.format(k, v) for k, v in obj.items()])

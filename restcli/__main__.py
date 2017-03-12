@@ -1,6 +1,6 @@
 import argparse
 
-from restcli.cmd import Cmd
+from restcli.icli import Cmd
 
 
 parser = argparse.ArgumentParser()
