@@ -41,7 +41,7 @@ partners:
     create:
         method: post
         url: '{{ host }}/partners'
-        headers:
+        headers: |
             Content-Type: application/json
             Accept: application/json
             Authorization: 'JWT {{ jwt_token }}'

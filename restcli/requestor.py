@@ -4,6 +4,7 @@ import jinja2
 import requests
 import yaml
 
+
 class Requestor:
     """Thing that reads config and makes requests."""
 
