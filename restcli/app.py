@@ -89,15 +89,18 @@ class App:
         highlight(output, self.json_lexer, self.formatter, self.outfile)
 
     def save(self):
+        """Save the current Environment to disk."""
         self.r.save_env()
 
     def get_group(self, command, group_name):
+        """Safely retrieve a Group object."""
         group = self.r.collection.get(group_name)
         if not group:
             self.usage(command, "Group '{}' not found.".format(group_name))
         return group
 
     def get_request(self, command, group, group_name, request_name):
+        """Safely retrieve a Request object."""
         request = group.get(request_name)
         if not request:
             self.usage(command, "Request '{}' not found in Group '{}'."
@@ -106,6 +109,7 @@ class App:
 
     def get_request_attr(self, command, request, group_name, request_name,
                          attr_name):
+        """Safely retrieve a Request Attribute."""
         attr = request.get(attr_name)
         if not attr:
             self.usage(command,
@@ -115,6 +119,7 @@ class App:
         return attr
 
     def print_response(self, response):
+        """Print an HTTP Response."""
         output = HTTP_TPL.substitute(
             status_code=response.status_code,
             headers=self.key_value_pairs(response.headers),
@@ -127,6 +132,7 @@ class App:
         highlight(output, self.json_lexer, self.formatter, self.outfile)
 
     def print_env(self):
+        """Print the current Environment."""
         env = self.r.env
         if env:
             print(self.key_value_pairs(env))
@@ -134,9 +140,11 @@ class App:
             print('No Environment loaded.')
 
     def usage(self, command, msg):
+        """Print usage info for the given command."""
         print(msg)
         print(self.usage_info[command])
 
     @staticmethod
     def key_value_pairs(obj):
+        """Format a dict-like object into lines of 'KEY: VALUE'."""
         return '\n'.join(['{}: {}'.format(k, v) for k, v in obj.items()])
