@@ -29,7 +29,10 @@ class Program(cmd.Cmd):
 
         self.usage_info = {
             'run': 'Usage: run GROUP REQUEST',
-            'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]'
+            'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]',
+            'set_env': 'Usage: set_env ENV_FILE',
+            'set_collection': 'Usage: set_collection COLLECTION_FILE',
+            'reload': 'Usage: reload [collection, env]',
         }
 
     def usage(self, command, msg):
@@ -142,10 +145,6 @@ class Program(cmd.Cmd):
             highlight(output, self.json_lexer, self.formatter,
                       outfile=self.stdout)
 
-    def do_reload(self, arg):
-        """Reload the collection and environment from disk."""
-        self.r.load_config()
-
     def do_env(self, arg):
         """Display the current environment."""
         env = self.r.env
@@ -157,3 +156,34 @@ class Program(cmd.Cmd):
     def do_save(self, arg):
         """Save the current environment to disk."""
         self.r.save_env()
+
+    def do_reload(self, arg):
+        "Reload the Collection and/or Environment from disk."
+        files = set(arg.split())
+        if not all(f in ('env', 'collection') for f in files):
+            self.usage('reload', 'Bad argument')
+            return
+
+        if 'collection' in files:
+            self.r.load_collection()
+        if 'env' in files:
+            self.r.load_env()
+
+    def do_set_env(self, arg):
+        """Set and load a new Environment file."""
+        args = arg.split()
+        if len(args) != 1:
+            self.usage('set_env', 'Missing argument')
+            return
+
+        path = args[0]
+        self.r.load_env(path)
+
+    def do_set_collection(self, arg):
+        args = arg.split()
+        if len(args) != 1:
+            self.usage('set_collection', 'Missing argument')
+            return
+
+        path = args[0]
+        self.r.load_collection(path)

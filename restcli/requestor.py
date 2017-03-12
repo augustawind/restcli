@@ -7,27 +7,36 @@ import yaml
 class Requestor:
     """Thing that reads config and makes requests."""
 
-    def __init__(self, groups_file, env_file=None):
-        self.groups_file = groups_file
+    def __init__(self, collection_file, env_file=None):
+        self.collection_file = collection_file
         self.env_file = env_file
-        self.groups = {}
+        self.collection = {}
         self.env = {}
         self.load_config()
 
-    def load_config(self):
+    def load_config(self, collection_file=None, env_file=None):
         """Load all the config files."""
-        groups = self.load_file(self.groups_file)
-        self.validate_groups(groups)
-        self.groups = groups
+        self.load_collection(collection_file)
+        self.load_env(env_file)
 
+    def load_collection(self, path=None):
+        if path:
+            self.collection_file = path
+        collections = self.load_file(self.collection_file)
+        self.validate_collections(collections)
+        self.collection = collections
+
+    def load_env(self, path=None):
+        if path:
+            self.env_file = path
         if self.env_file:
             self.env = self.load_file(self.env_file)
 
     @staticmethod
-    def validate_groups(groups):
-        """Validate that the given groups are valid."""
+    def validate_collections(collections):
+        """Validate that the given collections are valid."""
         # TODO: Add more validation
-        for group_name, group in groups.items():
+        for group_name, group in collections.items():
             for req_name, request in group.items():
                 assert 'method' in request, (
                     'Missing required field: "method"\n'
@@ -75,7 +84,7 @@ class Requestor:
 
     def request(self, group, name):
         """Execute the request with the given ``name`` in the given ``group``."""
-        request = self.groups[group][name]
+        request = self.collection[group][name]
         scripts = request.get('scripts', {})
         request_kwargs = self.parse_request(request, self.env)
         response = requests.request(**request_kwargs)
