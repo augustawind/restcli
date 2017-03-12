@@ -1,6 +1,6 @@
 import argparse
 
-from .cli import Program
+from .cmd import Program
 
 parser = argparse.ArgumentParser()
 parser.add_argument('collection',
