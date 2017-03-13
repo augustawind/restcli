@@ -9,20 +9,19 @@ from restcli.exceptions import InvalidInput, NotFound
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
-
-USAGE_INFO = {
-    'change_collection': 'Usage: change_collection COLLECTION_FILE',
-    'change_env': 'Usage: change_env ENV_FILE',
-    'env': 'Usage: env [ENV0 [ENV1 ... [ENVn]]]',
-    'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]',
-    'reload': 'Usage: reload [collection, env]',
-    'run': 'Usage: run GROUP REQUEST',
+USAGE_ARGS = {
+    'change_collection': 'COLLECTION_FILE',
+    'change_env': 'ENV_FILE',
+    'env': '[ENV0 [ENV1 ... [ENVn]]]',
+    'inspect': 'GROUP [REQUEST [ATTR]]',
+    'reload': '[collection, env]',
+    'run': 'GROUP REQUEST',
 }
 
 
 def usage(action):
     """Print usage info for the given command."""
-    print(USAGE_INFO[action])
+    print('Usage: {} {}'.format(action, USAGE_ARGS[action]))
 
 
 def expect(*exceptions):
