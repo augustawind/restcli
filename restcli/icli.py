@@ -1,15 +1,22 @@
 import cmd
+import re
 from functools import wraps
+
+import yaml
 
 from restcli.app import App
 from restcli.exceptions import InvalidInput, NotFound
 
+ENV_RE = re.compile(r'([^:]+):(.*)')
+
+
 USAGE_INFO = {
-    'run': 'Usage: run GROUP REQUEST',
+    'change_collection': 'Usage: change_collection COLLECTION_FILE',
+    'change_env': 'Usage: change_env ENV_FILE',
+    'env': 'Usage: env [ENV0 [ENV1 ... [ENVn]]]',
     'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]',
-    'set_env': 'Usage: set_env ENV_FILE',
-    'set_collection': 'Usage: set_collection COLLECTION_FILE',
     'reload': 'Usage: reload [collection, env]',
+    'run': 'Usage: run GROUP REQUEST',
 }
 
 
@@ -35,19 +42,6 @@ def expect(*exceptions):
     return wrapper
 
 
-def nargs(min, max=None):
-    """Wrap a function to accept a certain number of arguments."""
-    def wrapper(func):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            count = len(args) + len(kwargs)
-            if count < min or (max and count > max):
-                raise InvalidInput(action=func.__name__)
-            return func(*args, **kwargs)
-        return wrapped
-    return wrapper
-
-
 class Cmd(cmd.Cmd):
     """Interactive command prompt for restcli."""
 
@@ -56,11 +50,11 @@ class Cmd(cmd.Cmd):
         self.app = App(groups_file, env_file, self.stdout)
 
     @staticmethod
-    def parse_args(action, line, min_args, max_args=None):
+    def parse_args(action, line, min_args=None, max_args=None):
         """Utility to parse input and validate the number of args given."""
         args = line.split()
         n = len(args)
-        if n < min_args or (max_args and n > max_args):
+        if (min_args and n < min_args) or (max_args and n > max_args):
             raise InvalidInput(action=action)
         return args
 
@@ -77,8 +71,26 @@ class Cmd(cmd.Cmd):
         self.app.inspect(*args)
 
     def do_env(self, line):
-        """Display the current environment."""
-        self.app.print_env()
+        """Display the current Environment, or set env vars."""
+        args = self.parse_args('env', line)
+        if not args:
+            self.app.print_env()
+            return
+
+        env = {}
+        for arg in args:
+            match = ENV_RE.match(arg)
+            if not match:
+                raise InvalidInput(
+                    action='env',
+                    message='Error: args must take the form `key:value`, where'
+                            ' `key` is a string and `value` is a valid YAML'
+                            ' value.',
+                )
+            key, val = match.groups()
+            env[key] = yaml.safe_load(val)
+
+        self.app.save_env(**env)
 
     @expect(InvalidInput)
     def do_reload(self, line):
@@ -100,14 +112,14 @@ class Cmd(cmd.Cmd):
         self.app.save_env()
 
     @expect(InvalidInput)
-    def do_set_collection(self, line):
+    def do_change_collection(self, line):
         """Set and load a new Collection file."""
         args = self.parse_args('set_collection', line, 1, 1)
         path = args[0]
         self.app.load_collection(path)
 
     @expect(InvalidInput)
-    def do_set_env(self, line):
+    def do_change_env(self, line):
         """Set and load a new Environment file."""
         args = self.parse_args('set_env', line, 1, 1)
         path = args[0]

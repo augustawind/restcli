@@ -90,9 +90,9 @@ class App:
         """Reload the current Env, changing it to ``path`` if given."""
         self.r.load_env(path)
 
-    def save_env(self):
+    def save_env(self, **kwargs):
         """Save the current Environment to disk."""
-        self.r.save_env()
+        self.r.save_env(**kwargs)
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""

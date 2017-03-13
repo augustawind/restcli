@@ -78,8 +78,9 @@ class Requestor:
         with open(path) as handle:
             return yaml.safe_load(handle)
 
-    def save_env(self):
+    def save_env(self, **kwargs):
         """Save ``self.env`` to ``self.env_path``."""
+        self.env.update(kwargs)
         with open(self.env_file, 'w') as handle:
             return yaml.safe_dump(self.env, handle)
 
