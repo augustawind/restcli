@@ -3,8 +3,8 @@ import pytest_mock
 
 from restcli import Requestor
 
-TEST_GROUPS_PATH = 'tests/test_groups.yaml'
-TEST_ENV_PATH = 'tests/test_env.yaml'
+TEST_GROUPS_PATH = 'tests/resources/test_groups.yaml'
+TEST_ENV_PATH = 'tests/resources/test_env.yaml'
 
 
 @pytest.fixture
