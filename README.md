@@ -72,7 +72,7 @@ interacting with the restcli library. The following commands are supported:
 - `inspect`: Inspect a Group, Request, or Request Attribute.
 - `env`: Print the currently loaded Environment.
 - `reload`: Reload the initial Groups file and Environment file from disk.
-- `save`: Save the current Environment to disk.
+- `save_env`: Save the current Environment to disk.
 
 You may run `help COMMAND` on any command for more information about arguments
 and usage of the given command.
