@@ -55,61 +55,64 @@ class Cmd(cmd.Cmd):
         super().__init__()
         self.app = App(groups_file, env_file, self.stdout)
 
-    @expect(InvalidInput, NotFound)
-    def do_run(self, arg):
-        """Run an HTTP request."""
-        args = arg.split()
-        if len(args) != 2:
-            raise InvalidInput(action='run')
+    @staticmethod
+    def parse_args(action, line, min_args, max_args=None):
+        """Utility to parse input and validate the number of args given."""
+        args = line.split()
+        n = len(args)
+        if n < min_args or (max_args and n > max_args):
+            raise InvalidInput(action=action)
+        return args
 
+    @expect(InvalidInput, NotFound)
+    def do_run(self, line):
+        """Run an HTTP request."""
+        args = self.parse_args('run', line, 2, 2)
         self.app.run(*args)
 
     @expect(InvalidInput, NotFound)
-    def do_inspect(self, arg):
+    def do_inspect(self, line):
         """Inspect a Group, Request, or Attribute."""
-        args = arg.split()
-        if len(args) == 0:
-            raise InvalidInput(action='inspect')
-        if len(args) > 3:
-            raise InvalidInput(action='inspect')
-
+        args = self.parse_args('inspect', line, 1, 3)
         self.app.inspect(*args)
 
-    def do_env(self, arg):
+    def do_env(self, line):
         """Display the current environment."""
         self.app.print_env()
 
     @expect(InvalidInput)
-    def do_reload(self, arg):
+    def do_reload(self, line):
         "Reload the Collection and/or Environment from disk."
-        files = set(arg.split())
-        if not all(f in ('env', 'collection') for f in files):
+        args = line.split()
+        options = ('collection', 'env')
+        if not args:
+            args = options
+        elif not all(o in options for o in args):
             raise InvalidInput(action='reload')
 
-        if 'collection' in files:
+        if 'collection' in args:
             self.app.load_collection()
-        if 'env' in files:
+        if 'env' in args:
             self.app.load_env()
 
-    def do_save(self, arg):
+    def do_save(self, line):
         """Save the current environment to disk."""
         self.app.save_env()
 
     @expect(InvalidInput)
-    def do_set_collection(self, arg):
-        args = arg.split()
-        if len(args) != 1:
-            raise InvalidInput(action='set_collection')
-
+    def do_set_collection(self, line):
+        """Set and load a new Collection file."""
+        args = self.parse_args('set_collection', line, 1, 1)
         path = args[0]
         self.app.load_collection(path)
 
     @expect(InvalidInput)
-    def do_set_env(self, arg):
+    def do_set_env(self, line):
         """Set and load a new Environment file."""
-        args = arg.split()
-        if len(args) != 1:
-            raise InvalidInput(action='set_env')
-
+        args = self.parse_args('set_env', line, 1, 1)
         path = args[0]
         self.app.load_env(path)
+
+    def do_quit(self, line):
+        """Quit the program."""
+        return True

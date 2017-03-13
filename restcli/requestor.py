@@ -74,28 +74,14 @@ class Requestor:
 
     @staticmethod
     def load_file(path):
-        """Load a JSON or YAML config file with the given ``path``."""
-        _, ext = os.path.splitext(path)
-        if ext == '.yaml':
-            loader = yaml.safe_load
-        else:
-            raise ValueError("Invalid file extension '{}'. Supported"
-                             " extensions are .yaml.".format(ext))
-
+        """Load a  YAML config file with the given ``path``."""
         with open(path) as handle:
-            return loader(handle)
+            return yaml.safe_load(handle)
 
     def save_env(self):
         """Save ``self.env`` to ``self.env_path``."""
-        _, ext = os.path.splitext(self.env_file)
-        if ext == '.yaml':
-            dumper = yaml.safe_dump
-        else:
-            raise ValueError("Invalid file extension '{}'. Supported"
-                             " extensions are .yaml.".format(ext))
-
         with open(self.env_file, 'w') as handle:
-            return dumper(self.env, handle)
+            return yaml.safe_dump(self.env, handle)
 
     @staticmethod
     def validate_collections(collections):
