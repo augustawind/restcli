@@ -58,7 +58,7 @@ class Requestor:
         self.load_env(env_file)
 
     def load_collection(self, path=None):
-        """Load a Collection, using and saving a new file if given."""
+        """Reload the current Collection, changing it to ``path`` if given."""
         if path:
             self.collection_file = path
         collections = self.load_file(self.collection_file)
@@ -66,7 +66,7 @@ class Requestor:
         self.collection = collections
 
     def load_env(self, path=None):
-        """Load an Environment, using and saving a new file if given."""
+        """Reload the current Env, changing it to ``path`` if given."""
         if path:
             self.env_file = path
         if self.env_file:

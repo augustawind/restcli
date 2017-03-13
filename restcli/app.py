@@ -8,16 +8,17 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from restcli import Requestor
-
-HTTP_TPL = Template('\n'.join([
-    'HTTP ${status_code}',
-    '${headers}',
-]))
+from restcli.exceptions import NotFound
+from restcli.requestor import Requestor
 
 
 class App:
     """Application interface for restcli."""
+
+    HTTP_TPL = Template('\n'.join([
+        'HTTP ${status_code}',
+        '${headers}',
+    ]))
 
     def __init__(self, groups_file, env_file, outfile=sys.stdout):
         self.r = Requestor(groups_file, env_file)
@@ -28,20 +29,13 @@ class App:
         self.python_lexer = Python3Lexer()
         self.formatter = TerminalFormatter()
 
-        self.usage_info = {
-            'run': 'Usage: run GROUP REQUEST',
-            'inspect': 'Usage: inspect GROUP [REQUEST [ATTR]]',
-            'set_env': 'Usage: set_env ENV_FILE',
-            'set_collection': 'Usage: set_collection COLLECTION_FILE',
-            'reload': 'Usage: reload [collection, env]',
-        }
-
     def run(self, group_name, request_name):
         """Run a Request."""
-        group = self.get_group('run', group_name)
+        group = self.get_group(group_name, action='run')
         if not group:
             return
-        request = self.get_request('run', group, group_name, request_name)
+        request = self.get_request(group, group_name, request_name,
+                                   action='run')
         if not request:
             return
 
@@ -50,21 +44,21 @@ class App:
 
     def inspect(self, group_name, request_name=None, attr_name=None):
         """Inspect a Group, Request, or Request Attribute."""
-        group = self.get_group('inspect', group_name)
+        group = self.get_group(group_name, action='inspect')
         if not group:
             return
         output_obj = group
 
         if request_name:
-            request = self.get_request('inspect', group, group_name,
-                                       request_name)
+            request = self.get_request(group, group_name, request_name,
+                                       action='inspect')
             if not request:
                 return
             output_obj = request
 
         if attr_name:
-            attr = self.get_request_attr('inspect', request, group_name,
-                                         request_name, attr_name)
+            attr = self.get_request_attr(request, group_name, request_name,
+                                         attr_name, action='inspect')
             if not attr:
                 return
 
@@ -88,39 +82,54 @@ class App:
         output = json.dumps(output_obj, indent=2)
         highlight(output, self.json_lexer, self.formatter, self.outfile)
 
-    def save(self):
+    def load_collection(self, path=None):
+        """Reload the current Collection, changing it to ``path`` if given."""
+        self.r.load_collection(path)
+
+    def load_env(self, path=None):
+        """Reload the current Env, changing it to ``path`` if given."""
+        self.r.load_env(path)
+
+    def save_env(self):
         """Save the current Environment to disk."""
         self.r.save_env()
 
-    def get_group(self, command, group_name):
-        """Safely retrieve a Group object."""
-        group = self.r.collection.get(group_name)
-        if not group:
-            self.usage(command, "Group '{}' not found.".format(group_name))
-        return group
+    def get_group(self, group_name, action):
+        """Retrieve a Group object."""
+        try:
+            return self.r.collection[group_name]
+        except KeyError:
+            raise NotFound(
+                action,
+                "Group '{}' not found.".format(group_name)
+            )
 
-    def get_request(self, command, group, group_name, request_name):
-        """Safely retrieve a Request object."""
-        request = group.get(request_name)
-        if not request:
-            self.usage(command, "Request '{}' not found in Group '{}'."
-                       .format(request_name, group_name))
-        return request
+    def get_request(self, group, group_name, request_name, action):
+        """Retrieve a Request object."""
+        try:
+            return group[request_name]
+        except KeyError:
+            raise NotFound(
+                action,
+                "Request '{}' not found in Group '{}'."
+                    .format(request_name, group_name),
+            )
 
-    def get_request_attr(self, command, request, group_name, request_name,
-                         attr_name):
-        """Safely retrieve a Request Attribute."""
-        attr = request.get(attr_name)
-        if not attr:
-            self.usage(command,
-                       "Attribute '{}' not found in Request '{}'"
-                       " of Group '{}'.".format(attr_name, request_name,
-                                                group_name))
-        return attr
+    def get_request_attr(self, request, group_name, request_name, attr_name,
+                         action):
+        """Retrieve a Request Attribute."""
+        try:
+            return request[attr_name]
+        except KeyError:
+            raise NotFound(
+                action,
+                "Attribute '{}' not found in Request '{}.{}'."
+                    .format(attr_name, request_name, group_name)
+            )
 
     def print_response(self, response):
         """Print an HTTP Response."""
-        output = HTTP_TPL.substitute(
+        output = self.HTTP_TPL.substitute(
             status_code=response.status_code,
             headers=self.key_value_pairs(response.headers),
         )
@@ -138,11 +147,6 @@ class App:
             print(self.key_value_pairs(env))
         else:
             print('No Environment loaded.')
-
-    def usage(self, command, msg):
-        """Print usage info for the given command."""
-        print(msg)
-        print(self.usage_info[command])
 
     @staticmethod
     def key_value_pairs(obj):

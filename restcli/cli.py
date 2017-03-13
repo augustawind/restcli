@@ -17,7 +17,7 @@ def run():
 
     # Flags
     parser.add_argument('-i', '--inspect', action='store_true')
-    parser.add_argument('-s', '--save-env', action='store_true')
+    parser.add_argument('-s', '--save_env-env', action='store_true')
 
     args = parser.parse_args()
 
@@ -28,4 +28,4 @@ def run():
     else:
         program.run(args.group, args.request)
         if args.save_env:
-            program.save()
+            program.save_env()
