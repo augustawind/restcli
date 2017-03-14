@@ -7,7 +7,7 @@ It's Postman for terminal lovers!
 restcli is a library and commandline utility for API testing. It reads requests
 from a YAML file and supports scripting and environment variables.
 
-## Config Format
+## File Format
 
 Requests are organized into Groups, which are like folders of Requests. The file
 should contain an object mapping Group names to Groups. Each Group object should
@@ -78,3 +78,10 @@ You may run `help COMMAND` on any command for more information about arguments
 and usage of the given command.
 
 There are also plans for a regular commandline utility as well.
+
+## TODO
+
+- [ ] Support for config files and global/default options.
+- [ ] Rewrite interactive mode to use `prompt_toolkit`.
+- [ ] Support running multiple Requests in sequence.
+- [ ] Export Collections to/from Postman.
