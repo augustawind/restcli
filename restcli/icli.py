@@ -4,7 +4,6 @@ from functools import wraps
 
 import yaml
 
-from restcli.app import App
 from restcli.exceptions import InvalidInput, NotFound
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
@@ -44,9 +43,9 @@ def expect(*exceptions):
 class Cmd(cmd.Cmd):
     """Interactive command prompt for restcli."""
 
-    def __init__(self, groups_file, env_file=None):
+    def __init__(self, app):
         super().__init__()
-        self.app = App(groups_file, env_file, self.stdout)
+        self.app = app
 
     @staticmethod
     def parse_args(action, line, min_args=None, max_args=None):

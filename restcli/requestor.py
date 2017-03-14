@@ -61,9 +61,10 @@ class Requestor:
         """Reload the current Collection, changing it to ``path`` if given."""
         if path:
             self.collection_file = path
-        collections = self.load_file(self.collection_file)
-        self.validate_collections(collections)
-        self.collection = collections
+        if self.collection_file:
+            collections = self.load_file(self.collection_file)
+            self.validate_collections(collections)
+            self.collection = collections
 
     def load_env(self, path=None):
         """Reload the current Env, changing it to ``path`` if given."""

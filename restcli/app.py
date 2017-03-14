@@ -20,8 +20,8 @@ class App:
         '${headers}',
     ]))
 
-    def __init__(self, groups_file, env_file, outfile=sys.stdout):
-        self.r = Requestor(groups_file, env_file)
+    def __init__(self, collection_file, env_file, outfile=sys.stdout):
+        self.r = Requestor(collection_file, env_file)
         self.outfile = outfile
 
         self.http_lexer = HttpLexer()
