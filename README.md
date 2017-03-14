@@ -69,10 +69,10 @@ interacting with the restcli library. The following commands are supported:
 
 - `help`: Display general help or help for a specific command.
 - `run`: Run an Request in a Group.
-- `inspect`: Inspect a Group, Request, or Request Attribute.
+- `view`: Inspect a Group, Request, or Request Attribute.
 - `env`: Print the currently loaded Environment.
 - `reload`: Reload the initial Groups file and Environment file from disk.
-- `save_env`: Save the current Environment to disk.
+- `save`: Save the current Environment to disk.
 
 You may run `help COMMAND` on any command for more information about arguments
 and usage of the given command.

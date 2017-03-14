@@ -42,23 +42,23 @@ class App:
         response = self.r.request(group_name, request_name)
         self.print_response(response)
 
-    def inspect(self, group_name, request_name=None, attr_name=None):
+    def view(self, group_name, request_name=None, attr_name=None):
         """Inspect a Group, Request, or Request Attribute."""
-        group = self.get_group(group_name, action='inspect')
+        group = self.get_group(group_name, action='view')
         if not group:
             return
         output_obj = group
 
         if request_name:
             request = self.get_request(group, group_name, request_name,
-                                       action='inspect')
+                                       action='view')
             if not request:
                 return
             output_obj = request
 
         if attr_name:
             attr = self.get_request_attr(request, group_name, request_name,
-                                         attr_name, action='inspect')
+                                         attr_name, action='view')
             if not attr:
                 return
 

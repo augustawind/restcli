@@ -12,7 +12,7 @@ USAGE_ARGS = {
     'change_collection': 'COLLECTION_FILE',
     'change_env': 'ENV_FILE',
     'env': '[ENV0 [ENV1 ... [ENVn]]]',
-    'inspect': 'GROUP [REQUEST [ATTR]]',
+    'view': 'GROUP [REQUEST [ATTR]]',
     'reload': '[collection, env]',
     'run': 'GROUP REQUEST',
 }
@@ -63,10 +63,10 @@ class Cmd(cmd.Cmd):
         self.app.run(*args)
 
     @expect(InvalidInput, NotFound)
-    def do_inspect(self, line):
+    def do_view(self, line):
         """Inspect a Group, Request, or Attribute."""
-        args = self.parse_args('inspect', line, 1, 3)
-        self.app.inspect(*args)
+        args = self.parse_args('view', line, 1, 3)
+        self.app.view(*args)
 
     def do_env(self, line):
         """Display the current Environment, or set env vars."""
