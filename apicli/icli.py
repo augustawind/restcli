@@ -4,7 +4,7 @@ from functools import wraps
 
 import yaml
 
-from restcli.exceptions import InvalidInput, NotFound
+from apicli.exceptions import InvalidInput, NotFound
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
 

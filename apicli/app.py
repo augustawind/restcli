@@ -8,8 +8,8 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from restcli.exceptions import NotFound
-from restcli.requestor import Requestor
+from apicli.exceptions import NotFound
+from apicli.requestor import Requestor
 
 
 class App:

@@ -1,7 +1,11 @@
-import argparse
+import click
 
-from restcli.app import App
-from restcli.icli import Cmd
+from apicli.app import App
+from apicli.icli import Cmd
+
+
+@click.group()
+@click.options('--')
 
 
 def run():
