@@ -20,11 +20,9 @@ class App:
         '${headers}',
     ]))
 
-    def __init__(self, collection_file, env_file, autosave=False,
-                 outfile=sys.stdout):
+    def __init__(self, collection_file, env_file, autosave=False):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
-        self.outfile = outfile
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
@@ -34,69 +32,62 @@ class App:
     def run(self, group_name, request_name):
         """Run a Request."""
         group = self.get_group(group_name, action='run')
-        if not group:
-            return
-        request = self.get_request(group, group_name, request_name,
-                                   action='run')
-        if not request:
-            return
-
+        self.get_request(group, group_name, request_name, action='run')
         response = self.r.request(group_name, request_name)
         if self.autosave:
             self.r.save_env()
-        self.print_response(response)
+        output = self.show_response(response)
+        return output
 
     def view(self, group_name, request_name=None, attr_name=None):
         """Inspect a Group, Request, or Request Attribute."""
         group = self.get_group(group_name, action='view')
-        if not group:
-            return
         output_obj = group
 
         if request_name:
             request = self.get_request(group, group_name, request_name,
                                        action='view')
-            if not request:
-                return
             output_obj = request
 
-        if attr_name:
-            attr = self.get_request_attr(request, group_name, request_name,
-                                         attr_name, action='view')
-            if not attr:
-                return
+            if attr_name:
+                attr = self.get_request_attr(request, group_name, request_name,
+                                             attr_name, action='view')
 
-            if attr_name == 'scripts':
-                for name, script in attr.items():
-                    print('{}:'.format(name))
-                    highlight(script, self.python_lexer, self.formatter,
-                              self.outfile)
-                    print()
-                    return
+                if attr_name == 'scripts':
+                    output = ''
+                    for name, script in attr.items():
+                        output += '%s:\n%s\n' % (
+                            name,
+                            highlight(script, self.python_lexer,
+                                      self.formatter),
+                        )
+                    return output
 
-            if attr_name == 'headers':
-                headers = dict(l.split(':') for l in attr.strip().split('\n'))
-                output = self.key_value_pairs(headers)
-                highlight(output, self.http_lexer, self.formatter,
-                          self.outfile)
-                return
+                if attr_name == 'headers':
+                    headers = dict(l.split(':')
+                                   for l in attr.strip().split('\n'))
+                    output = self.key_value_pairs(headers)
+                    return highlight(output, self.http_lexer, self.formatter)
 
-            output_obj = attr
+                output_obj = attr
 
         output = json.dumps(output_obj, indent=2)
-        highlight(output, self.json_lexer, self.formatter, self.outfile)
+        return highlight(output, self.json_lexer, self.formatter)
 
     def load_collection(self, path=None):
         """Reload the current Collection, changing it to ``path`` if given."""
         self.r.load_collection(path)
+        return ''
 
     def load_env(self, path=None):
         """Reload the current Env, changing it to ``path`` if given."""
         self.r.load_env(path)
+        return ''
 
     def save_env(self, **kwargs):
         """Save the current Environment to disk."""
         self.r.save_env(**kwargs)
+        return ''
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""
@@ -131,26 +122,25 @@ class App:
                     .format(attr_name, request_name, group_name)
             )
 
-    def print_response(self, response):
+    def show_response(self, response):
         """Print an HTTP Response."""
-        output = self.HTTP_TPL.substitute(
+        http_txt = self.HTTP_TPL.substitute(
             status_code=response.status_code,
             headers=self.key_value_pairs(response.headers),
         )
-        highlight(output, self.http_lexer, self.formatter, self.outfile)
+        json_txt = json.dumps(response.json(), indent=2)
+        return '%s\n%s' % (
+            highlight(http_txt, self.http_lexer, self.formatter),
+            highlight(json_txt, self.json_lexer, self.formatter),
+        )
 
-        print()
-
-        output = json.dumps(response.json(), indent=2)
-        highlight(output, self.json_lexer, self.formatter, self.outfile)
-
-    def print_env(self):
+    def show_env(self):
         """Print the current Environment."""
         env = self.r.env
         if env:
-            print(self.key_value_pairs(env))
+            return self.key_value_pairs(env)
         else:
-            print('No Environment loaded.')
+            return 'No Environment loaded.'
 
     @staticmethod
     def key_value_pairs(obj):

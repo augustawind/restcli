@@ -60,19 +60,21 @@ class Cmd(cmd.Cmd):
     def do_run(self, line):
         """Run an HTTP request."""
         args = self.parse_args('run', line, 2, 2)
-        self.app.run(*args)
+        output = self.app.run(*args)
+        print(output)
 
     @expect(InvalidInput, NotFound)
     def do_view(self, line):
         """Inspect a Group, Request, or Attribute."""
         args = self.parse_args('view', line, 1, 3)
-        self.app.view(*args)
+        output = self.app.view(*args)
+        print(output)
 
     def do_env(self, line):
         """Display the current Environment, or set env vars."""
         args = self.parse_args('env', line)
         if not args:
-            self.app.print_env()
+            print(self.app.show_env())
             return
 
         env = {}
@@ -88,7 +90,8 @@ class Cmd(cmd.Cmd):
             key, val = match.groups()
             env[key] = yaml.safe_load(val)
 
-        self.app.save_env(**env)
+        output = self.app.save_env(**env)
+        print(output)
 
     @expect(InvalidInput)
     def do_reload(self, line):
@@ -100,28 +103,33 @@ class Cmd(cmd.Cmd):
         elif not all(o in options for o in args):
             raise InvalidInput(action='reload')
 
+        output = ''
         if 'collection' in args:
-            self.app.load_collection()
+            output += self.app.load_collection()
         if 'env' in args:
-            self.app.load_env()
+            output += self.app.load_env()
+        print(output)
 
     def do_save(self, line):
         """Save the current environment to disk."""
-        self.app.save_env()
+        output = self.app.save_env()
+        print(output)
 
     @expect(InvalidInput)
     def do_change_collection(self, line):
         """Set and load a new Collection file."""
         args = self.parse_args('set_collection', line, 1, 1)
         path = args[0]
-        self.app.load_collection(path)
+        output = self.app.load_collection(path)
+        print(output)
 
     @expect(InvalidInput)
     def do_change_env(self, line):
         """Set and load a new Environment file."""
         args = self.parse_args('set_env', line, 1, 1)
         path = args[0]
-        self.app.load_env(path)
+        output = self.app.load_env(path)
+        print(output)
 
     def do_quit(self, line):
         """Quit the program."""

@@ -20,7 +20,8 @@ def cli(ctx, collection, env, save):
 @click.argument('request')
 @click.pass_obj
 def run(app, group, request):
-    app.run(group, request)
+    output = app.run(group, request)
+    click.echo(output)
 
 
 @cli.command()
@@ -29,7 +30,8 @@ def run(app, group, request):
 @click.argument('attr', required=False)
 @click.pass_obj
 def view(app, group, request, attr):
-    app.view(group, request, attr)
+    output = app.view(group, request, attr)
+    click.echo(output)
 
 
 @cli.command()
