@@ -23,6 +23,7 @@ class App:
     def __init__(self, collection_file, env_file, autosave=False,
                  outfile=sys.stdout):
         self.r = Requestor(collection_file, env_file)
+        self.autosave = autosave
         self.outfile = outfile
 
         self.http_lexer = HttpLexer()
@@ -41,6 +42,8 @@ class App:
             return
 
         response = self.r.request(group_name, request_name)
+        if self.autosave:
+            self.r.save_env()
         self.print_response(response)
 
     def view(self, group_name, request_name=None, attr_name=None):
