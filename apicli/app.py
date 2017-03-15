@@ -34,13 +34,17 @@ class App:
         self.python_lexer = Python3Lexer()
         self.formatter = Terminal256Formatter(style=style)
 
-    def run(self, group_name, request_name):
+    def run(self, group_name, request_name, *env_args):
         """Run a Request."""
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
-        response = self.r.request(group_name, request_name)
+
+        env_kwargs = self.parse_env(*env_args)
+        response = self.r.request(group_name, request_name, **env_kwargs)
+
         if self.autosave:
             self.r.save_env()
+
         output = self.show_response(response)
         return output
 
@@ -94,8 +98,8 @@ class App:
         self.r.save_env(**kwargs)
         return ''
 
-    def set_env(self, *args):
-        """Set some new variables in the Environment."""
+    def parse_env(self, *args):
+        """Parse some string args with Environment syntax."""
         env = {}
         for arg in args:
             match = ENV_RE.match(arg)
@@ -108,7 +112,11 @@ class App:
                 )
             key, val = match.groups()
             env[key] = yaml.safe_load(val)
+        return env
 
+    def set_env(self, *args):
+        """Set some new variables in the Environment."""
+        env = self.parse_env(*args)
         if self.autosave:
             return self.save_env(**env)
         else:

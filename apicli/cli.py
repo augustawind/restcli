@@ -18,9 +18,10 @@ def cli(ctx, collection, env, save):
 @cli.command()
 @click.argument('group')
 @click.argument('request')
+@click.argument('env', nargs=-1)
 @click.pass_obj
-def run(app, group, request):
-    output = app.run(group, request)
+def run(app, group, request, env):
+    output = app.run(group, request, *env)
     click.echo(output)
 
 

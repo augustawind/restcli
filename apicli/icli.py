@@ -64,7 +64,7 @@ class Cmd(cmd.Cmd):
     @expect(InvalidInput, NotFound)
     def do_run(self, line):
         """Run an HTTP request."""
-        args = self.parse_args('run', line, 2, 2)
+        args = self.parse_args('run', line, 2)
         output = self.app.run(*args)
         self.output(output)
 

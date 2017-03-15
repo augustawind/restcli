@@ -15,10 +15,10 @@ class Requestor:
         self.env = {}
         self.load_workspace()
 
-    def request(self, group, name):
+    def request(self, group, name, **env_kwargs):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        request_kwargs = self.parse_request(request, self.env)
+        request_kwargs = self.parse_request(request, self.env, **env_kwargs)
         response = requests.request(**request_kwargs)
 
         script = request.get('script')
@@ -28,8 +28,9 @@ class Requestor:
         return response
 
     @classmethod
-    def parse_request(cls, request, env):
+    def parse_request(cls, request, env, **env_kwargs):
         """Parse a Request object in the context of an Environment."""
+        env = {**env, **env_kwargs}
         body = request.get('body')
         headers = request.get('headers')
         return {
