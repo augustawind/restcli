@@ -43,6 +43,12 @@ def expect(*exceptions):
 class Cmd(cmd.Cmd):
     """Interactive command prompt for restcli."""
 
+    prompt = '> '
+    intro = (
+        'apicli 0.1\n'
+        'Type "help" for more information.\n'
+    )
+
     def __init__(self, app):
         super().__init__()
         self.app = app
