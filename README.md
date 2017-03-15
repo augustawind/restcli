@@ -82,6 +82,9 @@ There are also plans for a regular commandline utility as well.
 ## TODO
 
 - [ ] Support for config files and global/default options.
-- [ ] Rewrite interactive mode to use `prompt_toolkit`.
+- [ ] Write a terminal UI using `prompt_toolkit`.
 - [ ] Support running multiple Requests in sequence.
 - [ ] Export Collections to/from Postman.
+- [ ] Improve this README.
+- [ ] Improve "help" command output.
+- [ ] Unify help/error handling between `cli` and `icli`.
