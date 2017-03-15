@@ -18,13 +18,12 @@ class Requestor:
     def request(self, group, name):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        scripts = request.get('scripts', {})
         request_kwargs = self.parse_request(request, self.env)
         response = requests.request(**request_kwargs)
 
-        post_request = scripts.get('post_request')
-        if post_request:
-            self.run_script(post_request, response, self.env)
+        script = request.get('script')
+        if script:
+            self.run_script(script, response, self.env)
 
         return response
 

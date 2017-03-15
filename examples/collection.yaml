@@ -9,10 +9,9 @@ auth:
         body: |
             username: '{{ username }}'
             password: '{{ password }}'
-        scripts:
-            post_request: |
-                if response.status_code == 200:
-                    env['jwt_token'] = response.json()['token']
+        script: |
+            if response.status_code == 200:
+                env['jwt_token'] = response.json()['token']
 partners:
     list:
         method: get
@@ -21,12 +20,11 @@ partners:
             Content-Type: application/json
             Accept: application/json
             Authorization: 'JWT {{ jwt_token }}'
-        scripts:
-            post_request: |
-                if response.status_code == 200:
-                    partners = response.json()
-                    if partners:
-                        env['partner_id'] = partners[0]['id']
+        script: |
+            if response.status_code == 200:
+                partners = response.json()
+                if partners:
+                    env['partner_id'] = partners[0]['id']
     retrieve:
         method: get
         url: '{{ host }}/partners/{{ partner_id }}'
@@ -34,10 +32,9 @@ partners:
             Content-Type: application/json
             Accept: application/json
             Authorization: 'JWT {{ jwt_token }}'
-        scripts:
-            post_request: |
-                if response.status_code == 200:
-                    env['partner_id'] = response.json()['id']
+        script: |
+            if response.status_code == 200:
+                env['partner_id'] = response.json()['id']
     create:
         method: post
         url: '{{ host }}/partners'
@@ -54,7 +51,6 @@ partners:
                 state: Florida
                 country: United States
                 postal_code: 33713
-        scripts:
-            post_request: |
-                if response.status_code == 201:
-                    env['partner_id'] = response.json()['id']
+        script: |
+            if response.status_code == 201:
+                env['partner_id'] = response.json()['id']
