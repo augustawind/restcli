@@ -1,15 +1,18 @@
 import json
-import sys
+import re
 from string import Template
 
+import yaml
 from pygments import highlight
 from pygments.formatters.terminal import TerminalFormatter
 from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from apicli.exceptions import NotFound
+from apicli.exceptions import InvalidInput, NotFound
 from apicli.requestor import Requestor
+
+ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
 class App:
@@ -88,6 +91,27 @@ class App:
         """Save the current Environment to disk."""
         self.r.save_env(**kwargs)
         return ''
+
+    def set_env(self, *args):
+        """Set some new variables in the Environment."""
+        env = {}
+        for arg in args:
+            match = ENV_RE.match(arg)
+            if not match:
+                raise InvalidInput(
+                    action='env',
+                    message='Error: args must take the form `key:value`, where'
+                            ' `key` is a string and `value` is a valid YAML'
+                            ' value.',
+                )
+            key, val = match.groups()
+            env[key] = yaml.safe_load(val)
+
+        if self.autosave:
+            return self.save_env(**env)
+        else:
+            self.r.env.update(env)
+            return ''
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""

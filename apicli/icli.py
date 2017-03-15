@@ -1,12 +1,7 @@
 import cmd
-import re
 from functools import wraps
 
-import yaml
-
 from apicli.exceptions import InvalidInput, NotFound
-
-ENV_RE = re.compile(r'([^:]+):(.*)')
 
 USAGE_ARGS = {
     'change_collection': 'COLLECTION_FILE',
@@ -53,6 +48,10 @@ class Cmd(cmd.Cmd):
         super().__init__()
         self.app = app
 
+    def output(self, msg):
+        if msg:
+            print(msg, file=self.stdout)
+
     @staticmethod
     def parse_args(action, line, min_args=None, max_args=None):
         """Utility to parse input and validate the number of args given."""
@@ -67,37 +66,25 @@ class Cmd(cmd.Cmd):
         """Run an HTTP request."""
         args = self.parse_args('run', line, 2, 2)
         output = self.app.run(*args)
-        print(output)
+        self.output(output)
 
     @expect(InvalidInput, NotFound)
     def do_view(self, line):
         """Inspect a Group, Request, or Attribute."""
         args = self.parse_args('view', line, 1, 3)
         output = self.app.view(*args)
-        print(output)
+        self.output(output)
 
+    @expect(InvalidInput)
     def do_env(self, line):
         """Display the current Environment, or set env vars."""
         args = self.parse_args('env', line)
         if not args:
-            print(self.app.show_env())
+            self.output(self.app.show_env())
             return
 
-        env = {}
-        for arg in args:
-            match = ENV_RE.match(arg)
-            if not match:
-                raise InvalidInput(
-                    action='env',
-                    message='Error: args must take the form `key:value`, where'
-                            ' `key` is a string and `value` is a valid YAML'
-                            ' value.',
-                )
-            key, val = match.groups()
-            env[key] = yaml.safe_load(val)
-
-        output = self.app.save_env(**env)
-        print(output)
+        output = self.app.set_env(*args)
+        self.output(output)
 
     @expect(InvalidInput)
     def do_reload(self, line):
@@ -114,12 +101,12 @@ class Cmd(cmd.Cmd):
             output += self.app.load_collection()
         if 'env' in args:
             output += self.app.load_env()
-        print(output)
+        self.output(output)
 
     def do_save(self, line):
         """Save the current environment to disk."""
         output = self.app.save_env()
-        print(output)
+        self.output(output)
 
     @expect(InvalidInput)
     def do_change_collection(self, line):
@@ -127,7 +114,7 @@ class Cmd(cmd.Cmd):
         args = self.parse_args('set_collection', line, 1, 1)
         path = args[0]
         output = self.app.load_collection(path)
-        print(output)
+        self.output(output)
 
     @expect(InvalidInput)
     def do_change_env(self, line):
@@ -135,7 +122,7 @@ class Cmd(cmd.Cmd):
         args = self.parse_args('set_env', line, 1, 1)
         path = args[0]
         output = self.app.load_env(path)
-        print(output)
+        self.output(output)
 
     def do_quit(self, line):
         """Quit the program."""
