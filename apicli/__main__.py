@@ -1,3 +1,3 @@
-from apicli.cli import run
+from apicli.cli import cli
 
-run()
+cli()

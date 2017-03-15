@@ -5,35 +5,35 @@ from apicli.icli import Cmd
 
 
 @click.group()
-@click.options('--')
+@click.option('-c', '--collection', envvar='APICLI_COLLECTION',
+              type=click.Path(exists=True, dir_okay=False))
+@click.option('-e', '--env', envvar='APICLI_ENV',
+              type=click.Path(exists=True, dir_okay=False))
+@click.option('-s', '--save/--no-save', default=False)
+@click.pass_context
+def cli(ctx, collection, env, save):
+    ctx.obj = App(collection, env, autosave=save)
 
 
-def run():
-    parser = argparse.ArgumentParser(prog='restcli')
+@cli.command()
+@click.argument('group')
+@click.argument('request')
+@click.pass_obj
+def run(app, group, request):
+    app.run(group, request)
 
-    # Positional arguments
-    parser.add_argument('group', nargs='?', default=None)
-    parser.add_argument('request', nargs='?', default=None)
-    parser.add_argument('attr', nargs='?', default=None)
 
-    # Options
-    parser.add_argument('-c', '--collection')
-    parser.add_argument('-e', '--env')
+@cli.command()
+@click.argument('group')
+@click.argument('request', required=False)
+@click.argument('attr', required=False)
+@click.pass_obj
+def view(app, group, request, attr):
+    app.view(group, request, attr)
 
-    # Flags
-    parser.add_argument('-i', '--interactive', action='store_true')
-    parser.add_argument('-v', '--view', action='store_true')
-    parser.add_argument('-s', '--save-env', action='store_true')
 
-    args = parser.parse_args()
-    app = App(args.collection, args.env)
-
-    if args.interactive:
-        cmd = Cmd(app)
-        cmd.cmdloop()
-    elif args.view:
-        app.view(args.group, args.request, args.attr)
-    else:
-        app.run(args.group, args.request)
-        if args.save_env:
-            app.save_env()
+@cli.command()
+@click.pass_obj
+def repl(app):
+    cmd = Cmd(app)  # , ctx.save)
+    cmd.cmdloop()

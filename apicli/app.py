@@ -20,7 +20,8 @@ class App:
         '${headers}',
     ]))
 
-    def __init__(self, collection_file, env_file, outfile=sys.stdout):
+    def __init__(self, collection_file, env_file, autosave=False,
+                 outfile=sys.stdout):
         self.r = Requestor(collection_file, env_file)
         self.outfile = outfile
 
