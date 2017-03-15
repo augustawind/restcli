@@ -6,9 +6,9 @@ from apicli.exceptions import InvalidInput, NotFound
 USAGE_ARGS = {
     'change_collection': 'COLLECTION_FILE',
     'change_env': 'ENV_FILE',
-    'env': '[ENV0 [ENV1 ... [ENVn]]]',
-    'view': 'GROUP [REQUEST [ATTR]]',
-    'reload': '[collection, env]',
+    'env': '[key0:val0] [key1:val1] .. [keyN:valN]',
+    'view': 'GROUP [REQUEST] [ATTR]',
+    'reload': '[collection | env]',
     'run': 'GROUP REQUEST',
 }
 
