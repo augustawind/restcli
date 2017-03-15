@@ -4,7 +4,7 @@ from string import Template
 
 import yaml
 from pygments import highlight
-from pygments.formatters.terminal import TerminalFormatter
+from pygments.formatters.terminal256 import Terminal256Formatter
 from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
@@ -18,19 +18,21 @@ ENV_RE = re.compile(r'([^:]+):(.*)')
 class App:
     """Application interface for restcli."""
 
-    HTTP_TPL = Template('\n'.join([
-        'HTTP ${status_code}',
+    HTTP_TPL = Template('\n'.join((
+        'HTTP/${http_version} ${status_code} ${reason}',
         '${headers}',
-    ]))
+        '${body}',
+    )))
 
-    def __init__(self, collection_file, env_file, autosave=False):
+    def __init__(self, collection_file, env_file, autosave=False,
+                 style='fruity'):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
         self.python_lexer = Python3Lexer()
-        self.formatter = TerminalFormatter()
+        self.formatter = Terminal256Formatter(style=style)
 
     def run(self, group_name, request_name):
         """Run a Request."""
@@ -149,24 +151,24 @@ class App:
     def show_response(self, response):
         """Print an HTTP Response."""
         http_txt = self.HTTP_TPL.substitute(
+            http_version=str(float(response.raw.version) / 10),
             status_code=response.status_code,
+            reason=response.reason,
             headers=self.key_value_pairs(response.headers),
+            body=json.dumps(response.json(), indent=2),
         )
-        json_txt = json.dumps(response.json(), indent=2)
-        return '%s\n%s' % (
-            highlight(http_txt, self.http_lexer, self.formatter),
-            highlight(json_txt, self.json_lexer, self.formatter),
-        )
+        return highlight(http_txt, self.http_lexer, self.formatter)
 
     def show_env(self):
         """Print the current Environment."""
         env = self.r.env
         if env:
-            return self.key_value_pairs(env)
+            return highlight(json.dumps(env, indent=2), self.json_lexer,
+                             self.formatter)
         else:
             return 'No Environment loaded.'
 
     @staticmethod
     def key_value_pairs(obj):
         """Format a dict-like object into lines of 'KEY: VALUE'."""
-        return '\n'.join(['{}: {}'.format(k, v) for k, v in obj.items()])
+        return '\n'.join(['%s: %s' % (k, v) for k, v in obj.items()])

@@ -87,4 +87,4 @@ There are also plans for a regular commandline utility as well.
 - [ ] Export Collections to/from Postman.
 - [ ] Improve this README.
 - [ ] Improve "help" command output.
-- [ ] Unify help/error handling between `cli` and `icli`.
+- [x] Unify help/error handling between `cli` and `icli`.
