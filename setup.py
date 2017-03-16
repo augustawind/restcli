@@ -43,7 +43,7 @@ setup(
     include_package_data=True,
     license="Apache",
     zip_safe=False,
-    keywords='rest, HTTP, client, cli',
+    keywords='rest, HTTP, client, cli, api, testing',
     packages=['apicli'],
     package_dir={'apicli': 'apicli'},
     classifiers=[
