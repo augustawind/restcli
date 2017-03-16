@@ -4,11 +4,11 @@ RESTCLI
 An API client library and CLI written in Python.
 It's Postman for terminal lovers!
 
--  Overview_
--  Installation_
--  File_Format_
--  Commandline_Interface_
--  License_
+-  `Overview`_
+-  `Installation`_
+-  `File Format`_
+-  `Commandline Interface`_
+-  `License`_
 
 
 .. _Overview:
