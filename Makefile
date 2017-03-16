@@ -6,25 +6,25 @@ install:
 
 .PHONY: watch
 watch:
-	find apicli | entr make install
+	find restcli | entr make install
 
 .PHONY: isort
 isort:
-	isort -rc -w 120 apicli
+	isort -rc -w 120 restcli
 	isort -rc -w 120 tests
 
 .PHONY: lint
 lint:
 	python setup.py check -rms
-	flake8 apicli/ tests/
+	flake8 restcli/ tests/
 
 .PHONY: test
 test:
-	pytest --cov=apicli && coverage combine
+	pytest --cov=restcli && coverage combine
 
 .PHONY: .test-build-cov
 .test-build-cov:
-	pytest --cov=apicli && (echo "building coverage html"; coverage combine; coverage html)
+	pytest --cov=restcli && (echo "building coverage html"; coverage combine; coverage html)
 
 .PHONY: all
 all: .test-build-cov lint

@@ -1,7 +1,7 @@
 import click
 
-from apicli.app import App
-from apicli.icli import Cmd
+from restcli.app import App
+from restcli.icli import Cmd
 
 
 @click.group()

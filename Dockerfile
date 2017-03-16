@@ -6,4 +6,4 @@ ADD . /usr/src/restcli
 
 RUN make install
 
-ENTRYPOINT ["apicli"]
+ENTRYPOINT ["restcli"]

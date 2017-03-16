@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 import pytest_mock
 
-from apicli import Requestor
+from restcli import Requestor
 
 TEST_GROUPS_PATH = 'tests/resources/test_collection.yaml'
 TEST_ENV_PATH = 'tests/resources/test_env.yaml'

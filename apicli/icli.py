@@ -1,7 +1,7 @@
 import cmd
 from functools import wraps
 
-from apicli.exceptions import InvalidInput, NotFound
+from restcli.exceptions import InvalidInput, NotFound
 
 USAGE_ARGS = {
     'change_collection': 'COLLECTION_FILE',
@@ -40,7 +40,7 @@ class Cmd(cmd.Cmd):
 
     prompt = '> '
     intro = (
-        'apicli 0.1\n'
+        'restcli 0.1\n'
         'Type "help" for more information.\n'
     )
 

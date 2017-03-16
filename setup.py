@@ -12,7 +12,7 @@ except ImportError:
     from distutils.core import setup
 
 # avoid loading the package before requirements are installed:
-version = SourceFileLoader('version', 'apicli/version.py').load_module()
+version = SourceFileLoader('version', 'restcli/version.py').load_module()
 
 __version__ = str(version.VERSION)
 
@@ -38,7 +38,7 @@ with open('HISTORY.rst', 'r') as f:
     f.close()
 
 setup(
-    name='apicli',
+    name='restcli',
     version=__version__,
     description='An API client library and CLI written in Python. Postman for terminal lovers!',
     long_description=readme + '\n\n' + history,
@@ -49,8 +49,8 @@ setup(
     license="Apache",
     zip_safe=False,
     keywords='rest, HTTP, client, cli, api, testing',
-    packages=['apicli'],
-    package_dir={'apicli': 'apicli'},
+    packages=['restcli'],
+    package_dir={'restcli': 'restcli'},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -68,7 +68,7 @@ setup(
     test_suite='tests',
     entry_points="""
     [console_scripts]
-    apicli=apicli.cli:cli
+    restcli=restcli.cli:cli
     """,
     install_requires=[
         'click>=6,<7',
