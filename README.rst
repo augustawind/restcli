@@ -143,9 +143,9 @@ Usage
     Usage: restcli [OPTIONS] COMMAND [ARGS]...
 
     Options:
-      -c, --collection PATH       [required]
-      -e, --env PATH
-      -s, --save / -S, --no-save
+      -c, --collection PATH       Collection file.  [required]
+      -e, --env PATH              Environment file.
+      -s, --save / -S, --no-save  Save Environment to disk after changes.
       --help                      Show this message and exit.
 
     Commands:
@@ -159,6 +159,8 @@ Usage
 
     Usage: restcli run [OPTIONS] GROUP REQUEST [ENV]...
 
+      Run a Request.
+
     Options:
       --help  Show this message and exit.
 
@@ -168,6 +170,8 @@ Usage
 
     Usage: restcli view [OPTIONS] GROUP [REQUEST] [ATTR]
 
+      View a Group, Request, or Request Attribute.
+
     Options:
       --help  Show this message and exit.
 
@@ -176,6 +180,8 @@ Usage
 .. code-block:: text
 
     Usage: restcli repl [OPTIONS]
+
+      Start an interactive command prompt.
 
     Options:
       --help  Show this message and exit.
