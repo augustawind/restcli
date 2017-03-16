@@ -37,7 +37,7 @@ Then run it with:
 
 .. code-block:: sh
 
-    $ docker run -it restcli repl
+    $ docker run -it restcli
 
 .. _File_Format:
 
