@@ -4,6 +4,7 @@ from functools import wraps
 import click
 
 from restcli.exceptions import InvalidInput, NotFound
+from restcli.version import VERSION
 
 USAGE_ARGS = {
     'change_collection': 'COLLECTION_FILE',
@@ -42,17 +43,18 @@ class Cmd(cmd.Cmd):
 
     prompt = '> '
     intro = (
-        'restcli 0.1\n'
-        'Type "help" for more information.\n'
+        'restcli %s\n'
+        'Type "help" for more information.\n' % VERSION
     )
 
-    def __init__(self, app):
-        super().__init__()
+    def __init__(self, app, stdout):
+        super().__init__(stdout=stdout)
         self.app = app
 
     def output(self, msg):
         if msg:
-            if len(msg.splitlines()) > 30:
+            _, height = click.get_terminal_size()
+            if len(msg.splitlines()) > height:
                 click.echo_via_pager(msg)
             else:
                 click.echo(msg)

@@ -9,7 +9,8 @@ from restcli.cmdprompt import Cmd
               type=click.Path(exists=True, dir_okay=False))
 @click.option('-e', '--env', envvar='RESTCLI_ENV',
               type=click.Path(exists=True, dir_okay=False))
-@click.option('-s/-S', '--save/--no-save', default=False)
+@click.option('-s/-S', '--save/--no-save', envvar='RESTCLI_AUTOSAVE',
+              default=False)
 @click.pass_context
 def cli(ctx, collection, env, save):
     ctx.obj = App(collection, env, autosave=save)
@@ -38,5 +39,5 @@ def view(app, group, request, attr):
 @cli.command()
 @click.pass_obj
 def repl(app):
-    cmd = Cmd(app)  # , ctx.save)
+    cmd = Cmd(app, stdout=click.get_text_stream('stdout'))
     cmd.cmdloop()
