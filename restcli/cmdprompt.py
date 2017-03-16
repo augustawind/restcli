@@ -41,6 +41,7 @@ def expect(*exceptions):
 class Cmd(cmd.Cmd):
     """Interactive command prompt for restcli."""
 
+    identchars = cmd.Cmd.identchars + '-'
     prompt = '> '
     intro = (
         'restcli %s\n'

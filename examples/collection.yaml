@@ -12,6 +12,29 @@ auth:
         script: |
             if response.status_code == 200:
                 env['jwt_token'] = response.json()['token']
+action-types:
+    list:
+        method: get
+        url: '{{ host }}/action_types'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        script: |
+            if response.status_code == 200:
+                action_types = response.json()
+                if action_types:
+                    env['action_type_name'] = action_types[0]['name']
+    get:
+        method: get
+        url: '{{ host }}/action_types/{{ action_type_name }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        script: |
+            if response.status_code == 200:
+                env['action_type_name'] = response.json()['name']
 partners:
     list:
         method: get
@@ -25,7 +48,7 @@ partners:
                 partners = response.json()
                 if partners:
                     env['partner_id'] = partners[0]['id']
-    retrieve:
+    get:
         method: get
         url: '{{ host }}/partners/{{ partner_id }}'
         headers: |
