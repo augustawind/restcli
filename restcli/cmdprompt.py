@@ -47,7 +47,7 @@ class Cmd(cmd.Cmd):
         'Type "help" for more information.\n' % VERSION
     )
 
-    def __init__(self, app, stdout):
+    def __init__(self, app, stdout=None):
         super().__init__(stdout=stdout)
         self.app = app
 
