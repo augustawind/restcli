@@ -1,7 +1,7 @@
 import click
 
 from restcli.app import App
-from restcli.icli import Cmd
+from restcli.cmdprompt import Cmd
 
 
 @click.group()
