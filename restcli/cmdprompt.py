@@ -1,6 +1,8 @@
 import cmd
 from functools import wraps
 
+import click
+
 from restcli.exceptions import InvalidInput, NotFound
 
 USAGE_ARGS = {
@@ -15,7 +17,7 @@ USAGE_ARGS = {
 
 def usage(action):
     """Print usage info for the given command."""
-    print('Usage: {} {}'.format(action, USAGE_ARGS[action]))
+    click.echo('Usage: {} {}'.format(action, USAGE_ARGS[action]))
 
 
 def expect(*exceptions):
@@ -28,7 +30,7 @@ def expect(*exceptions):
                 return func(*args, **kwargs)
             except exceptions as exc:
                 if exc.message:
-                    print('restcli: {}: {}'.format(exc.action, exc.message))
+                    click.echo('{}: {}'.format(exc.action, exc.message))
                 if exc.action:
                     usage(exc.action)
         return wrapped
@@ -50,7 +52,10 @@ class Cmd(cmd.Cmd):
 
     def output(self, msg):
         if msg:
-            print(msg, file=self.stdout)
+            if len(msg.splitlines()) > 30:
+                click.echo_via_pager(msg)
+            else:
+                click.echo(msg)
 
     @staticmethod
     def parse_args(action, line, min_args=None, max_args=None):
