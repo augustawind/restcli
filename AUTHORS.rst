@@ -2,8 +2,8 @@
 Credits
 =======
 
-Development Lead
-----------------
+Maintainer
+----------
 
 * Dustin Rohde <dustin@gooee.com>
 
