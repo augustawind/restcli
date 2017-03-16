@@ -38,7 +38,7 @@ setup(
     description='An API client library and CLI written in Python. Postman for terminal lovers!',
     long_description=readme + '\n\n' + history,
     author='Dustin Rohde',
-    author_email='dustin@gooee.com',
+    author_email='dustin.rohde@gmail.com',
     url='https://github.com/dustinrohde/restcli',
     include_package_data=True,
     license="Apache",

@@ -5,10 +5,10 @@ Credits
 Maintainer
 ----------
 
-* Dustin Rohde <dustin@gooee.com>
+* Dustin Rohde <dustin.rohde@gmail.com>
 
 Contributors
 ------------
 
-* Dairon Medina C. <dairon@gooee.com>
+* Dairon Medina C. <me@dairon.org>
 * You?
