@@ -4,9 +4,13 @@ install:
 	pip install -e .
 	pip install -r requirements.txt
 
+.PHONY: watch
+watch:
+	find apicli | entr make install
+
 .PHONY: isort
 isort:
-	isort -rc -w 120 arq
+	isort -rc -w 120 apicli
 	isort -rc -w 120 tests
 
 .PHONY: lint
