@@ -5,7 +5,7 @@ It's Postman for terminal lovers!
 ## Overview
 
 restcli is a library and commandline utility for API testing. It reads requests
-from a YAML file and supports scripting and environment variables.
+from a YAML file and supports scripting and variable interpolation.
 
 ## File Format
 

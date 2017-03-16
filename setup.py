@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='apicli',
+    name='restcli',
     version='0.1',
     py_modules=['restcli'],
     install_requires=[
@@ -14,6 +14,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        apicli=apicli:cli
+        restcli=restcli:cli
     ''',
 )

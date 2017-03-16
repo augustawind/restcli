@@ -1,13 +1,13 @@
 import click
 
-from apicli.app import App
-from apicli.icli import Cmd
+from restcli.app import App
+from restcli.icli import Cmd
 
 
 @click.group()
-@click.option('-c', '--collection', envvar='APICLI_COLLECTION', required=True,
+@click.option('-c', '--collection', envvar='RESTCLI_COLLECTION', required=True,
               type=click.Path(exists=True, dir_okay=False))
-@click.option('-e', '--env', envvar='APICLI_ENV',
+@click.option('-e', '--env', envvar='RESTCLI_ENV',
               type=click.Path(exists=True, dir_okay=False))
 @click.option('-s/-S', '--save/--no-save', default=False)
 @click.pass_context

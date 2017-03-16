@@ -2,7 +2,7 @@ install:
 	pip install --editable .
 
 watch:
-	find apicli | entr make install
+	find restcli | entr make install
 
 test:
 	pytest

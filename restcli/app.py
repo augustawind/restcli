@@ -9,8 +9,8 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from apicli.exceptions import InvalidInput, NotFound
-from apicli.requestor import Requestor
+from restcli.exceptions import InvalidInput, NotFound
+from restcli.requestor import Requestor
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
