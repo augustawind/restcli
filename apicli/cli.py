@@ -5,11 +5,11 @@ from apicli.icli import Cmd
 
 
 @click.group()
-@click.option('-c', '--collection', envvar='APICLI_COLLECTION',
+@click.option('-c', '--collection', envvar='APICLI_COLLECTION', required=True,
               type=click.Path(exists=True, dir_okay=False))
 @click.option('-e', '--env', envvar='APICLI_ENV',
               type=click.Path(exists=True, dir_okay=False))
-@click.option('-s', '--save/--no-save', default=False)
+@click.option('-s/-S', '--save/--no-save', default=False)
 @click.pass_context
 def cli(ctx, collection, env, save):
     ctx.obj = App(collection, env, autosave=save)
