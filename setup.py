@@ -5,6 +5,7 @@ import os
 import sys
 
 from importlib.machinery import SourceFileLoader
+
 try:
     from setuptools import setup
 except ImportError:
@@ -29,8 +30,12 @@ if sys.argv[-1] == 'test':
     os.system('py.test')
     sys.exit()
 
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+with open('README.rst', 'r') as f:
+    readme = f.read()
+    f.close()
+with open('HISTORY.rst', 'r') as f:
+    history = f.read()
+    f.close()
 
 setup(
     name='apicli',
