@@ -7,10 +7,6 @@ install:
 watch:
 	find restcli | entr make install
 
-isort:
-	isort -rc -w 120 restcli
-	isort -rc -w 120 tests
-
 lint:
 	python setup.py check -rms
 	flake8 restcli/ tests/

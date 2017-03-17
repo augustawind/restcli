@@ -52,10 +52,13 @@ class Cmd(cmd.Cmd):
         super().__init__(stdout=stdout)
         self.app = app
 
-    def output(self, msg):
+    def output(self, msg, pager='auto'):
         if msg:
-            _, height = click.get_terminal_size()
-            if len(msg.splitlines()) > height:
+            if pager == 'auto':
+                _, height = click.get_terminal_size()
+                if len(msg.splitlines()) > height - 3:
+                    click.echo_via_pager(msg)
+            elif pager:
                 click.echo_via_pager(msg)
             else:
                 click.echo(msg)
