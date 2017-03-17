@@ -3,13 +3,13 @@
 dev:
 	pip install -e .
 
+watch:
+	find restcli | entr make dev
+
 install:
 	pip install -U pip setuptools
 	pip install -e .
 	pip install -r requirements.txt
-
-watch:
-	find restcli | entr make install
 
 lint:
 	python setup.py check -rms
