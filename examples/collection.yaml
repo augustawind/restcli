@@ -35,6 +35,65 @@ action-types:
         script: |
             if response.status_code == 200:
                 env['action_type_name'] = response.json()['name']
+actions:
+    list:
+        method: get
+        url: '{{ host }}/actions'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        script: |
+            if response.status_code == 200:
+                actions = response.json()
+                if actions:
+                    env['action_id'] = actions[0]['id']
+    post:
+        method: post
+        url: '{{ host }}/actions'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        body: |
+            name: POST Action
+            type: {{ action_type_name }}
+            device: {{ device_id }}
+            space: {{ space_id }}
+        script: |
+            if response.status_code == 201:
+                env['action_id'] = response.json()['id']
+    opt-list:
+        method: options
+        url: '{{ host }}/actions'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+    get:
+        method: get
+        url: '{{ host }}/actions/{{ action_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        script: |
+            if response.status_code == 200:
+                env['action_id'] = response.json()['id']
+    del:
+        method: delete
+        url: '{{ host }}/actions/{{ action_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/actions/{{ action_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
 partners:
     list:
         method: get
@@ -48,17 +107,7 @@ partners:
                 partners = response.json()
                 if partners:
                     env['partner_id'] = partners[0]['id']
-    get:
-        method: get
-        url: '{{ host }}/partners/{{ partner_id }}'
-        headers: |
-            Content-Type: application/json
-            Accept: application/json
-            Authorization: 'JWT {{ jwt_token }}'
-        script: |
-            if response.status_code == 200:
-                env['partner_id'] = response.json()['id']
-    create:
+    post:
         method: post
         url: '{{ host }}/partners'
         headers: |
@@ -66,7 +115,7 @@ partners:
             Accept: application/json
             Authorization: 'JWT {{ jwt_token }}'
         body: |
-            name: Test Partner
+            name: POST Partner
             description: A Partner that doesn't really exist.
             location:
                 addr1: 123 Foo St.
@@ -77,3 +126,59 @@ partners:
         script: |
             if response.status_code == 201:
                 env['partner_id'] = response.json()['id']
+    opt-list:
+        method: options
+        url: '{{ host }}/partners'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+    get:
+        method: get
+        url: '{{ host }}/partners/{{ partner_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        script: |
+            if response.status_code == 200:
+                env['partner_id'] = response.json()['id']
+    put:
+        method: put
+        url: '{{ host }}/partners{{ partner_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        body: |
+            name: PUT Partner
+            description: A Partner that _really_ doesn't exist.
+            location:
+                addr1: 345 Bar Ave.
+                city: Saint Petersburg
+                state: Florida
+                country: United States
+                postal_code: 33701
+    patch:
+        method: patch
+        url: '{{ host }}/partners{{ partner_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+        body: |
+            name: PATCH Partner
+    del:
+        method: delete
+        url: '{{ host }}/partners{{ partner_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/partners{{ partner_id }}'
+        headers: |
+            Content-Type: application/json
+            Accept: application/json
+            Authorization: 'JWT {{ jwt_token }}'
