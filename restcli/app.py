@@ -2,7 +2,6 @@ import json
 import re
 from string import Template
 
-import yaml
 from pygments import highlight
 from pygments.formatters.terminal256 import Terminal256Formatter
 from pygments.lexers.data import JsonLexer
@@ -11,6 +10,7 @@ from pygments.lexers.textfmts import HttpLexer
 
 from restcli.exceptions import InvalidInput, NotFound
 from restcli.requestor import Requestor
+from restcli.utils import load_ordered
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
@@ -111,7 +111,7 @@ class App:
                             ' value.',
                 )
             key, val = match.groups()
-            env[key] = yaml.safe_load(val)
+            env[key] = load_ordered(val)
         return env
 
     def set_env(self, *args):

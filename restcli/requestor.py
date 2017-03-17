@@ -1,8 +1,7 @@
-import os
-
 import jinja2
 import requests
-import yaml
+
+from restcli.utils import dump_ordered, load_ordered
 
 
 class Requestor:
@@ -45,7 +44,7 @@ class Requestor:
         """Given some ``data``, render it with the given ``env``."""
         tpl = jinja2.Template(data)
         rendered = tpl.render(env)
-        return yaml.load(rendered)
+        return load_ordered(rendered)
 
     @staticmethod
     def run_script(script, response, env):
@@ -77,13 +76,13 @@ class Requestor:
     def load_file(path):
         """Load a  YAML config file with the given ``path``."""
         with open(path) as handle:
-            return yaml.safe_load(handle)
+            return load_ordered(handle)
 
     def save_env(self, **kwargs):
         """Save ``self.env`` to ``self.env_path``."""
         self.env.update(kwargs)
         with open(self.env_file, 'w') as handle:
-            return yaml.safe_dump(self.env, handle)
+            return dump_ordered(self.env, handle)
 
     @staticmethod
     def validate_collections(collections):
