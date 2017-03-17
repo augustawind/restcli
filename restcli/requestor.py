@@ -14,10 +14,10 @@ class Requestor:
         self.env = {}
         self.load_workspace()
 
-    def request(self, group, name, **env_kwargs):
+    def request(self, group, name, **env_override):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        request_kwargs = self.parse_request(request, self.env, **env_kwargs)
+        request_kwargs = self.parse_request(request, self.env, **env_override)
         response = requests.request(**request_kwargs)
 
         script = request.get('script')
@@ -27,9 +27,9 @@ class Requestor:
         return response
 
     @classmethod
-    def parse_request(cls, request, env, **env_kwargs):
+    def parse_request(cls, request, env, **env_override):
         """Parse a Request object in the context of an Environment."""
-        env = {**env, **env_kwargs}
+        env = {**env, **env_override}
         body = request.get('body')
         headers = request.get('headers')
         return {
@@ -78,9 +78,20 @@ class Requestor:
         with open(path) as handle:
             return load_ordered(handle)
 
-    def save_env(self, **kwargs):
-        """Save ``self.env`` to ``self.env_path``."""
+    def set_env(self, **kwargs):
+        """Update ``self.env`` with ``kwargs``."""
         self.env.update(kwargs)
+
+    def del_env(self, *args):
+        """Remove all ``args`` from ``self.env``."""
+        for var in args:
+            try:
+                del self.env[var]
+            except KeyError:
+                pass
+
+    def save_env(self):
+        """Save ``self.env`` to ``self.env_path``."""
         with open(self.env_file, 'w') as handle:
             return dump_ordered(self.env, handle)
 

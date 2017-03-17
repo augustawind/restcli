@@ -39,8 +39,8 @@ class App:
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
 
-        env_kwargs = self.parse_env(*env_args)
-        response = self.r.request(group_name, request_name, **env_kwargs)
+        set_env, _ = self.parse_env(*env_args)
+        response = self.r.request(group_name, request_name, **set_env)
 
         if self.autosave:
             self.r.save_env()
@@ -93,15 +93,25 @@ class App:
         self.r.load_env(path)
         return ''
 
-    def save_env(self, **kwargs):
+    def save_env(self):
         """Save the current Environment to disk."""
-        self.r.save_env(**kwargs)
+        self.r.save_env()
         return ''
 
     def parse_env(self, *args):
         """Parse some string args with Environment syntax."""
-        env = {}
+        del_env = []
+        set_env = {}
         for arg in args:
+            # Parse deletion syntax
+            if arg.startswith('!'):
+                var = arg[1:]
+                del_env.append(var)
+                if var in set_env:
+                    del set_env[var]
+                continue
+
+            # Parse assignment syntax
             match = ENV_RE.match(arg)
             if not match:
                 raise InvalidInput(
@@ -111,17 +121,19 @@ class App:
                             ' value.',
                 )
             key, val = match.groups()
-            env[key] = load_ordered(val)
-        return env
+            set_env[key] = load_ordered(val)
+        return set_env, del_env
 
     def set_env(self, *args):
         """Set some new variables in the Environment."""
-        env = self.parse_env(*args)
+        set_env, del_env = self.parse_env(*args)
+        self.r.set_env(**set_env)
+        self.r.del_env(*del_env)
+
+        output = ''
         if self.autosave:
-            return self.save_env(**env)
-        else:
-            self.r.env.update(env)
-            return ''
+            output += self.save_env()
+        return output
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""
