@@ -1,4 +1,8 @@
 .PHONY: install watch isort lint test .test-build-cov all clean
+
+dev:
+	pip install -e .
+
 install:
 	pip install -U pip setuptools
 	pip install -e .
