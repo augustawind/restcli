@@ -14,3 +14,8 @@ class InvalidInput(Error):
 class NotFound(Error):
     """Exception for invalid lookups."""
     message = 'Not found'
+
+
+class InvalidConfig(Error):
+    """Exception for invalid config files."""
+    message = 'Invalid config entry'

@@ -197,7 +197,7 @@ convenience:
 - ``help``: Display general help or help for a specific command.
 - ``run``: Run an Request.
 - ``view``: Inspect a Group, Request, or Request Attribute.
-- ``env``: Print the currently loaded Environment.
+- ``env``: View or change the currently loaded Environment.
 - ``reload``: Reload the current Collection and/or Environment from disk.
 - ``save``: Save the current Environment to disk.
 - ``change_collection``: Change the current Collection file to something else.

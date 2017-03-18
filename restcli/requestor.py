@@ -1,7 +1,13 @@
+from collections import Mapping, OrderedDict, namedtuple
+
 import jinja2
 import requests
 
 from restcli import yaml_utils as yaml
+from restcli.exceptions import InvalidConfig
+
+REQUEST_ATTRS = {'group_name', 'name', 'method', 'url', 'headers', 'body',
+                 'script'}
 
 
 class Requestor:
@@ -61,9 +67,12 @@ class Requestor:
         if path:
             self.collection_file = path
         if self.collection_file:
-            collections = self.load_file(self.collection_file)
-            self.validate_collections(collections)
-            self.collection = collections
+            with open(self.collection_file) as handle:
+                data = yaml.load(handle, many=True)
+                meta, collection = data
+            # self.validate_collections(collection, meta)
+            self.apply_meta(collection, meta)
+            self.collection = collection
 
     def load_env(self, path=None):
         """Reload the current Env, changing it to ``path`` if given."""
@@ -73,10 +82,27 @@ class Requestor:
             self.env = self.load_file(self.env_file)
 
     @staticmethod
-    def load_file(path):
+    def load_file(path, **kwargs):
         """Load a  YAML config file with the given ``path``."""
         with open(path) as handle:
-            return yaml.load(handle)
+            return yaml.load(handle, **kwargs)
+
+    @classmethod
+    def apply_meta(cls, collection, meta):
+        """Apply Collection Meta to a Collection. Mutates ``collection``."""
+        defaults = meta.get('defaults')
+        if not defaults:
+            return
+
+        if not isinstance(defaults, Mapping):
+            raise InvalidConfig(
+                message='Collection defaults must be a mapping object')
+
+        for group_name, group in collection.items():
+            for req_name, request in group.items():
+                for key in REQUEST_ATTRS:
+                    if key not in request and key in defaults:
+                        request[key] = defaults[key]
 
     def set_env(self, **kwargs):
         """Update ``self.env`` with ``kwargs``."""

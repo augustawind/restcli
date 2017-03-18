@@ -48,14 +48,17 @@ SafeCustomDumper.add_representer(literal_str, literal_unicode_representer)
 
 # Dump and load functions
 
-def dump(data, stream=None, safe=False, **kwargs):
-    """Serialize an OrderedDict into YAML, preserving mapping order."""
+def dump(data, stream=None, safe=False, many=False, **kwargs):
     kwargs.setdefault('default_flow_style', False)
     Dumper = SafeCustomDumper if safe else CustomDumper
-    return yaml.dump(data, stream, Dumper, **kwargs)
+    if not many:
+        data = [data]
+    return yaml.dump_all(data, stream, Dumper, **kwargs)
 
 
-def load(stream, safe=False):
-    """Deserialize an OrderedDict from YAML, preserving mapping order."""
+def load(stream, safe=False, many=False):
     Loader = SafeCustomLoader if safe else CustomLoader
-    return yaml.load(stream, Loader)
+    if many:
+        return yaml.load_all(stream, Loader)
+    else:
+        return yaml.load(stream, Loader)
