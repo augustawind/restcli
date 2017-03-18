@@ -19,7 +19,8 @@ class SafeCustomDumper(yaml.SafeDumper): pass
 
 def ordered_constructor(loader, node):
     loader.flatten_mapping(node)
-    return OrderedDict(loader.construct_pairs(node))
+    pairs = loader.construct_pairs(node)
+    return OrderedDict(pairs)
 
 CustomLoader.add_constructor(
     BaseResolver.DEFAULT_MAPPING_TAG, ordered_constructor)
@@ -59,6 +60,6 @@ def dump(data, stream=None, safe=False, many=False, **kwargs):
 def load(stream, safe=False, many=False):
     Loader = SafeCustomLoader if safe else CustomLoader
     if many:
-        return yaml.load_all(stream, Loader)
+        return tuple(yaml.load_all(stream, Loader))
     else:
         return yaml.load(stream, Loader)

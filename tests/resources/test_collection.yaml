@@ -3,9 +3,9 @@ authors:
     create:
         method: post
         url: "{{ server }}/authors"
-        headers: |
+        headers:
             Content-Type: application/json
-            Foo: {{ foo }}
+            Foo: '{{ foo }}'
         body: |
             id: 1
             name: Bartholomew McNozzleWafer

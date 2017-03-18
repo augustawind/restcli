@@ -1,6 +1,6 @@
 ---
 defaults:
-    headers: |
+    headers:
         Content-Type: application/json
         Accept: application/json
         Authorization: 'JWT {{ jwt_token }}'
@@ -10,7 +10,7 @@ auth:
     login:
         method: post
         url: '{{ host }}/auth/login'
-        headers: |
+        headers:
             Content-Type: application/json
             Accept: application/json
         body: |

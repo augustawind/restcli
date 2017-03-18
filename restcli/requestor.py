@@ -1,4 +1,4 @@
-from collections import Mapping, OrderedDict, namedtuple
+from collections import Mapping
 
 import jinja2
 import requests
@@ -6,8 +6,8 @@ import requests
 from restcli import yaml_utils as yaml
 from restcli.exceptions import InvalidConfig
 
-REQUEST_ATTRS = {'group_name', 'name', 'method', 'url', 'headers', 'body',
-                 'script'}
+REQUIRED_REQ_ATTRS = ('method', 'url')
+REQ_ATTRS = REQUIRED_REQ_ATTRS + ('headers', 'body', 'script')
 
 
 class Requestor:
@@ -36,14 +36,21 @@ class Requestor:
     def parse_request(cls, request, env, **env_override):
         """Parse a Request object in the context of an Environment."""
         env = {**env, **env_override}
-        body = request.get('body')
-        headers = request.get('headers')
-        return {
+        obj = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),
-            'headers': cls.interpolate(headers, env) if headers else None,
-            'json': cls.interpolate(body, env) if body else None,
         }
+
+        body = request.get('body')
+        if body:
+            obj['json'] = cls.interpolate(body, env)
+
+        headers = request.get('headers')
+        if headers:
+            obj['headers'] = {k: cls.interpolate(v, env)
+                              for k,v in headers.items()}
+
+        return obj
 
     @staticmethod
     def interpolate(data, env):
@@ -69,8 +76,15 @@ class Requestor:
         if self.collection_file:
             with open(self.collection_file) as handle:
                 data = yaml.load(handle, many=True)
+
+            if len(data) == 1:
+                meta, collection = {}, data[0]
+            elif len(data) == 2:
                 meta, collection = data
-            # self.validate_collections(collection, meta)
+            else:
+                raise InvalidConfig(
+                    message='Collection can have at most two documents')
+
             self.apply_meta(collection, meta)
             self.collection = collection
 
@@ -79,30 +93,27 @@ class Requestor:
         if path:
             self.env_file = path
         if self.env_file:
-            self.env = self.load_file(self.env_file)
+            with open(self.env_file) as handle:
+                self.env = yaml.load(handle)
 
-    @staticmethod
-    def load_file(path, **kwargs):
-        """Load a  YAML config file with the given ``path``."""
-        with open(path) as handle:
-            return yaml.load(handle, **kwargs)
-
-    @classmethod
-    def apply_meta(cls, collection, meta):
+    def apply_meta(self, collection, meta):
         """Apply Collection Meta to a Collection. Mutates ``collection``."""
         defaults = meta.get('defaults')
-        if not defaults:
-            return
-
-        if not isinstance(defaults, Mapping):
-            raise InvalidConfig(
-                message='Collection defaults must be a mapping object')
+        if defaults:
+            self.assert_mapping(defaults, 'Defaults', 'Meta.Defaults')
+        else:
+            defaults = {}
 
         for group_name, group in collection.items():
+            path = 'Collection."%s"' % group_name
+            self.assert_mapping(group, 'Group', path)
             for req_name, request in group.items():
-                for key in REQUEST_ATTRS:
+                path += '."%s"' % req_name
+                self.assert_mapping(request, 'Request', path)
+                for key in REQ_ATTRS:
                     if key not in request and key in defaults:
                         request[key] = defaults[key]
+                    self.validate_request(request, group_name, req_name)
 
     def set_env(self, **kwargs):
         """Update ``self.env`` with ``kwargs``."""
@@ -121,17 +132,26 @@ class Requestor:
         with open(self.env_file, 'w') as handle:
             return yaml.dump(self.env, handle)
 
-    @staticmethod
-    def validate_collections(collections):
-        """Validate that the given collections are valid."""
-        # TODO: Add more validation
-        for group_name, group in collections.items():
-            for req_name, request in group.items():
-                assert 'method' in request, (
-                    'Missing required field: "method"\n'
-                    'Group "{}", Request "{}"'.format(group_name, req_name)
+    def assert_type(self, obj, type, msg, path):
+        if not isinstance(obj, type):
+            raise InvalidConfig(
+                message=msg, file=self.collection_file, path=path)
+
+    def assert_mapping(self, obj, name, path):
+        msg = '%s must be a mapping object' % name
+        self.assert_type(obj, Mapping, msg, path)
+
+    def validate_request(self, request, group_name, request_name):
+        path = 'Collection."%s"."%s"' % (group_name, request_name)
+
+        for attr in REQUIRED_REQ_ATTRS:
+            if attr not in request:
+                raise InvalidConfig(
+                    file=self.collection_file,
+                    path=path,
+                    message='Required attribute "%s" not found' % attr,
                 )
-                assert 'url' in request, (
-                    'Missing required field: "url"\n'
-                    'Group "{}", Request "{}"'.format(group_name, req_name)
-                )
+
+        headers = request.get('headers')
+        if headers:
+            self.assert_mapping(headers, 'Request headers', path)

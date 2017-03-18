@@ -27,9 +27,9 @@ def test_parse_request():
     request = {
         'method': 'post',
         'url': '{{ server }}/authors',
-        'headers': '''
-            'Content-Type': 'application/json'
-        ''',
+        'headers': {
+            'Content-Type': 'application/json',
+        },
         'body': '''
             id: 1
             name: Bartholomew McNozzleWafer
