@@ -10,7 +10,7 @@ from pygments.lexers.textfmts import HttpLexer
 
 from restcli.exceptions import InvalidInput, NotFound
 from restcli.requestor import Requestor
-from restcli.utils import load_ordered
+from restcli import yaml_utils as yaml
 
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
@@ -121,7 +121,7 @@ class App:
                             ' value.',
                 )
             key, val = match.groups()
-            set_env[key] = load_ordered(val)
+            set_env[key] = yaml.dump(val)
         return set_env, del_env
 
     def set_env(self, *args):
