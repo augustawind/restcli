@@ -1,5 +1,5 @@
 import abc
-from collections import Mapping, UserDict
+from collections import Mapping, OrderedDict, UserDict
 
 from restcli.exceptions import InvalidConfig
 from restcli import yaml_utils as yaml
@@ -19,20 +19,29 @@ class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
     def load(self, path=None):
         pass
 
-    def assert_type(self, obj, type_, msg, path):
+    def assert_type(self, obj, type_, path, msg):
         if not isinstance(obj, type_):
             raise InvalidConfig(
                 message=msg, file=self._file, path=path)
 
     def assert_mapping(self, obj, name, path):
         msg = '%s must be a mapping object' % name
-        self.assert_type(obj, Mapping, msg, path)
+        self.assert_type(obj, Mapping, path, msg)
 
 
 class Collection(YamlDictReader):
 
-    REQUIRED_REQ_ATTRS = ('method', 'url')
-    REQ_ATTRS = REQUIRED_REQ_ATTRS + ('headers', 'body', 'script')
+    REQUIRED_REQ_ATTRS = (
+        ('method', str),
+        ('url', str)
+    )
+    REQ_ATTRS = REQUIRED_REQ_ATTRS + (
+        ('headers', dict),
+        ('body', str),
+        ('script', str)
+    )
+
+    META_ATTRS = ('defaults', 'pre_run')
 
     def load(self, path=None):
         """Reload the current Collection, changing it to ``path`` if given."""
@@ -56,38 +65,50 @@ class Collection(YamlDictReader):
             self.update(collection)
 
     def _parse_collection(self, collection, meta):
-        """Apply Collection Meta to a Collection. Mutates ``collection``."""
+        """Parse and validate a Collection and its Meta."""
         defaults = meta.get('defaults')
         if defaults:
             self.assert_mapping(defaults, 'Defaults', 'Meta.Defaults')
         else:
             defaults = {}
 
+        new_collection = OrderedDict()
         for group_name, group in collection.items():
-            path = 'Collection."%s"' % group_name
+            path = 'Group(%s)' % group_name
             self.assert_mapping(group, 'Group', path)
+            new_group = new_collection[group_name] = OrderedDict()
+
             for req_name, request in group.items():
-                path += '."%s"' % req_name
+                path += '.Request(%s)' % req_name
                 self.assert_mapping(request, 'Request', path)
-                for key in self.REQ_ATTRS:
-                    if key not in request and key in defaults:
-                        request[key] = defaults[key]
-                    self._validate_request(request, group_name, req_name)
+                new_req = new_group[req_name] = OrderedDict()
 
-    def _validate_request(self, request, group_name, request_name):
-        path = 'Collection."%s"."%s"' % (group_name, request_name)
+                for key, type_ in self.REQ_ATTRS:
+                    if key in request:
+                        new_req[key] = request[key]
+                    elif key in defaults:
+                        new_req[key] = defaults[key]
+                    # Check required attributes
+                    elif key in self.REQUIRED_REQ_ATTRS:
+                        raise InvalidConfig(
+                            file=self._file,
+                            path=path,
+                            message='Required attribute "%s" not found' % key,
+                        )
+                    else:
+                        continue
 
-        for attr in self.REQUIRED_REQ_ATTRS:
-            if attr not in request:
-                raise InvalidConfig(
-                    file=self._file,
-                    path=path,
-                    message='Required attribute "%s" not found' % attr,
-                )
+                    # Check data type
+                    path += '.Attribute(%s)' % key
+                    self.assert_type(
+                        obj=new_req[key],
+                        type_=type_,
+                        path=path,
+                        msg='Request "%s" must be a %s'
+                            % (key, type_.__name__),
+                    )
 
-        headers = request.get('headers')
-        if headers:
-            self.assert_mapping(headers, 'Request headers', path)
+        return new_collection
 
 
 class Environment(YamlDictReader):
