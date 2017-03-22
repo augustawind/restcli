@@ -8,11 +8,20 @@ __all__ = ['literal_str', 'load', 'dump']
 
 # Custom Loaders and Dumpers
 
-class CustomLoader(yaml.Loader): pass
-class SafeCustomLoader(yaml.SafeLoader): pass
+class CustomLoader(yaml.Loader):
+    pass
 
-class CustomDumper(yaml.Dumper): pass
-class SafeCustomDumper(yaml.SafeDumper): pass
+
+class SafeCustomLoader(yaml.SafeLoader):
+    pass
+
+
+class CustomDumper(yaml.Dumper):
+    pass
+
+
+class SafeCustomDumper(yaml.SafeDumper):
+    pass
 
 
 # OrderedDict support
@@ -21,6 +30,7 @@ def ordered_constructor(loader, node):
     loader.flatten_mapping(node)
     pairs = loader.construct_pairs(node)
     return OrderedDict(pairs)
+
 
 CustomLoader.add_constructor(
     BaseResolver.DEFAULT_MAPPING_TAG, ordered_constructor)
@@ -38,13 +48,17 @@ SafeCustomDumper.add_representer(OrderedDict, dict_representer)
 
 # String literal style support ("|")
 
-class literal_str(str): pass
+class YamlLiteralStr(str):
+    pass
+
 
 def literal_unicode_representer(dumper, data):
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
 
-CustomDumper.add_representer(literal_str, literal_unicode_representer)
-SafeCustomDumper.add_representer(literal_str, literal_unicode_representer)
+CustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
+SafeCustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
+
+literal_str = YamlLiteralStr
 
 
 # Dump and load functions

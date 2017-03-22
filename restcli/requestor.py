@@ -48,7 +48,7 @@ class Requestor:
         headers = request.get('headers')
         if headers:
             obj['headers'] = {k: cls.interpolate(v, env)
-                              for k,v in headers.items()}
+                              for k, v in headers.items()}
 
         return obj
 

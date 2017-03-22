@@ -63,7 +63,7 @@ def parse_body(body_info):
         return None
 
     text = yaml.dump(python_repr)
-    return yaml.literal_str(text)
+    return yaml.YamlLiteralStr(text)
 
 
 def parse_formdata(formdata):
