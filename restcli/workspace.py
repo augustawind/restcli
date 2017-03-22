@@ -1,10 +1,23 @@
+import abc
 from collections import Mapping, UserDict
 
 from restcli.exceptions import InvalidConfig
 from restcli import yaml_utils as yaml
 
+__all__ = ['Collection', 'Environment']
 
-class YamlFileMixin:
+
+class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
+    """Base class for dicts that read from YAML files."""
+
+    def __init__(self, file_path):
+        super().__init__()
+        self._file = file_path
+        self.load()
+
+    @abc.abstractmethod
+    def load(self, path=None):
+        pass
 
     def assert_type(self, obj, type_, msg, path):
         if not isinstance(obj, type_):
@@ -16,15 +29,10 @@ class YamlFileMixin:
         self.assert_type(obj, Mapping, msg, path)
 
 
-class Collection(YamlFileMixin, UserDict):
+class Collection(YamlDictReader):
 
     REQUIRED_REQ_ATTRS = ('method', 'url')
     REQ_ATTRS = REQUIRED_REQ_ATTRS + ('headers', 'body', 'script')
-
-    def __init__(self, collection_file):
-        super().__init__()
-        self._file = collection_file
-        self.load()
 
     def load(self, path=None):
         """Reload the current Collection, changing it to ``path`` if given."""
@@ -44,7 +52,8 @@ class Collection(YamlFileMixin, UserDict):
                     message='Collection can have at most two documents')
 
             self._parse_collection(collection, meta)
-            self.data = collection
+            self.clear()
+            self.update(collection)
 
     def _parse_collection(self, collection, meta):
         """Apply Collection Meta to a Collection. Mutates ``collection``."""
@@ -79,3 +88,30 @@ class Collection(YamlFileMixin, UserDict):
         headers = request.get('headers')
         if headers:
             self.assert_mapping(headers, 'Request headers', path)
+
+
+class Environment(YamlDictReader):
+
+    def load(self, path=None):
+        """Reload the current Environment, changing it to ``path`` if given."""
+        if path:
+            self._file = path
+
+        if self._file:
+            with open(self._file) as handle:
+                env = yaml.load(handle)
+                self.clear()
+                self.update(env)
+
+    def remove(self, *args):
+        """Remove each of the given vars from the Environment."""
+        for var in args:
+            try:
+                del self.data[var]
+            except KeyError:
+                pass
+
+    def save(self):
+        """Save ``self.env`` to ``self.env_path``."""
+        with open(self._file, 'w') as handle:
+            return yaml.dump(self.data, handle)

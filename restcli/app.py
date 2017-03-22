@@ -43,7 +43,7 @@ class App:
         response = self.r.request(group_name, request_name, **set_env)
 
         if self.autosave:
-            self.r.save_env()
+            self.r.env.save()
 
         output = self.show_response(response)
         return output
@@ -62,15 +62,8 @@ class App:
                 attr = self.get_request_attr(request, group_name, request_name,
                                              attr_name, action='view')
 
-                if attr_name == 'scripts':
-                    output = ''
-                    for name, script in attr.items():
-                        output += '%s:\n%s\n' % (
-                            name,
-                            highlight(script, self.python_lexer,
-                                      self.formatter),
-                        )
-                    return output
+                if attr_name == 'script':
+                    return highlight(attr, self.python_lexer, self.formatter)
 
                 if attr_name == 'headers':
                     headers = dict(l.split(':')
@@ -89,16 +82,17 @@ class App:
         return ''
 
     def load_env(self, path=None):
-        """Reload the current Env, changing it to ``path`` if given."""
-        self.r.load_env(path)
+        """Reload the current Environment, changing it to ``path`` if given."""
+        self.r.env.load(path)
         return ''
 
     def save_env(self):
         """Save the current Environment to disk."""
-        self.r.save_env()
+        self.r.env.save()
         return ''
 
-    def parse_env(self, *args):
+    @staticmethod
+    def parse_env(*args):
         """Parse some string args with Environment syntax."""
         del_env = []
         set_env = {}
@@ -127,8 +121,8 @@ class App:
     def set_env(self, *args):
         """Set some new variables in the Environment."""
         set_env, del_env = self.parse_env(*args)
-        self.r.set_env(**set_env)
-        self.r.del_env(*del_env)
+        self.r.env.update(**set_env)
+        self.r.env.remove(*del_env)
 
         output = ''
         if self.autosave:

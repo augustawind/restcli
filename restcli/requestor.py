@@ -4,20 +4,18 @@ import jinja2
 import requests
 
 from restcli import yaml_utils as yaml
-from restcli.workspace import Collection
+from restcli.workspace import Collection, Environment
 
 REQUIRED_REQ_ATTRS = ('method', 'url')
 REQ_ATTRS = REQUIRED_REQ_ATTRS + ('headers', 'body', 'script')
 
 
 class Requestor:
-    """Thing that reads config and makes requests."""
+    """Parser and executor of requests."""
 
     def __init__(self, collection_file, env_file=None):
         self.collection = Collection(collection_file)
-        self.env_file = env_file
-        self.env = {}
-        self.load_workspace()
+        self.env = Environment(env_file)
 
     def request(self, group, name, **env_override):
         """Execute the Request found at ``self.collection[group][name]``."""
@@ -62,31 +60,6 @@ class Requestor:
     def run_script(script, response, env):
         """Run a Request script with a Response and Environment as context."""
         exec(script, {'response': response, 'env': env})
-
-    def load_workspace(self, collection_file=None, env_file=None):
-        """Load all the config files."""
-        self.collection.load(collection_file)
-        self.load_env(env_file)
-
-    def load_env(self, path=None):
-        """Reload the current Env, changing it to ``path`` if given."""
-        if path:
-            self.env_file = path
-        if self.env_file:
-            with open(self.env_file) as handle:
-                self.env = yaml.load(handle)
-
-    def set_env(self, **kwargs):
-        """Update ``self.env`` with ``kwargs``."""
-        self.env.update(kwargs)
-
-    def del_env(self, *args):
-        """Remove all ``args`` from ``self.env``."""
-        for var in args:
-            try:
-                del self.env[var]
-            except KeyError:
-                pass
 
     def save_env(self):
         """Save ``self.env`` to ``self.env_path``."""
