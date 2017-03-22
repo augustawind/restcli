@@ -66,15 +66,19 @@ class Collection(YamlDictReader):
 
     def _parse_collection(self, collection, meta):
         """Parse and validate a Collection and its Meta."""
+        if 'pre_run' in meta:
+            self.pre_run = meta['pre_run']
+
         defaults = meta.get('defaults')
         if defaults:
-            self.assert_mapping(defaults, 'Defaults', 'Meta.Defaults')
+            self.assert_mapping(
+                defaults, 'Defaults', 'Collection::Meta(defaults)')
         else:
             defaults = {}
 
         new_collection = OrderedDict()
         for group_name, group in collection.items():
-            path = 'Group(%s)' % group_name
+            path = 'Collection::Group(%s)' % group_name
             self.assert_mapping(group, 'Group', path)
             new_group = new_collection[group_name] = OrderedDict()
 
