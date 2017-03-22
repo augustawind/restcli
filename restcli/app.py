@@ -85,7 +85,7 @@ class App:
 
     def load_collection(self, path=None):
         """Reload the current Collection, changing it to ``path`` if given."""
-        self.r.load_collection(path)
+        self.r.collection.load(path)
         return ''
 
     def load_env(self, path=None):
