@@ -3,7 +3,7 @@ from collections import OrderedDict
 import yaml
 from yaml.resolver import BaseResolver
 
-__all__ = ['literal_str', 'load', 'dump']
+__all__ = ['YamlLiteralStr', 'load', 'dump']
 
 
 # Custom Loaders and Dumpers
@@ -57,8 +57,6 @@ def literal_unicode_representer(dumper, data):
 
 CustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
 SafeCustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
-
-literal_str = YamlLiteralStr
 
 
 # Dump and load functions
