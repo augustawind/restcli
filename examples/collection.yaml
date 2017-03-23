@@ -1,4 +1,21 @@
 ---
+pre_run: |
+    def set_env(status, var, path, ignore_missing_index=False,
+                ignore_missing_key=False):
+        if response.status_code == status:
+            value = response.json()
+
+            for key in path:
+                try:
+                    value = value[key]
+                except IndexError as exc:
+                    if not ignore_missing_index:
+                        raise exc
+                except KeyError as exc:
+                    if not ignore_missing_key:
+                        raise exc
+            env[var] = value
+
 defaults:
     headers:
         Content-Type: application/json
@@ -17,23 +34,23 @@ auth:
             username: '{{ username }}'
             password: '{{ password }}'
         script: |
-            if response.status_code == 200:
-                env['jwt_token'] = response.json()['token']
+            set_env(200, 'jwt_token', ['token'])
 action-types:
     list:
         method: get
         url: '{{ host }}/action_types'
         script: |
-            if response.status_code == 200:
-                action_types = response.json()
-                if action_types:
-                    env['action_type_name'] = action_types[0]['name']
+            set_env(200, 'action_type_name', [0, 'name']',
+                    ignore_missing_index=True)
+#            if response.status_code == 200:
+#                action_types = response.json()
+#                if action_types:
+#                    env['action_type_name'] = action_types[0]['name']
     get:
         method: get
         url: '{{ host }}/action_types/{{ action_type_name }}'
         script: |
-            if response.status_code == 200:
-                env['action_type_name'] = response.json()['name']
+            set_env(200, 'action_type_name', ['name'])
 actions:
     list:
         method: get
