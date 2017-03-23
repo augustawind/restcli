@@ -43,6 +43,10 @@ class Collection(YamlDictReader):
 
     META_ATTRS = ('defaults', 'pre_run')
 
+    def __init__(self, file_path):
+        self.pre_run = None
+        super().__init__(file_path)
+
     def load(self, path=None):
         """Reload the current Collection, changing it to ``path`` if given."""
         if path:
@@ -61,8 +65,6 @@ class Collection(YamlDictReader):
                     message='Collection can have at most two documents')
 
             self._parse_collection(collection, meta)
-            self.clear()
-            self.update(collection)
 
     def _parse_collection(self, collection, meta):
         """Parse and validate a Collection and its Meta."""
@@ -112,7 +114,7 @@ class Collection(YamlDictReader):
                             % (key, type_.__name__),
                     )
 
-        return new_collection
+        self.data = new_collection
 
 
 class Environment(YamlDictReader):

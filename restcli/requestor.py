@@ -21,11 +21,16 @@ class Requestor:
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
         request_kwargs = self.parse_request(request, self.env, **env_override)
+
         response = requests.request(**request_kwargs)
 
-        script = request.get('script')
-        if script:
-            self.run_script(script, response, self.env)
+        script = ''
+        if self.collection.pre_run:
+            script += self.collection.pre_run
+        if 'script' in request:
+            script += '\n' + request['script']
+
+        self.run_script(script, response, self.env)
 
         return response
 
