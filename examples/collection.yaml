@@ -26,12 +26,8 @@ action-types:
         method: get
         url: '{{ host }}/action_types'
         script: |
-            set_env(200, 'action_type_name', [0, 'name']',
+            set_env(200, 'action_type_name', [0, 'name'],
                     ignore_missing_index=True)
-#            if response.status_code == 200:
-#                action_types = response.json()
-#                if action_types:
-#                    env['action_type_name'] = action_types[0]['name']
     get:
         method: get
         url: '{{ host }}/action_types/{{ action_type_name }}'
@@ -42,10 +38,8 @@ actions:
         method: get
         url: '{{ host }}/actions'
         script: |
-            if response.status_code == 200:
-                actions = response.json()
-                if actions:
-                    env['action_id'] = actions[0]['id']
+            set_env(200, 'action_id', [0, 'id'],
+                    ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/actions'
@@ -55,8 +49,7 @@ actions:
             device: {{ device_id }}
             space: {{ space_id }}
         script: |
-            if response.status_code == 201:
-                env['action_id'] = response.json()['id']
+            set_env(201, 'action_id', ['id'])
     opt-list:
         method: options
         url: '{{ host }}/actions'
@@ -64,11 +57,7 @@ actions:
         method: get
         url: '{{ host }}/actions/{{ action_id }}'
         script: |
-            if response.status_code == 200:
-                env['action_id'] = response.json()['id']
-    del:
-        method: delete
-        url: '{{ host }}/actions/{{ action_id }}'
+            set_env(200, 'action_id', ['id'])
     opt-detail:
         method: options
         url: '{{ host }}/actions/{{ action_id }}'
@@ -77,10 +66,8 @@ partners:
         method: get
         url: '{{ host }}/partners'
         script: |
-            if response.status_code == 200:
-                partners = response.json()
-                if partners:
-                    env['partner_id'] = partners[0]['id']
+            set_env(200, 'partner_id', [0, 'id'],
+                    ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/partners'
@@ -94,8 +81,7 @@ partners:
                 country: United States
                 postal_code: 33713
         script: |
-            if response.status_code == 201:
-                env['partner_id'] = response.json()['id']
+            set_env(201, 'partner_id', ['id'])
     opt-list:
         method: options
         url: '{{ host }}/partners'
@@ -103,8 +89,7 @@ partners:
         method: get
         url: '{{ host }}/partners/{{ partner_id }}'
         script: |
-            if response.status_code == 200:
-                env['partner_id'] = response.json()['id']
+            set_env(200, 'partner_id', ['id'])
     put:
         method: put
         url: '{{ host }}/partners{{ partner_id }}'
