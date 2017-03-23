@@ -24,13 +24,12 @@ class Requestor:
 
         response = requests.request(**request_kwargs)
 
-        script = ''
-        if self.collection.pre_run:
-            script += self.collection.pre_run
-        if 'script' in request:
-            script += '\n' + request['script']
-
-        self.run_script(script, response, self.env)
+        script = request.get('script')
+        if script:
+            script_locals = {'response': response, 'env': self.env}
+            for lib in self.collection.libs:
+                script_locals.update(lib.define(response, self.env))
+            self.run_script(script, script_locals)
 
         return response
 
@@ -62,11 +61,6 @@ class Requestor:
         return yaml.load(rendered)
 
     @staticmethod
-    def run_script(script, response, env):
+    def run_script(script, script_locals):
         """Run a Request script with a Response and Environment as context."""
-        exec(script, {'response': response, 'env': env})
-
-    def save_env(self):
-        """Save ``self.env`` to ``self.env_path``."""
-        with open(self.env_file, 'w') as handle:
-            return yaml.dump(self.env, handle)
+        exec(script, script_locals)

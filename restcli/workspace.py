@@ -1,4 +1,5 @@
 import abc
+import importlib
 from collections import Mapping, OrderedDict, UserDict
 
 from restcli.exceptions import InvalidConfig
@@ -44,7 +45,7 @@ class Collection(YamlDictReader):
     META_ATTRS = ('defaults', 'pre_run')
 
     def __init__(self, file_path):
-        self.pre_run = None
+        self.libs = []
         super().__init__(file_path)
 
     def load(self, path=None):
@@ -62,14 +63,34 @@ class Collection(YamlDictReader):
                 meta, collection = data
             else:
                 raise InvalidConfig(
-                    message='Collection can have at most two documents')
+                    message='Collection can have at most two documents',
+                    file=self._file,
+                    path='Collection',
+                )
 
             self._parse_collection(collection, meta)
 
+    def _parse_lib(self, libs):
+        self.assert_type(libs, list, 'Collection::Meta(lib)',
+                         msg='Meta "lib" must be an array')
+        self.libs = []
+        for path in libs:
+            try:
+                lib = importlib.import_module(path)
+            except ImportError:
+                raise InvalidConfig(
+                    message='Failed to import lib "%s"' % path,
+                    path='Collection::Meta(lib)',
+                    file=self._file,
+                )
+            else:
+                self.libs.append(lib)
+
     def _parse_collection(self, collection, meta):
         """Parse and validate a Collection and its Meta."""
-        if 'pre_run' in meta:
-            self.pre_run = meta['pre_run']
+        lib = meta.get('lib')
+        if lib:
+            self._parse_lib(lib)
 
         defaults = meta.get('defaults')
         if defaults:
