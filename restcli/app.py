@@ -76,13 +76,17 @@ class App:
         output = json.dumps(output_obj, indent=2)
         return highlight(output, self.json_lexer, self.formatter)
 
-    def load_collection(self, path=None):
-        """Reload the current Collection, changing it to ``path`` if given."""
+    def load_collection(self, source=None):
+        """Reload the current Collection, changing it to `source` if given."""
+        if source:
+            self.r.collection.source = source
         self.r.collection.load()
         return ''
 
-    def load_env(self, path=None):
-        """Reload the current Environment, changing it to ``path`` if given."""
+    def load_env(self, source=None):
+        """Reload the current Environment, changing it to `source` if given."""
+        if source:
+            self.r.env.source = source
         self.r.env.load()
         return ''
 
@@ -109,10 +113,9 @@ class App:
             match = ENV_RE.match(arg)
             if not match:
                 raise InputError(
-                    action='env',
-                    message='Error: args must take the form `key:value`, where'
-                            ' `key` is a string and `value` is a valid YAML'
-                            ' value.',
+                    msg='env args must take the form `key:value`, where'
+                        ' "key" is a YAML-compatible string and "value" is a'
+                        ' YAML value.'
                 )
             key, val = match.groups()
             set_env[key] = yaml.dump(val)
@@ -139,7 +142,8 @@ class App:
                 "Group '{}' not found.".format(group_name)
             )
 
-    def get_request(self, group, group_name, request_name, action):
+    @staticmethod
+    def get_request(group, group_name, request_name, action):
         """Retrieve a Request object."""
         try:
             return group[request_name]
@@ -147,10 +151,11 @@ class App:
             raise NotFoundError(
                 action,
                 "Request '{}' not found in Group '{}'."
-                    .format(request_name, group_name),
+                .format(request_name, group_name),
             )
 
-    def get_request_attr(self, request, group_name, request_name, attr_name,
+    @staticmethod
+    def get_request_attr(request, group_name, request_name, attr_name,
                          action):
         """Retrieve a Request Attribute."""
         try:
