@@ -14,26 +14,26 @@ from restcli import yaml_utils as yaml
 __all__ = ['Collection', 'Environment']
 
 
-class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
+class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
     """Base class for dicts that read from YAML files."""
 
     error_class = FileContentError
 
-    def __init__(self, file_path):
+    def __init__(self, source):
         super().__init__()
-        self.file = file_path
+        self.source = source
         self.load()
 
     @abc.abstractmethod
-    def load(self, source=None):
+    def load(self):
         pass
 
-    def raise_error(self, msg, path, error_class=None, file=None,
-                    **kwargs):
+    def raise_error(self, msg, path, error_class=None, source=None, **kwargs):
         """Helper for raising an error for a Reader instance."""
         if not error_class:
             error_class = self.error_class
-        raise error_class(msg=msg, file=file or self.file, path=path, **kwargs)
+        raise error_class(msg=msg, file=source or self.source, path=path,
+                          **kwargs)
 
     def assert_type(self, obj, type_, path, msg, error_class=error_class,
                     **err_kwargs):
@@ -47,6 +47,7 @@ class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
 
 
 class Collection(YamlDictReader):
+    """A Collection reader and parser."""
 
     error_class = CollectionError
 
@@ -60,19 +61,17 @@ class Collection(YamlDictReader):
         ('script', str)
     )
 
-    META_ATTRS = ('defaults', 'pre_run')
+    META_ATTRS = ('defaults', 'lib')
 
-    def __init__(self, file_path):
+    def __init__(self, source):
+        self.defaults = {}
         self.libs = []
-        super().__init__(file_path)
+        super().__init__(source)
 
-    def load(self, source=None):
+    def load(self):
         """Reload the current Collection, changing it to ``path`` if given."""
-        if source:
-            self.file = source
-
-        if self.file:
-            with open(self.file) as handle:
+        if self.source:
+            with open(self.source) as handle:
                 data = yaml.load(handle, many=True)
 
             if len(data) == 1:
@@ -86,54 +85,39 @@ class Collection(YamlDictReader):
                     msg = 'Too many documents; expected 1 or 2'
                 self.raise_error(msg, [])
 
-            self._parse_collection(collection, meta)
+            self.load_meta(meta)
+            self.load_collection(collection)
 
-    def _parse_lib(self, libs):
-        self.assert_type(libs, list, ['lib'], '"lib" must be an array')
-        self.libs = []
-        for i, module in enumerate(libs):
-            path = ['lib', i]
-            try:
-                assert type(module) is str
-                lib = importlib.import_module(module)
-            except (AssertionError, ImportError):
-                self.raise_error('Failed to import lib "%s"' % module, path,
-                                 error_class=LibError,
-                                 file=inspect.getsourcefile(lib))
-            try:
-                assert hasattr(lib, 'define')
-                assert inspect.isfunction(lib.define)
-                sig = inspect.signature(lib.define)
-                params = tuple(sig.parameters.values())
-                assert len(params) == 4
-                assert params[0].name == 'response'
-                assert params[1].name == 'env'
-                assert params[2].kind == inspect.Parameter.VAR_POSITIONAL
-                assert params[3].kind == inspect.Parameter.VAR_KEYWORD
-            except AssertionError:
+    def load_meta(self, meta):
+        """Parse and validate Collection Meta."""
+        # Verify all fields are known
+        for key in meta.keys():
+            if key not in self.META_ATTRS:
                 self.raise_error(
-                    '"lib" modules must contain a function with the'
-                    ' signature ``define(response, env, *args, **kwargs)``',
-                    path,
-                    error_class=LibError,
-                    file=inspect.getsourcefile(lib),
-                )
+                    'Unexpected key in meta: "{}"'.format(key), [])
 
-            self.libs.append(lib)
-
-    def _parse_collection(self, collection, meta):
-        """Parse and validate a Collection and its Meta."""
+        # Load libs
         lib = meta.get('lib')
         if lib:
-            self._parse_lib(lib)
+            self.libs = Libs(lib)
 
-        defaults = meta.get('defaults')
+        # Load defaults
+        defaults = meta.get('defaults', OrderedDict())
+
         if defaults:
-            self.assert_mapping(
-                defaults, 'Defaults', ['defaults'])
-        else:
-            defaults = {}
+            path = ['defaults']
+            self.assert_mapping(defaults, 'Defaults', path)
 
+            for key in defaults.keys():
+                if key not in self.REQ_ATTRS:
+                    self.raise_error(
+                        'Unexpected key in defaults "{}"'.format(key), path)
+
+            self.defaults.clear()
+            self.defaults.update(defaults)
+
+    def load_collection(self, collection):
+        """Parse and validate a Collection."""
         new_collection = OrderedDict()
         for group_name, group in collection.items():
             path = [group_name]
@@ -148,8 +132,8 @@ class Collection(YamlDictReader):
                 for key, type_ in self.REQ_ATTRS:
                     if key in request:
                         new_req[key] = request[key]
-                    elif key in defaults:
-                        new_req[key] = defaults[key]
+                    elif key in self.defaults:
+                        new_req[key] = self.defaults[key]
                     # Check required attributes
                     elif key in self.REQUIRED_REQ_ATTRS:
                         self.raise_error(
@@ -169,18 +153,19 @@ class Collection(YamlDictReader):
                             % (key, type_.__name__),
                     )
 
-        self.data = new_collection
+        self.clear()
+        self.update(new_collection)
 
 
 class Environment(YamlDictReader):
+    """An Env reader and parser."""
 
-    def load(self, source=None):
+    error_class = EnvError
+
+    def load(self):
         """Reload the current Environment, changing it to ``path`` if given."""
-        if source:
-            self.file = source
-
-        if self.file:
-            with open(self.file) as handle:
+        if self.source:
+            with open(self.source) as handle:
                 env = yaml.load(handle)
                 self.clear()
                 self.update(env)
@@ -195,5 +180,43 @@ class Environment(YamlDictReader):
 
     def save(self):
         """Save ``self.env`` to ``self.env_path``."""
-        with open(self.file, 'w') as handle:
+        with open(self.source, 'w') as handle:
             return yaml.dump(self.data, handle)
+
+
+class Libs(YamlDictReader):
+    """A Libs reader and parser."""
+
+    error_class = LibError
+
+    def load(self):
+        """Parse and validate a Libs list."""
+        self.assert_type(self.source, list, ['lib'], '"lib" must be an array')
+        for i, module in enumerate(self.source):
+            path = ['lib', i]
+            try:
+                assert type(module) is str
+                lib = importlib.import_module(module)
+            except (AssertionError, ImportError):
+                self.raise_error('Failed to import lib "%s"' % module, path,
+                                 source=inspect.getsourcefile(lib))
+            try:
+                assert hasattr(lib, 'define')
+                assert inspect.isfunction(lib.define)
+                sig = inspect.signature(lib.define)
+                params = tuple(sig.parameters.values())
+                assert len(params) == 4
+                assert params[0].name == 'response'
+                assert params[1].name == 'env'
+                assert params[2].kind == inspect.Parameter.VAR_POSITIONAL
+                assert params[3].kind == inspect.Parameter.VAR_KEYWORD
+            except AssertionError:
+                self.raise_error(
+                    'lib must contain a function with the signature'
+                    ' `define(response, env, *args, **kwargs)`',
+                    path,
+                    error_class=LibError,
+                    source=inspect.getsourcefile(lib),
+                )
+
+            self[module] = lib

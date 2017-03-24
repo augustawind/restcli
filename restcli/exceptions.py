@@ -109,19 +109,19 @@ class FileContentError(Error):
 class CollectionError(FileContentError):
     """Exception for invalid Collection files."""
 
-    base_msg = 'Invalid Collection'
+    base_msg = 'Invalid collection'
     file_type = 'COLLECTION'
 
 
 class EnvError(FileContentError):
     """Exception for invalid Env files."""
 
-    base_msg = 'Invalid Env'
+    base_msg = 'Invalid env'
     file_type = 'ENV'
 
 
 class LibError(FileContentError):
-    """Exception for invalid Lib files."""
+    """Exception for invalid Libs files."""
 
-    base_msg = 'Invalid Lib'
+    base_msg = 'Invalid lib(s)'
     file_type = 'LIB'
