@@ -37,21 +37,7 @@ def expect(*exceptions):
     try:
         yield
     except exceptions as exc:
-        lines = []
-
-        if exc.file:
-            line = exc.file
-            if exc.path:
-                line += ' => {}'.format(exc.path)
-            lines.append(line)
-
-        if exc.message:
-            lines.append('{}{}'.format(
-                '{}: '.format(exc.action) if exc.action else '',
-                exc.message,
-            ))
-
-        raise click.ClickException('\n'.join(lines))
+        raise click.ClickException(exc.show())
 
 
 def usage(action):
@@ -62,27 +48,59 @@ def usage(action):
 class Error(Exception):
     """Base library exception."""
 
-    def __init__(self, action=None, msg=None, traceback=None):
+    base_msg = ''
+
+    def __init__(self, msg, action=None, traceback=None):
         self.action = action
-        self.message = msg
+        self.msg = msg
         self.traceback = traceback
 
+    def show(self):
+        return '{action}{base_msg}{msg}'.format(
+            action=self._fmt_label(self.action),
+            base_msg=self._fmt_label(self.base_msg),
+            msg=self.msg,
+        )
 
-class InvalidInput(Error):
+    @staticmethod
+    def _fmt_label(text):
+        return '{}: '.format(text) if text else ''
+
+
+class InputError(Error):
     """Exception for invalid user input."""
-    message = 'Invalid input'
+
+    base_msg = 'Invalid input'
 
 
-class NotFound(Error):
+class NotFoundError(Error):
     """Exception for invalid lookups."""
-    message = 'Not found'
+
+    base_msg = 'Not found'
 
 
-class InvalidConfig(Error):
-    """Exception for invalid config files."""
-    message = 'Invalid config entry'
+class FileContentError(Error):
+    """Exception for invalid file data."""
 
-    def __init__(self, action=None, msg=None, file=None, path=None):
-        super().__init__(action, msg)
+    base_msg = 'Invalid content'
+
+    def __init__(self, msg, file, path=None, action=None, traceback=None):
+        super().__init__(msg, action)
         self.file = file
         self.path = path
+
+    def show(self):
+        line = self.file
+        if self.path:
+            line += ' => {}'.format(self._fmt_path(self.path))
+        return '{}\n{}'.format(line, super().show())
+
+    @staticmethod
+    def _fmt_path(path):
+        text = ''
+        for item in path:
+            if type(item) is str:
+                text += '.{}'.format(item)
+            else:
+                text += '[{}]'.format(item)
+        return text.lstrip('.')

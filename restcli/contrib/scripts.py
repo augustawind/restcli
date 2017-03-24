@@ -1,4 +1,4 @@
-def define(response, env, *args, **kwargs):
+def define(response, env, *args):
 
     def set_env(status, var, path, ignore_missing_index=False,
                 ignore_missing_key=False):

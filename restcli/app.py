@@ -8,7 +8,7 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from restcli.exceptions import InvalidInput, NotFound
+from restcli.exceptions import InputError, NotFoundError
 from restcli.requestor import Requestor
 from restcli import yaml_utils as yaml
 
@@ -108,7 +108,7 @@ class App:
             # Parse assignment syntax
             match = ENV_RE.match(arg)
             if not match:
-                raise InvalidInput(
+                raise InputError(
                     action='env',
                     message='Error: args must take the form `key:value`, where'
                             ' `key` is a string and `value` is a valid YAML'
@@ -134,7 +134,7 @@ class App:
         try:
             return self.r.collection[group_name]
         except KeyError:
-            raise NotFound(
+            raise NotFoundError(
                 action,
                 "Group '{}' not found.".format(group_name)
             )
@@ -144,7 +144,7 @@ class App:
         try:
             return group[request_name]
         except KeyError:
-            raise NotFound(
+            raise NotFoundError(
                 action,
                 "Request '{}' not found in Group '{}'."
                     .format(request_name, group_name),
@@ -156,7 +156,7 @@ class App:
         try:
             return request[attr_name]
         except KeyError:
-            raise NotFound(
+            raise NotFoundError(
                 action,
                 "Attribute '{}' not found in Request '{}.{}'."
                     .format(attr_name, request_name, group_name)

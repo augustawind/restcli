@@ -2,7 +2,7 @@ import cmd
 
 import click
 
-from restcli.exceptions import InvalidInput, NotFound, expect
+from restcli.exceptions import InputError, NotFoundError, expect
 from restcli.version import VERSION
 
 
@@ -35,24 +35,24 @@ class Cmd(cmd.Cmd):
         args = line.split()
         n = len(args)
         if (min_args and n < min_args) or (max_args and n > max_args):
-            raise InvalidInput(action=action)
+            raise InputError(action=action)
         return args
 
-    @expect(InvalidInput, NotFound)
+    @expect(InputError, NotFoundError)
     def do_run(self, line):
         """Run an HTTP request."""
         args = self.parse_args('run', line, 2)
         output = self.app.run(*args)
         self.output(output)
 
-    @expect(InvalidInput, NotFound)
+    @expect(InputError, NotFoundError)
     def do_view(self, line):
         """Inspect a Group, Request, or Attribute."""
         args = self.parse_args('view', line, 1, 3)
         output = self.app.view(*args)
         self.output(output)
 
-    @expect(InvalidInput)
+    @expect(InputError)
     def do_env(self, line):
         """Display the current Environment, or set env vars."""
         args = self.parse_args('env', line)
@@ -63,7 +63,7 @@ class Cmd(cmd.Cmd):
         output = self.app.set_env(*args)
         self.output(output)
 
-    @expect(InvalidInput)
+    @expect(InputError)
     def do_reload(self, line):
         "Reload the Collection and/or Environment from disk."
         args = line.split()
@@ -71,7 +71,7 @@ class Cmd(cmd.Cmd):
         if not args:
             args = options
         elif not all(o in options for o in args):
-            raise InvalidInput(action='reload')
+            raise InputError(action='reload')
 
         output = ''
         if 'collection' in args:
@@ -85,7 +85,7 @@ class Cmd(cmd.Cmd):
         output = self.app.save_env()
         self.output(output)
 
-    @expect(InvalidInput)
+    @expect(InputError)
     def do_change_collection(self, line):
         """Set and load a new Collection file."""
         args = self.parse_args('set_collection', line, 1, 1)
@@ -93,7 +93,7 @@ class Cmd(cmd.Cmd):
         output = self.app.load_collection(path)
         self.output(output)
 
-    @expect(InvalidInput)
+    @expect(InputError)
     def do_change_env(self, line):
         """Set and load a new Environment file."""
         args = self.parse_args('set_env', line, 1, 1)
