@@ -83,6 +83,7 @@ class FileContentError(Error):
     """Exception for invalid file data."""
 
     base_msg = 'Invalid content'
+    file_type = 'CONTENT'
 
     def __init__(self, msg, file, path=None, action=None, traceback=None):
         super().__init__(msg, action)
@@ -95,12 +96,32 @@ class FileContentError(Error):
             line += ' => {}'.format(self._fmt_path(self.path))
         return '{}\n{}'.format(line, super().show())
 
-    @staticmethod
-    def _fmt_path(path):
+    def _fmt_path(self, path):
         text = ''
         for item in path:
             if type(item) is str:
                 text += '.{}'.format(item)
             else:
                 text += '[{}]'.format(item)
-        return text.lstrip('.')
+        return '{}{}'.format(self.file_type, text)
+
+
+class CollectionError(FileContentError):
+    """Exception for invalid Collection files."""
+
+    base_msg = 'Invalid Collection'
+    file_type = 'COLLECTION'
+
+
+class EnvError(FileContentError):
+    """Exception for invalid Env files."""
+
+    base_msg = 'Invalid Env'
+    file_type = 'ENV'
+
+
+class LibError(FileContentError):
+    """Exception for invalid Lib files."""
+
+    base_msg = 'Invalid Lib'
+    file_type = 'LIB'

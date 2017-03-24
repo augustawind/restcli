@@ -3,7 +3,12 @@ import importlib
 import inspect
 from collections import Mapping, OrderedDict, UserDict
 
-from restcli.exceptions import FileContentError
+from restcli.exceptions import (
+    CollectionError,
+    EnvError,
+    LibError,
+    FileContentError,
+)
 from restcli import yaml_utils as yaml
 
 __all__ = ['Collection', 'Environment']
@@ -11,6 +16,8 @@ __all__ = ['Collection', 'Environment']
 
 class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
     """Base class for dicts that read from YAML files."""
+
+    error_class = FileContentError
 
     def __init__(self, file_path):
         super().__init__()
@@ -21,16 +28,27 @@ class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
     def load(self, path=None):
         pass
 
-    def assert_type(self, obj, type_, path, msg):
-        if not isinstance(obj, type_):
-            raise FileContentError(msg, self.file, path)
+    def raise_error(self, msg, path, error_class=None, file=None,
+                    **kwargs):
+        """Helper for raising an error for a Reader instance."""
+        if not error_class:
+            error_class = self.error_class
+        raise error_class(msg=msg, file=file or self.file, path=path, **kwargs)
 
-    def assert_mapping(self, obj, name, path):
+    def assert_type(self, obj, type_, path, msg, error_class=error_class,
+                    **err_kwargs):
+        if not isinstance(obj, type_):
+            self.raise_error(msg, path, error_class, **err_kwargs)
+
+    def assert_mapping(self, obj, name, path, error_class=error_class,
+                       **err_kwargs):
         msg = '%s must be a mapping object' % name
-        self.assert_type(obj, Mapping, path, msg)
+        self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
 class Collection(YamlDictReader):
+
+    error_class = CollectionError
 
     REQUIRED_REQ_ATTRS = (
         ('method', str),
@@ -62,20 +80,24 @@ class Collection(YamlDictReader):
             elif len(data) == 2:
                 meta, collection = data
             else:
-                raise FileContentError(
-                    msg='Collection can have at most two documents')
+                if len(data) == 0:
+                    msg = 'Collection document not found'
+                else:
+                    msg = 'Too many documents; expected 1 or 2'
+                self.raise_error(msg, [])
 
             self._parse_collection(collection, meta)
 
     def _parse_lib(self, libs):
-        self.assert_type(libs, list, ['lib'],
-                         msg='Meta "lib" must be an array')
+        self.assert_type(libs, list, ['lib'], '"lib" must be an array')
         self.libs = []
-        for i, path in enumerate(libs):
+        for i, module in enumerate(libs):
+            path = ['lib', i]
             try:
-                lib = importlib.import_module(path)
-            except ImportError:
-                raise FileContentError(msg='Failed to import lib "%s"' % path)
+                assert type(module) is str
+                lib = importlib.import_module(module)
+            except (AssertionError, ImportError):
+                self.raise_error('Failed to import lib "%s"' % module, path)
             try:
                 assert hasattr(lib, 'define')
                 assert inspect.isfunction(lib.define)
@@ -87,11 +109,11 @@ class Collection(YamlDictReader):
                 assert params[2].kind == inspect.Parameter.VAR_POSITIONAL
                 assert params[3].kind == inspect.Parameter.VAR_KEYWORD
             except AssertionError:
-                raise FileContentError(
+                self.raise_error(
                     '"lib" modules must contain a function with the'
                     ' signature ``define(response, env, *args, **kwargs)``',
-                    inspect.getsourcefile(lib),
-                    ['lib', i]
+                    path,
+                    file=inspect.getsourcefile(lib),
                 )
 
             self.libs.append(lib)
@@ -127,8 +149,10 @@ class Collection(YamlDictReader):
                         new_req[key] = defaults[key]
                     # Check required attributes
                     elif key in self.REQUIRED_REQ_ATTRS:
-                        raise FileContentError(
-                            msg='Required attribute "%s" not found' % key)
+                        self.raise_error(
+                            'Required attribute "%s" not found' % key,
+                            path,
+                        )
                     else:
                         continue
 
