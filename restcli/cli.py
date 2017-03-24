@@ -26,7 +26,8 @@ def cli(ctx, collection, env, save):
 @cli.command(help='Run a Request.')
 @click.argument('group')
 @click.argument('request')
-@click.option('-o', '--override', multiple=True)
+@click.option('-o', '--override', multiple=True,
+              help='Add "key:val" pairs that shadow the Environment.')
 @pass_app
 def run(app, group, request, override):
     output = app.run(group, request, *override)

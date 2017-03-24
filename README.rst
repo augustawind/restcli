@@ -52,7 +52,7 @@ Configuring Your API
 
 **restcli** reads requests from YAML files called *Collections*. Collections
 are objects composed of *Groups*, which are again objects composed of
-*Requests*.
+*Requests*:
 
 .. code-block:: yaml
 
@@ -61,7 +61,7 @@ are objects composed of *Groups*, which are again objects composed of
         new:
             method: post
             url: "{{ server }}/foo"
-            headers: |
+            headers:
                 Content-Type: application/json
                 Accept: application/json
             body: |
@@ -74,6 +74,36 @@ are objects composed of *Groups*, which are again objects composed of
 
 In this example, ``foo`` is a Group, and ``new`` is a Request in that Group.
 
+Meta
+~~~~
+
+A Collection can also have a second YAML
+`document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
+referred to as **Meta**. This document must appear *above* the Collection
+document, and contains data which applies to the Collection as a whole.
+
+.. code-block:: yaml
+
+    ---
+    defaults:
+        headers:
+            Content-Type: application/json
+            Authorization: {{ username }}:{{ password }}
+    lib:
+        - restcli.contrib.scripts
+
+Each item in ``defaults`` must be a valid `Request`_ attribute. These values
+will be used by any `Request`_ in the Collection which does not provide that
+attribute itself.
+
+``lib`` is an array of Python module paths. Each module here must contain a
+function with the signature ``define(request, env, *args, **kwargs)`` which
+returns a dict. That dict will be added to the execution environment of
+any script that gets executed (in the ``script`` field of a Request).
+
+For an example of a ``lib`` file, check out ``restcli.contrib.scripts``, which
+provides pre-baked functions and can be included in your own Requests.
+
 Requests
 ~~~~~~~~
 
@@ -83,7 +113,7 @@ Here is the Request from the above example:
 
     method: post
     url: "{{ server }}/foo"
-    headers: |
+    headers:
         Content-Type: application/json
         Accept: application/json
     body: |
@@ -97,10 +127,11 @@ Here is the Request from the above example:
 ``headers``, ``body``, and ``scripts`` are optional. ``url``, ``headers``, and
 ``body`` all support Jinja2 templating, using an `Environment`_ as the context.
 
-``headers`` and ``body`` are both strings, but must contain valid YAML markup.
-This is in order to support variable interpolation of arbitrary types, such as
-numbers or booleans. ``headers`` must contain a flat object of key-value pairs.
-Only YAML bodies are supported at this time.
+``body`` is a strings, but must contain valid YAML markup. This is in order to
+support variable interpolation of arbitrary types, such as numbers or booleans.
+
+``headers`` must be a flat object of key-value pairs. The values of ``headers``
+can contain Jinja2 templates.
 
 ``script`` is a Python3 script that is executed after the request is performed,
 and is provided the ``response`` (which is a `Response
@@ -162,7 +193,8 @@ Usage
       Run a Request.
 
     Options:
-      --help  Show this message and exit.
+      -o, --override TEXT  Add "key:val" pairs that shadow the Environment.
+      --help               Show this message and exit.
 
 ``restcli view``:
 
@@ -189,6 +221,8 @@ Usage
 
 Interactive Prompt
 ~~~~~~~~~~~~~~~~~~
+
+NOTE: Some of this will be changing soon, so don't rely on stability here.
 
 The interactive prompt is a read-eval-print loop which supports the same API
 as the commandline interface, but with a few additional commands for
