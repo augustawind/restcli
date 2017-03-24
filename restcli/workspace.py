@@ -1,5 +1,6 @@
 import abc
 import importlib
+import inspect
 from collections import Mapping, OrderedDict, UserDict
 
 from restcli.exceptions import InvalidConfig
@@ -23,7 +24,7 @@ class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
     def assert_type(self, obj, type_, path, msg):
         if not isinstance(obj, type_):
             raise InvalidConfig(
-                message=msg, file=self._file, path=path)
+                msg=msg, file=self._file, path=path)
 
     def assert_mapping(self, obj, name, path):
         msg = '%s must be a mapping object' % name
@@ -63,7 +64,7 @@ class Collection(YamlDictReader):
                 meta, collection = data
             else:
                 raise InvalidConfig(
-                    message='Collection can have at most two documents',
+                    msg='Collection can have at most two documents',
                     file=self._file,
                     path='Collection',
                 )
@@ -79,12 +80,29 @@ class Collection(YamlDictReader):
                 lib = importlib.import_module(path)
             except ImportError:
                 raise InvalidConfig(
-                    message='Failed to import lib "%s"' % path,
+                    msg='Failed to import lib "%s"' % path,
                     path='Collection::Meta(lib)',
                     file=self._file,
                 )
-            else:
-                self.libs.append(lib)
+            try:
+                assert hasattr(lib, 'define')
+                assert inspect.isfunction(lib.define)
+                sig = inspect.signature(lib.define)
+                params = tuple(sig.parameters.values())
+                assert len(params) == 4
+                assert params[0].name == 'response'
+                assert params[1].name == 'env'
+                assert params[2].kind == inspect.Parameter.VAR_POSITIONAL
+                assert params[3].kind == inspect.Parameter.VAR_KEYWORD
+            except AssertionError:
+                raise InvalidConfig(
+                    path='Collection::Meta(lib)',
+                    file=inspect.getsourcefile(lib),
+                    msg='"lib" modules must contain a function with the'
+                        ' signature ``define(response, env, *args, **kwargs)``'
+                )
+
+            self.libs.append(lib)
 
     def _parse_collection(self, collection, meta):
         """Parse and validate a Collection and its Meta."""
@@ -120,7 +138,7 @@ class Collection(YamlDictReader):
                         raise InvalidConfig(
                             file=self._file,
                             path=path,
-                            message='Required attribute "%s" not found' % key,
+                            msg='Required attribute "%s" not found' % key,
                         )
                     else:
                         continue

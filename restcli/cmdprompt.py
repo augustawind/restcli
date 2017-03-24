@@ -1,41 +1,9 @@
 import cmd
-from functools import wraps
 
 import click
 
-from restcli.exceptions import InvalidInput, NotFound
+from restcli.exceptions import InvalidInput, NotFound, expect
 from restcli.version import VERSION
-
-USAGE_ARGS = {
-    'change_collection': 'COLLECTION_FILE',
-    'change_env': 'ENV_FILE',
-    'env': '[key0:val0] [key1:val1] .. [keyN:valN]',
-    'view': 'GROUP [REQUEST] [ATTR]',
-    'reload': '[collection | env]',
-    'run': 'GROUP REQUEST',
-}
-
-
-def usage(action):
-    """Print usage info for the given command."""
-    click.echo('Usage: {} {}'.format(action, USAGE_ARGS[action]))
-
-
-def expect(*exceptions):
-    """Wrap a function to gracefully handle the given exception(s)."""
-    exceptions = tuple(exceptions)
-    def wrapper(func):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except exceptions as exc:
-                if exc.message:
-                    click.echo('{}: {}'.format(exc.action, exc.message))
-                if exc.action:
-                    usage(exc.action)
-        return wrapped
-    return wrapper
 
 
 class Cmd(cmd.Cmd):
@@ -52,7 +20,8 @@ class Cmd(cmd.Cmd):
         super().__init__(stdout=stdout)
         self.app = app
 
-    def output(self, msg):
+    @staticmethod
+    def output(msg):
         if msg:
             _, height = click.get_terminal_size()
             if len(msg.splitlines()) > height - 3:

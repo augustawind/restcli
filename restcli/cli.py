@@ -2,6 +2,7 @@ import click
 
 from restcli.app import App
 from restcli.cmdprompt import Cmd
+from restcli.exceptions import InvalidConfig, expect
 
 
 @click.group()
@@ -16,7 +17,8 @@ from restcli.cmdprompt import Cmd
               help='Save Environment to disk after changes.')
 @click.pass_context
 def cli(ctx, collection, env, save):
-    ctx.obj = App(collection, env, autosave=save)
+    with expect(InvalidConfig):
+        ctx.obj = App(collection, env, autosave=save)
 
 
 @cli.command(help='Run a Request.')
