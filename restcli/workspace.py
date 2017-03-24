@@ -25,7 +25,7 @@ class YamlDictReader(UserDict, metaclass=abc.ABCMeta):
         self.load()
 
     @abc.abstractmethod
-    def load(self, path=None):
+    def load(self, source=None):
         pass
 
     def raise_error(self, msg, path, error_class=None, file=None,
@@ -66,10 +66,10 @@ class Collection(YamlDictReader):
         self.libs = []
         super().__init__(file_path)
 
-    def load(self, path=None):
+    def load(self, source=None):
         """Reload the current Collection, changing it to ``path`` if given."""
-        if path:
-            self.file = path
+        if source:
+            self.file = source
 
         if self.file:
             with open(self.file) as handle:
@@ -97,7 +97,9 @@ class Collection(YamlDictReader):
                 assert type(module) is str
                 lib = importlib.import_module(module)
             except (AssertionError, ImportError):
-                self.raise_error('Failed to import lib "%s"' % module, path)
+                self.raise_error('Failed to import lib "%s"' % module, path,
+                                 error_class=LibError,
+                                 file=inspect.getsourcefile(lib))
             try:
                 assert hasattr(lib, 'define')
                 assert inspect.isfunction(lib.define)
@@ -113,6 +115,7 @@ class Collection(YamlDictReader):
                     '"lib" modules must contain a function with the'
                     ' signature ``define(response, env, *args, **kwargs)``',
                     path,
+                    error_class=LibError,
                     file=inspect.getsourcefile(lib),
                 )
 
@@ -171,10 +174,10 @@ class Collection(YamlDictReader):
 
 class Environment(YamlDictReader):
 
-    def load(self, path=None):
+    def load(self, source=None):
         """Reload the current Environment, changing it to ``path`` if given."""
-        if path:
-            self.file = path
+        if source:
+            self.file = source
 
         if self.file:
             with open(self.file) as handle:
