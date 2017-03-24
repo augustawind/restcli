@@ -4,6 +4,8 @@ from restcli.app import App
 from restcli.cmdprompt import Cmd
 from restcli.exceptions import FileContentError, expect
 
+pass_app = click.make_pass_decorator(App)
+
 
 @click.group()
 @click.option('-c', '--collection', envvar='RESTCLI_COLLECTION', required=True,
@@ -24,10 +26,10 @@ def cli(ctx, collection, env, save):
 @cli.command(help='Run a Request.')
 @click.argument('group')
 @click.argument('request')
-@click.argument('env', nargs=-1)
-@click.pass_obj
-def run(app, group, request, env):
-    output = app.run(group, request, *env)
+@click.option('-o', '--override', multiple=True)
+@pass_app
+def run(app, group, request, override):
+    output = app.run(group, request, *override)
     click.echo(output)
 
 
@@ -35,14 +37,14 @@ def run(app, group, request, env):
 @click.argument('group')
 @click.argument('request', required=False)
 @click.argument('attr', required=False)
-@click.pass_obj
+@pass_app
 def view(app, group, request, attr):
     output = app.view(group, request, attr)
     click.echo(output)
 
 
 @cli.command(help='Start an interactive command prompt.')
-@click.pass_obj
+@pass_app
 def repl(app):
     cmd = Cmd(app, stdout=click.get_text_stream('stdout'))
     cmd.cmdloop()

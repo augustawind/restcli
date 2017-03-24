@@ -6,9 +6,6 @@ import requests
 from restcli import yaml_utils as yaml
 from restcli.workspace import Collection, Environment
 
-REQUIRED_REQ_ATTRS = ('method', 'url')
-REQ_ATTRS = REQUIRED_REQ_ATTRS + ('headers', 'body', 'script')
-
 
 class Requestor:
     """Parser and executor of requests."""
@@ -27,7 +24,7 @@ class Requestor:
         script = request.get('script')
         if script:
             script_locals = {'response': response, 'env': self.env}
-            for lib in self.collection.libs:
+            for lib in self.collection.libs.values():
                 script_locals.update(lib.define(response, self.env))
             self.run_script(script, script_locals)
 

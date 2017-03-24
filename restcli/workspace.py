@@ -46,6 +46,11 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
+def heads(iterables) -> tuple:
+    """Return the first item of each iterable in `iterables`."""
+    return tuple(head for head, *args in iterables)
+
+
 class Collection(YamlDictReader):
     """A Collection reader and parser."""
 
@@ -55,13 +60,20 @@ class Collection(YamlDictReader):
         ('method', str),
         ('url', str)
     )
+    REQUIRED_REQ_ATTR_KEYS = heads(REQUIRED_REQ_ATTRS)
+
     REQ_ATTRS = REQUIRED_REQ_ATTRS + (
         ('headers', dict),
         ('body', str),
         ('script', str)
     )
+    REQ_ATTR_KEYS = heads(REQ_ATTRS)
 
-    META_ATTRS = ('defaults', 'lib')
+    META_ATTRS = (
+        ('defaults', dict),
+        ('lib', list),
+    )
+    META_ATTR_KEYS = heads(META_ATTRS)
 
     def __init__(self, source):
         self.defaults = {}
@@ -92,7 +104,7 @@ class Collection(YamlDictReader):
         """Parse and validate Collection Meta."""
         # Verify all fields are known
         for key in meta.keys():
-            if key not in self.META_ATTRS:
+            if key not in self.META_ATTR_KEYS:
                 self.raise_error(
                     'Unexpected key in meta: "{}"'.format(key), [])
 
@@ -109,7 +121,7 @@ class Collection(YamlDictReader):
             self.assert_mapping(defaults, 'Defaults', path)
 
             for key in defaults.keys():
-                if key not in self.REQ_ATTRS:
+                if key not in self.REQ_ATTR_KEYS:
                     self.raise_error(
                         'Unexpected key in defaults "{}"'.format(key), path)
 
@@ -174,14 +186,14 @@ class Environment(YamlDictReader):
         """Remove each of the given vars from the Environment."""
         for var in args:
             try:
-                del self.data[var]
+                del self[var]
             except KeyError:
                 pass
 
     def save(self):
         """Save ``self.env`` to ``self.env_path``."""
         with open(self.source, 'w') as handle:
-            return yaml.dump(self.data, handle)
+            return yaml.dump(OrderedDict(self), handle)
 
 
 class Libs(YamlDictReader):

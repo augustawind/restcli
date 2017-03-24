@@ -16,7 +16,7 @@ ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
 class App:
-    """Application interface for restcli."""
+    """Input/output agnostic application runner for restcli."""
 
     HTTP_TPL = Template('\n'.join((
         'HTTP/${http_version} ${status_code} ${reason}',
