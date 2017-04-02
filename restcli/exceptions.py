@@ -22,11 +22,6 @@ def expect(*exceptions):
         raise click.ClickException(exc.show())
 
 
-def usage(action):
-    """Print usage info for the given command."""
-    return 'Usage: restcli {} {}'.format(action, USAGE_ARGS[action])
-
-
 class Error(Exception):
     """Base library exception."""
 
@@ -37,18 +32,15 @@ class Error(Exception):
         self.msg = msg
 
     def show(self):
-        msg = '%(base_msg)s%(msg)s' % {
-            'base_msg': self._fmt_label(self.base_msg),
-            'msg': self.msg,
-        }
-        return '%(action)s%(msg)s' % {
-            'action': self._fmt_label(self.action),
-            'msg': msg % self._attr_dict(),
-        }
+        msg = self._fmt_label(self.base_msg, self.msg) % self._attr_dict()
+        return self._fmt_label(self.action, msg)
 
     @staticmethod
-    def _fmt_label(text):
-        return '%s: ' % (text,) if text else ''
+    def _fmt_label(first, second):
+        return '%s%s' % (
+            first,
+            ': %s' % second if second else ''
+        )
 
     @staticmethod
     def _is_custom_attr(attr):

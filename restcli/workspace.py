@@ -1,7 +1,8 @@
 import abc
 import importlib
 import inspect
-from collections import Mapping, OrderedDict, UserDict
+from collections import Mapping, OrderedDict
+from typing import Iterable
 
 from restcli.exceptions import (
     CollectionError,
@@ -46,7 +47,7 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
-def heads(iterables) -> tuple:
+def heads(iterables: Iterable) -> tuple:
     """Return the first item of each iterable in `iterables`."""
     return tuple(head for head, *args in iterables)
 

@@ -2,7 +2,14 @@ import click
 
 from restcli.app import App
 from restcli.cmdprompt import Cmd
-from restcli.exceptions import FileContentError, expect
+from restcli.exceptions import (
+    CollectionError,
+    EnvError,
+    InputError,
+    LibError,
+    NotFoundError,
+    expect
+)
 
 pass_app = click.make_pass_decorator(App)
 
@@ -19,7 +26,7 @@ pass_app = click.make_pass_decorator(App)
               help='Save Environment to disk after changes.')
 @click.pass_context
 def cli(ctx, collection, env, save):
-    with expect(FileContentError):
+    with expect(CollectionError, EnvError, LibError):
         ctx.obj = App(collection, env, autosave=save)
 
 
@@ -30,7 +37,8 @@ def cli(ctx, collection, env, save):
               help='Add "key:val" pairs that shadow the Environment.')
 @pass_app
 def run(app, group, request, override):
-    output = app.run(group, request, *override)
+    with expect(InputError, NotFoundError):
+        output = app.run(group, request, *override)
     click.echo(output)
 
 
@@ -40,7 +48,8 @@ def run(app, group, request, override):
 @click.argument('attr', required=False)
 @pass_app
 def view(app, group, request, attr):
-    output = app.view(group, request, attr)
+    with expect(NotFoundError):
+        output = app.view(group, request, attr)
     click.echo(output)
 
 
