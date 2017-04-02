@@ -32,16 +32,16 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
         """Helper for raising an error for a Reader instance."""
         if not error_class:
             error_class = self.error_class
-        raise error_class(msg=msg, file=source or self.source, path=path,
+        raise error_class(file=source or self.source, msg=msg, path=path,
                           **kwargs)
 
-    def assert_type(self, obj, type_, path, msg, error_class=error_class,
+    def assert_type(self, obj, type_, path, msg, error_class=None,
                     **err_kwargs):
         if not isinstance(obj, type_):
-            self.raise_error(msg, path, error_class, **err_kwargs)
+            self.raise_error(msg, path, error_class or self.error_class,
+                             **err_kwargs)
 
-    def assert_mapping(self, obj, name, path, error_class=error_class,
-                       **err_kwargs):
+    def assert_mapping(self, obj, name, path, error_class=None, **err_kwargs):
         msg = '%s must be a mapping object' % name
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
