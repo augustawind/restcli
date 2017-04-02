@@ -60,4 +60,5 @@ class Requestor:
     @staticmethod
     def run_script(script, script_locals):
         """Run a Request script with a Response and Environment as context."""
-        exec(script, script_locals)
+        code = compile(script, '<<script>>', 'exec')
+        exec(code, script_locals)
