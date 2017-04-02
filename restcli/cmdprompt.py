@@ -5,6 +5,8 @@ import click
 from restcli.exceptions import InputError, NotFoundError, expect
 from restcli.version import VERSION
 
+__all__ = ['Cmd']
+
 
 class Cmd(cmd.Cmd):
     """Interactive command prompt for restcli."""

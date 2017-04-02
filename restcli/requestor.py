@@ -6,6 +6,8 @@ import requests
 from restcli import yaml_utils as yaml
 from restcli.workspace import Collection, Environment
 
+__all__ = ['Requestor']
+
 
 class Requestor:
     """Parser and executor of requests."""

@@ -17,6 +17,8 @@ from restcli.exceptions import (
 from restcli.requestor import Requestor
 from restcli import yaml_utils as yaml
 
+__all__ = ['App']
+
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
 

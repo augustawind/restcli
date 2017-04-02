@@ -3,15 +3,9 @@ from contextlib import contextmanager
 
 import click
 
-USAGE_ARGS = {
-    'change_collection': 'COLLECTION_FILE',
-    'change_env': 'ENV_FILE',
-    'env': '[key0:val0] [key1:val1] .. [keyN:valN]',
-    'view': 'GROUP [REQUEST] [ATTR]',
-    'reload': '[collection | env]',
-    'run': 'GROUP REQUEST',
-    'save': '',
-}
+__all__ = ['expect', 'Error', 'InputError', 'FileContentError',
+           'NotFoundError', 'GroupNotFoundError', 'RequestNotFoundError',
+           'AttributeNotFoundError', 'CollectionError', 'EnvError', 'LibError']
 
 
 @contextmanager
