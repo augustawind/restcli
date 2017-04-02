@@ -1,5 +1,5 @@
+import inspect
 from contextlib import contextmanager
-from functools import wraps
 
 import click
 
@@ -12,24 +12,6 @@ USAGE_ARGS = {
     'run': 'GROUP REQUEST',
     'save': '',
 }
-
-#
-# def expect(*exceptions):
-#     """Wrap a function to gracefully handle the given exception(s)."""
-#     exceptions = tuple(exceptions)
-#
-#     def wrapper(func):
-#         @wraps(func)
-#         def wrapped(*args, **kwargs):
-#             try:
-#                 return func(*args, **kwargs)
-#             except exceptions as exc:
-#                 if exc.message:
-#                     click.echo('{}: {}'.format(exc.action, exc.message))
-#                 if exc.action:
-#                     usage(exc.action)
-#         return wrapped
-#     return wrapper
 
 
 @contextmanager
@@ -50,33 +32,46 @@ class Error(Exception):
 
     base_msg = ''
 
-    def __init__(self, msg, action=None, traceback=None):
+    def __init__(self, msg='', action=None):
         self.action = action
         self.msg = msg
-        self.traceback = traceback
 
     def show(self):
-        return '{action}{base_msg}{msg}'.format(
-            action=self._fmt_label(self.action),
-            base_msg=self._fmt_label(self.base_msg),
-            msg=self.msg,
-        )
+        msg = '%(base_msg)s%(msg)s' % {
+            'base_msg': self._fmt_label(self.base_msg),
+            'msg': self.msg,
+        }
+        return '%(action)s%(msg)s' % {
+            'action': self._fmt_label(self.action),
+            'msg': msg % self._attr_dict(),
+        }
 
     @staticmethod
     def _fmt_label(text):
-        return '{}: '.format(text) if text else ''
+        return '%s: ' % (text,) if text else ''
+
+    @staticmethod
+    def _is_custom_attr(attr):
+        """Return whether an attr is a custom member of an Error instance."""
+        return (
+            not callable(attr)
+            and attr != 'args'
+            and not (type(attr) is str and attr.startswith('__'))
+        )
+
+    def _attr_dict(self):
+        return dict(inspect.getmembers(self, self._is_custom_attr))
 
 
 class InputError(Error):
     """Exception for invalid user input."""
 
-    base_msg = 'Invalid input'
+    base_msg = "Invalid input '%(input)s'"
 
-
-class NotFoundError(Error):
-    """Exception for invalid lookups."""
-
-    base_msg = 'Not found'
+    def __init__(self, line, item, msg='', action=None):
+        super().__init__(msg, action)
+        self.line = line
+        self.item = item
 
 
 class FileContentError(Error):
@@ -85,7 +80,7 @@ class FileContentError(Error):
     base_msg = 'Invalid content'
     file_type = 'CONTENT'
 
-    def __init__(self, msg, file, path=None, action=None, traceback=None):
+    def __init__(self, file, msg='', path=None, action=None):
         super().__init__(msg, action)
         self.file = file
         self.path = path
@@ -96,6 +91,10 @@ class FileContentError(Error):
             line += ' => {}'.format(self._fmt_path(self.path))
         return '{}\n{}'.format(line, super().show())
 
+    @property
+    def name(self):
+        return self.path[-1]
+
     def _fmt_path(self, path):
         text = ''
         for item in path:
@@ -104,6 +103,27 @@ class FileContentError(Error):
             else:
                 text += '[{}]'.format(item)
         return '{}{}'.format(self.file_type, text)
+
+
+class NotFoundError(FileContentError):
+    """Exception for invalid lookups."""
+
+    base_msg = 'Not found'
+
+
+class GroupNotFoundError(NotFoundError):
+
+    base_msg = "Group '%(name)s' not found"
+
+
+class RequestNotFoundError(NotFoundError):
+
+    base_msg = "Request '%(name)s' not found"
+
+
+class AttributeNotFoundError(NotFoundError):
+
+    base_msg = "Attribute '%(name)s' not found"
 
 
 class CollectionError(FileContentError):

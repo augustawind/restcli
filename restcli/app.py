@@ -8,7 +8,12 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from restcli.exceptions import InputError, NotFoundError
+from restcli.exceptions import (
+    AttributeNotFoundError,
+    GroupNotFoundError,
+    InputError,
+    RequestNotFoundError,
+)
 from restcli.requestor import Requestor
 from restcli import yaml_utils as yaml
 
@@ -113,9 +118,9 @@ class App:
             match = ENV_RE.match(arg)
             if not match:
                 raise InputError(
-                    msg='env args must take the form `key:value`, where'
-                        ' "key" is a YAML-compatible string and "value" is a'
-                        ' YAML value.'
+                    line=' '.join(args),
+                    item=arg,
+                    msg="env args must have the format 'KEY:VALUE'",
                 )
             key, val = match.groups()
             set_env[key] = yaml.dump(val)
@@ -137,34 +142,33 @@ class App:
         try:
             return self.r.collection[group_name]
         except KeyError:
-            raise NotFoundError(
-                action,
-                "Group '{}' not found.".format(group_name)
+            raise GroupNotFoundError(
+                file=self.r.collection.source,
+                action=action,
+                path=[group_name],
             )
 
-    @staticmethod
-    def get_request(group, group_name, request_name, action):
+    def get_request(self, group, group_name, request_name, action):
         """Retrieve a Request object."""
         try:
             return group[request_name]
         except KeyError:
-            raise NotFoundError(
-                action,
-                "Request '{}' not found in Group '{}'."
-                .format(request_name, group_name),
+            raise RequestNotFoundError(
+                file=self.r.collection.source,
+                action=action,
+                path=[group_name, request_name]
             )
 
-    @staticmethod
-    def get_request_attr(request, group_name, request_name, attr_name,
+    def get_request_attr(self, request, group_name, request_name, attr_name,
                          action):
         """Retrieve a Request Attribute."""
         try:
             return request[attr_name]
         except KeyError:
-            raise NotFoundError(
-                action,
-                "Attribute '{}' not found in Request '{}.{}'."
-                    .format(attr_name, request_name, group_name)
+            raise AttributeNotFoundError(
+                file=self.r.collection.source,
+                action=action,
+                path=[group_name, request_name, attr_name]
             )
 
     def show_response(self, response):

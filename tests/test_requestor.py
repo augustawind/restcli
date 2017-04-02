@@ -91,8 +91,7 @@ def test_run_script():
     response = SimpleNamespace(status_code=404)
     env = {'f': io.StringIO()}
     Requestor.run_script(
-        r'''print('%s\n' % response.status_code, file=env['f'])''',
-        response=response,
-        env=env,
+        script=r'''print('%s\n' % response.status_code, file=env['f'])''',
+        script_locals={'response': response, 'env': env}
     )
     assert env['f'].getvalue().strip() == '404'

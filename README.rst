@@ -102,7 +102,8 @@ returns a dict. That dict will be added to the execution environment of
 any script that gets executed (in the ``script`` field of a Request).
 
 For an example of a ``lib`` file, check out ``restcli.contrib.scripts``, which
-provides pre-baked functions and can be included in your own Requests.
+provides helpful utilities and shortcuts, and can be included in your own
+Collections by adding ``restcli.contrib.scripts`` to the ``lib``.
 
 Requests
 ~~~~~~~~
