@@ -45,8 +45,7 @@ def parse_request(request_info):
 
 
 def parse_headers(header_info):
-    py_headers = OrderedDict((h['key'], h['value']) for h in header_info)
-    return yaml.dump(py_headers)
+    return OrderedDict((h['key'], h['value']) for h in header_info)
 
 
 def parse_body(body_info):
@@ -54,16 +53,19 @@ def parse_body(body_info):
     mode = body_info['mode']
     body = body_info[mode]
 
-    if mode == 'formdata':
-        python_repr = parse_formdata(body)
-    elif mode == 'raw':
-        python_repr = json.loads(body)
-    else:
-        warnings.warn('Found unknown body mode "%s"; skipping' % mode)
-        return None
+    if body:
+        if mode == 'formdata':
+            python_repr = parse_formdata(body)
+        elif mode == 'raw':
+            python_repr = json.loads(body)
+        else:
+            warnings.warn('Found unknown body mode "%s"; skipping' % mode)
+            return None
 
-    text = yaml.dump(python_repr)
-    return yaml.YamlLiteralStr(text)
+        text = yaml.dump(python_repr, indent=4)
+        return yaml.YamlLiteralStr(text)
+
+    return None
 
 
 def parse_formdata(formdata):
