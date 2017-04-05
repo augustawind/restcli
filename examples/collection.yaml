@@ -21,6 +21,7 @@ action-types:
         url: '{{ host }}/action_types/{{ action_type_name }}'
         script: |
             set_env(200, 'action_type_name', ['name'])
+
 actions:
     list:
         method: get
@@ -49,6 +50,7 @@ actions:
     opt-detail:
         method: options
         url: '{{ host }}/actions/{{ action_id }}'
+
 auth:
     login:
         method: post
@@ -73,6 +75,7 @@ auth:
         url: '{{ host }}/auth/verify'
         body: |
             token: '{{ jwt_token }}'
+
 buildings:
     list:
         method: get
@@ -87,12 +90,14 @@ buildings:
             name: POST Building
             customer: '{{ customer_id }}'
             meta:
-                - name: serial_number
-                  display_name: Serial Number
-                  value: ABC123
-                - name: temperature
-                  display_name: Temperature
-                  value: 1.23
+                -
+                    name: serial_number
+                    display_name: Serial Number
+                    value: ABC123
+                -
+                    name: temperature
+                    display_name: Temperature
+                    value: 1.23
             timezone: UTC
             location:
                 postal_code: '12345'
@@ -134,6 +139,56 @@ buildings:
     opt-detail:
         method: options
         url: '{{ host }}/buildings/{{ building_id }}'
+    devices:
+        method: get
+        url: '{{ host }}/buildings/{{ building_id }}/devices'
+
+building-meta:
+    list:
+        method: get
+        url: '{{ host }}/buildings/{{ building_id }}/meta'
+        script: |
+            set_env(200, 'building_meta_name', [0, 'name'],
+                    ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/buildings/{{ building_id }}/meta'
+        body: |
+            -
+                name: serial_number
+                display_name: 'Serial Number'
+                value:
+                    foo: ABC123
+                    bar: 'the thing'
+                    guavas: 5
+                    doe:
+                        - Jon
+                        - Mary
+                    price: 10.5
+                    is_cool: false
+            -
+                name: integer_value
+                display_name: 'Test Integer'
+                value: 19
+            -
+                name: string_value
+                display_name: 'Test String'
+                value: Lorem
+            -
+                name: float_value
+                display_name: 'Test Float'
+                value: 50.07
+            -
+                name: bool_value
+                display_name: 'Test Boolean'
+                value: true
+            -
+                name: null_value
+                display_name: 'Test Null value'
+                value: Nullo
+    opt-list:
+        method: options
+        url: '{{ host }}/buildings/{{ building_id }}/meta'
 
 partners:
     list:
@@ -166,7 +221,7 @@ partners:
             set_env(200, 'partner_id', ['id'])
     put:
         method: put
-        url: '{{ host }}/partners{{ partner_id }}'
+        url: '{{ host }}/partners/{{ partner_id }}'
         body: |
             name: PUT Partner
             description: A Partner that _really_ doesn't exist.
@@ -178,12 +233,12 @@ partners:
                 postal_code: 33701
     patch:
         method: patch
-        url: '{{ host }}/partners{{ partner_id }}'
+        url: '{{ host }}/partners/{{ partner_id }}'
         body: |
             name: PATCH Partner
     del:
         method: delete
-        url: '{{ host }}/partners{{ partner_id }}'
+        url: '{{ host }}/partners/{{ partner_id }}'
     opt-detail:
         method: options
-        url: '{{ host }}/partners{{ partner_id }}'
+        url: '{{ host }}/partners/{{ partner_id }}'
