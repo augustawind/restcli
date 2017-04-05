@@ -175,12 +175,20 @@ class App:
 
     def show_response(self, response):
         """Print an HTTP Response."""
+        if response.headers.get('Content-Type', None) == 'application/json':
+            try:
+                body = json.dumps(response.json(), indent=2)
+            except json.JSONDecodeError:
+                body = response.text
+        else:
+            body = response.text
+
         http_txt = self.HTTP_TPL.substitute(
             http_version=str(float(response.raw.version) / 10),
             status_code=response.status_code,
             reason=response.reason,
             headers=self.key_value_pairs(response.headers),
-            body=json.dumps(response.json(), indent=2),
+            body=body,
         )
         return highlight(http_txt, self.http_lexer, self.formatter)
 
