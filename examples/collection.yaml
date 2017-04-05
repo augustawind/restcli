@@ -9,18 +9,6 @@ defaults:
         Authorization: 'JWT {{ jwt_token }}'
 
 ---
-auth:
-    login:
-        method: post
-        url: '{{ host }}/auth/login'
-        headers:
-            Content-Type: application/json
-            Accept: application/json
-        body: |
-            username: '{{ username }}'
-            password: '{{ password }}'
-        script: |
-            set_env(200, 'jwt_token', ['token'])
 action-types:
     list:
         method: get
@@ -61,6 +49,92 @@ actions:
     opt-detail:
         method: options
         url: '{{ host }}/actions/{{ action_id }}'
+auth:
+    login:
+        method: post
+        url: '{{ host }}/auth/login'
+        body: |
+            username: '{{ username }}'
+            password: '{{ password }}'
+        script: |
+            set_env(200, 'jwt_token', ['token'])
+    refresh:
+        method: post
+        url: '{{ host }}/auth/refresh'
+        body: |
+            token: '{{ jwt_token }}'
+    revoke:
+        method: put
+        url: '{{ host }}/auth/revoke'
+        body: |
+            token: '{{ jwt_token }}'
+    verify:
+        method: post
+        url: '{{ host }}/auth/verify'
+        body: |
+            token: '{{ jwt_token }}'
+buildings:
+    list:
+        method: get
+        url: '{{ host }}/buildings'
+        script: |
+            set_env(200, 'building_id', [0, 'id'],
+                    ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/buildings'
+        body: |
+            name: POST Building
+            customer: '{{ customer_id }}'
+            meta:
+                - name: serial_number
+                  display_name: Serial Number
+                  value: ABC123
+                - name: temperature
+                  display_name: Temperature
+                  value: 1.23
+            timezone: UTC
+            location:
+                postal_code: '12345'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+        script: |
+            set_env(201, 'building_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/buildings'
+    get:
+        method: get
+        url: '{{ host }}/buildings/{{ building_id }}'
+        script: |
+            set_env(200, 'building_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/buildings/{{ building_id }}'
+        body: |
+            name: PUT Building
+            customer: '{{ customer_id }}'
+            timezone: UTC
+            location:
+                postal_code: '54321'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+    patch:
+        method: patch
+        url: '{{ host }}/buildings/{{ building_id }}'
+        body: |
+            name: PATCH Building
+    delete:
+        method: delete
+        url: '{{ host }}/buildings/{{ building_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/buildings/{{ building_id }}'
+
 partners:
     list:
         method: get
