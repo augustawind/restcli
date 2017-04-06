@@ -27,8 +27,7 @@ actions:
         method: get
         url: '{{ host }}/actions'
         script: |
-            set_env(200, 'action_id', [0, 'id'],
-                    ignore_missing_index=True)
+            set_env(200, 'action_id', [0, 'id'], ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/actions'
@@ -81,8 +80,7 @@ buildings:
         method: get
         url: '{{ host }}/buildings'
         script: |
-            set_env(200, 'building_id', [0, 'id'],
-                    ignore_missing_index=True)
+            set_env(200, 'building_id', [0, 'id'], ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/buildings'
@@ -148,8 +146,7 @@ building-meta:
         method: get
         url: '{{ host }}/buildings/{{ building_id }}/meta'
         script: |
-            set_env(200, 'building_meta_name', [0, 'name'],
-                    ignore_missing_index=True)
+            set_env(200, 'building_meta_name', [0, 'name'], ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/buildings/{{ building_id }}/meta'
@@ -185,10 +182,30 @@ building-meta:
             -
                 name: null_value
                 display_name: 'Test Null value'
-                value: Nullo
+                value: null
     opt-list:
         method: options
         url: '{{ host }}/buildings/{{ building_id }}/meta'
+    get:
+        method: get
+        url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta_name }}'
+    put:
+        method: put
+        url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta_name }}'
+        body: |
+            display_name: PUT Meta
+            value: 'foo'
+    patch:
+        method: patch
+        url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta_name }}'
+        body: |
+            display_name: PATCH Meta
+    delete:
+        method: delete
+        url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta_name }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta_name }}'
 
 partners:
     list:
