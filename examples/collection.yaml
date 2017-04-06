@@ -461,6 +461,58 @@ device-meta:
         method: get
         url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
 
+org-units:
+    list:
+        method: get
+        url: '{{ host }}/organizational_units'
+        script: |
+            set_env(200, 'org_unit_id', [0, 'id'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/organizational_units'
+        body: |
+            name: POST Organizational Unit
+            partner: {{ partner_id }}
+            location:
+                postal_code: '12345'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+        script: |
+            set_env(201, 'org_unit_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/organizational_units'
+    get:
+        method: get
+        url: '{{ host }}/organizational_units/{{ org_unit_id }}'
+        script: |
+            set_env(200, 'org_unit_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/organizational_units/{{ org_unit_id }}'
+        body: |
+            name: PUT Organizational Unit
+            partner: {{ partner_id }}
+            location:
+                postal_code: '12345'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+    patch:
+        method: patch
+        url: '{{ host }}/organizational_units/{{ org_unit_id }}'
+        body: |
+            name: PATCH Organizational Unit
+    delete:
+        method: delete
+        url: '{{ host }}/organizational_units/{{ org_unit_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/organizational_units/{{ org_unit_id }}'
+
 partners:
     list:
         method: get
