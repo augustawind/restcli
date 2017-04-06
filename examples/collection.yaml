@@ -306,13 +306,76 @@ connected_product-meta:
         method: options
         url: '{{ host }}/connected_products/{{ connected_product_id }}/meta/{{ connected_product_meta }}'
 
+currency:
+    list:
+        method: get
+        url: '{{ host }}/currency'
+        script: |
+            set_env(200, 'currency_code', [0, 'code'])
+    get:
+        method: get
+        url: '{{ host }}/currency/{{ currency_code }}'
+
+customers:
+    list:
+        method: get
+        url: '{{ host }}/customers'
+        script: |
+            set_env(200, 'customer_id', [0, 'id'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/customers'
+        body: |
+            name: POST Customer
+            partners:
+                - {{ partner_id }}
+            location:
+                postal_code: '12345'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+        script: |
+            set_env(201, 'customer_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/customers'
+    get:
+        method: get
+        url: '{{ host }}/customers/{{ customer_id }}'
+        script: |
+            set_env(200, 'customer_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/customers/{{ customer_id }}'
+        body: |
+            name: PUT Customer
+            partners:
+                - {{ partner_id }}
+            location:
+                postal_code: '12345'
+                addr1: 007 Easy Street
+                state: FL
+                country: US
+                city: Pleasantville
+    patch:
+        method: patch
+        url: '{{ host }}/customers/{{ customer_id }}'
+        body: |
+            name: PATCH Customer
+    delete:
+        method: delete
+        url: '{{ host }}/customers/{{ customer_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/customers/{{ customer_id }}'
+
 partners:
     list:
         method: get
         url: '{{ host }}/partners'
         script: |
-            set_env(200, 'partner_id', [0, 'id'],
-                    ignore_missing_index=True)
+            set_env(200, 'partner_id', [0, 'id'], ignore_missing_index=True)
     post:
         method: post
         url: '{{ host }}/partners'
