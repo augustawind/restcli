@@ -141,6 +141,59 @@ buildings:
         method: get
         url: '{{ host }}/buildings/{{ building_id }}/devices'
 
+connected_products:
+    list:
+        method: get
+        url: '{{ host }}/connected_products'
+        script: |
+            set_env(200, 'connected_product_id', [0, 'id'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/connected_products'
+        body: |
+            name: POST Connected Product
+            device: {{ device_id }}
+            spaces:
+                - {{ space_id }}
+            meta:
+                -
+                    name: serial_number
+                    display_name: Serial Number
+                    value: ABC123
+                -
+                    name: temperature
+                    display_name: Temperature
+                    value: 1.23
+        script: |
+            set_env(201, 'connected_product_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/connected_products'
+    get:
+        method: get
+        url: '{{ host }}/connected_products/{{ connected_product_id }}'
+        script: |
+            set_env(200, 'connected_product_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/connected_products/{{ connected_product_id }}'
+        body: |
+            name: PUT Connected Product
+            device: {{ device_id }}
+            spaces:
+                - {{ space_id }}
+    patch:
+        method: patch
+        url: '{{ host }}/connected_products/{{ connected_product_id }}'
+        body: |
+            name: PATCH Connected Product
+    delete:
+        method: delete
+        url: '{{ host }}/connected_products/{{ connected_product_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/connected_products/{{ connected_product_id }}'
+
 building-meta:
     list:
         method: get
