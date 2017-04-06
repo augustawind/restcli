@@ -370,6 +370,97 @@ customers:
         method: options
         url: '{{ host }}/customers/{{ customer_id }}'
 
+deployment:
+    info:
+        method: get
+        url: '{{ host }}/deployment/info'
+
+devices:
+    list:
+        method: get
+        url: '{{ host }}/devices'
+        script: |
+            set_env(200, 'device_id', [0, 'id'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/devices'
+        body: |
+            name: POST Device
+            product: {{ product_id }}
+        script: |
+            set_env(201, 'device_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/devices'
+    get:
+        method: get
+        url: '{{ host }}/devices/{{ device_id }}'
+        script: |
+            set_env(200, 'device_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/devices/{{ device_id }}'
+        body: |
+            name: PUT Device
+    patch:
+        method: patch
+        url: '{{ host }}/devices/{{ device_id }}'
+        body: |
+            name: PATCH Device
+    delete:
+        method: delete
+        url: '{{ host }}/devices/{{ device_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/devices/{{ device_id }}'
+
+device-meta:
+    list:
+        method: get
+        url: '{{ host }}/devices/{{ device_id }}/meta'
+        script: |
+            set_env(200, 'device_meta', [0, 'name'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/devices/{{ device_id }}/meta'
+        body: |
+            -
+                name: serial_number
+                display_name: Serial Number
+                value: ABC123
+            -
+                name: temperature
+                display_name: Temperature
+                value: 1.23
+        script: |
+            set_env(201, 'device_meta', [0, 'name'], ignore_missing_index=True)
+    opt-list:
+        method: options
+        url: '{{ host }}/devices/{{ device_id }}/meta'
+    get:
+        method: get
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+    put:
+        method: put
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+        body: |
+            display_name: PUT Meta
+            value: 'foo'
+    patch:
+        method: patch
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+        body: |
+            display_name: PATCH Meta
+    delete:
+        method: delete
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+    history:
+        method: get
+        url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
+
 partners:
     list:
         method: get
