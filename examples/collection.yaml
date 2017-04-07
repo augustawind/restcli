@@ -179,10 +179,6 @@ building-meta:
                 name: bool_value
                 display_name: 'Test Boolean'
                 value: true
-            -
-                name: null_value
-                display_name: 'Test Null value'
-                value: null
         script: |
             set_env(201, 'building_meta', [0, 'name'], ignore_missing_index=True)
     opt-list:
