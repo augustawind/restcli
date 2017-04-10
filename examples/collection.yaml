@@ -1119,3 +1119,96 @@ space-meta:
     opt-detail:
         method: options
         url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
+
+timezones:
+    list:
+        method: get
+        url: '{{ host }}/timezones'
+        script: |
+            set_env(200, 'timezone_name', [0, 'name'])
+    get:
+        method: get
+        url: '{{ host }}/timezones/{{ timezone_name }}'
+
+users:
+    list:
+        method: get
+        url: '{{ host }}/users'
+        script: |
+            set_env(200, 'user_id', [0, 'id'])
+            set_env(200, 'user_username', [0, 'username'])
+    post:
+        method: post
+        url: '{{ host }}/users'
+        body: |
+            username: 'user@email.com'
+            first_name: POST
+            last_name: User
+            account_type: partner
+            partner: {{ partner_id }}
+        script: |
+            set_env(201, 'user_id', ['id'])
+            set_env(201, 'user_username', ['username'])
+    opt-list:
+        method: options
+        url: '{{ host }}/users'
+    get:
+        method: get
+        url: '{{ host }}/users/{{ user_id }}'
+    put:
+        method: put
+        url: '{{ host }}/users/{{ user_id }}'
+        body: |
+            username: 'user@email.com'
+            first_name: PUT
+            last_name: User
+            account_type: partner
+            partner: {{ partner_id }}
+    patch:
+        method: patch
+        url: '{{ host }}/users/{{ user_id }}'
+        body: |
+            first_name: PATCH
+    delete:
+        method: delete
+        url: '{{ host }}/users/{{ user_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/users/{{ user_id }}'
+    register:
+        method: post
+        url: '{{ host }}/users/register'
+        body: |
+            activation_key: 'b942a49bf6449268230cdeff109aa13080f8f94f'
+            first_name: Linus
+            last_name: Torvalds
+            phone_number: '18008575309'
+            password: 'fooF00barB4r'
+            password_confirm: 'fooF00barB4r'
+    activate:
+        method: post
+        url: '{{ host }}/users/{{ user_id }}/activate'
+    request-change-password:
+        method: post
+        url: '{{ host }}/users/password/request/change'
+        body: |
+            username: {{ user_username }}
+    change-password:
+        method: post
+        url: '{{ host }}/users/password/change'
+        body: |
+            uidb64: 'NDYwYmI5ZWEtMzZkNS00MWY5LTk0YzctZDE0MTEwMzg4YmI2'
+            token: '4l3-c900fd652afd7abdd94c'
+            password: 'fooF00barB4zzz'
+            password_confirm: 'fooF00barB4zzz'
+
+me:
+    get:
+        method: get
+        url: '{{ host }}/me'
+        script: |
+            set_env(200, 'user_id', ['id'])
+            set_env(200, 'user_username', ['username'])
+    permissions:
+        method: get
+        url: '{{ host }}/me/permissions'
