@@ -20,7 +20,7 @@ api-tokens:
         method: get
         url: '{{ host }}/customers/{{ customer_id }}/api_tokens'
         script: |
-            set_env(200, 'customer_api_token', [0, 'api_token'], ignore_missing_index=True)
+            set_env(200, 'customer_api_token', [0, 'api_token'])
     post:
         method: post
         url: '{{ host }}/customers/{{ customer_id }}/api_tokens'
@@ -58,7 +58,7 @@ actions:
         method: get
         url: '{{ host }}/actions'
         script: |
-            set_env(200, 'action_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'action_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/actions'
@@ -111,7 +111,7 @@ buildings:
         method: get
         url: '{{ host }}/buildings'
         script: |
-            set_env(200, 'building_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'building_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/buildings'
@@ -177,7 +177,7 @@ building-meta:
         method: get
         url: '{{ host }}/buildings/{{ building_id }}/meta'
         script: |
-            set_env(200, 'building_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(200, 'building_meta', [0, 'name'])
     post:
         method: post
         url: '{{ host }}/buildings/{{ building_id }}/meta'
@@ -211,7 +211,7 @@ building-meta:
                 display_name: 'Test Boolean'
                 value: true
         script: |
-            set_env(201, 'building_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(201, 'building_meta', [0, 'name'])
     opt-list:
         method: options
         url: '{{ host }}/buildings/{{ building_id }}/meta'
@@ -241,7 +241,7 @@ connected-products:
         method: get
         url: '{{ host }}/connected_products'
         script: |
-            set_env(200, 'connected_product_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'connected_product_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/connected_products'
@@ -294,7 +294,7 @@ connected-product-meta:
         method: get
         url: '{{ host }}/connected_products/{{ connected_product_id }}/meta'
         script: |
-            set_env(200, 'connected_product_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(200, 'connected_product_meta', [0, 'name'])
     post:
         method: post
         url: '{{ host }}/connected_products/{{ connected_product_id }}/meta'
@@ -308,7 +308,7 @@ connected-product-meta:
                 display_name: Temperature
                 value: 1.23
         script: |
-            set_env(201, 'connected_product_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(201, 'connected_product_meta', [0, 'name'])
     opt-list:
         method: options
         url: '{{ host }}/connected_products/{{ connected_product_id }}/meta'
@@ -348,7 +348,7 @@ customers:
         method: get
         url: '{{ host }}/customers'
         script: |
-            set_env(200, 'customer_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'customer_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/customers'
@@ -407,7 +407,7 @@ devices:
         method: get
         url: '{{ host }}/devices'
         script: |
-            set_env(200, 'device_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'device_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/devices'
@@ -446,7 +446,7 @@ device-meta:
         method: get
         url: '{{ host }}/devices/{{ device_id }}/meta'
         script: |
-            set_env(200, 'device_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(200, 'device_meta', [0, 'name'])
     post:
         method: post
         url: '{{ host }}/devices/{{ device_id }}/meta'
@@ -460,7 +460,7 @@ device-meta:
                 display_name: Temperature
                 value: 1.23
         script: |
-            set_env(201, 'device_meta', [0, 'name'], ignore_missing_index=True)
+            set_env(201, 'device_meta', [0, 'name'])
     opt-list:
         method: options
         url: '{{ host }}/devices/{{ device_id }}/meta'
@@ -493,7 +493,7 @@ org-units:
         method: get
         url: '{{ host }}/organizational_units'
         script: |
-            set_env(200, 'org_unit_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'org_unit_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/organizational_units'
@@ -545,7 +545,7 @@ partners:
         method: get
         url: '{{ host }}/partners'
         script: |
-            set_env(200, 'partner_id', [0, 'id'], ignore_missing_index=True)
+            set_env(200, 'partner_id', [0, 'id'])
     post:
         method: post
         url: '{{ host }}/partners'
@@ -597,7 +597,7 @@ product-types:
         method: get
         url: '{{ host }}/product_types'
         script: |
-            set_env(200, 'product_type_name', [0, 'name'], ignore_missing_index=True)
+            set_env(200, 'product_type_name', [0, 'name'])
     get:
         method: get
         url: '{{ host }}/product_types/{{ product_type_name }}'
