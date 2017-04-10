@@ -980,3 +980,98 @@ service-profiles:
     opt-detail:
         method: options
         url: '{{ host }}/service_profiles/{{ service_profile_name }}'
+
+spaces:
+    list:
+        method: get
+        url: '{{ host }}/spaces'
+        script: |
+            set_env(200, 'space_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/spaces'
+        body: |
+            name: POST Space
+            type: floor
+            building: {{ building_id }}
+        script: |
+            set_env(201, 'space_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/spaces'
+    get:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}'
+        script: |
+            set_env(200, 'space_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/spaces/{{ space_id }}'
+        body: |
+            name: PUT Space
+            type: floor
+            building: {{ building_id }}
+    patch:
+        method: patch
+        url: '{{ host }}/spaces/{{ space_id }}'
+        body: |
+            name: PATCH Space
+    delete:
+        method: delete
+        url: '{{ host }}/spaces/{{ space_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/spaces/{{ space_id }}'
+    connected-products:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}/connected_products'
+    devices:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}/devices'
+    device-states:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}/device_states'
+
+space-meta:
+    list:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}/meta'
+        script: |
+            set_env(200, 'space_meta', [0, 'name'])
+    post:
+        method: post
+        url: '{{ host }}/spaces/{{ space_id }}/meta'
+        body: |
+            -
+                name: serial_number
+                display_name: Serial Number
+                value: ABC123
+            -
+                name: temperature
+                display_name: Temperature
+                value: 1.23
+        script: |
+            set_env(201, 'space_meta', [0, 'name'])
+    opt-list:
+        method: options
+        url: '{{ host }}/spaces/{{ space_id }}/meta'
+    get:
+        method: get
+        url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
+    put:
+        method: put
+        url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
+        body: |
+            display_name: PUT Meta
+            value: 'foo'
+    patch:
+        method: patch
+        url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
+        body: |
+            display_name: PATCH Meta
+    delete:
+        method: delete
+        url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/spaces/{{ space_id }}/meta/{{ space_meta }}'
