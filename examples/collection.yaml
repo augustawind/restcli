@@ -488,6 +488,42 @@ device-meta:
         method: get
         url: '{{ host }}/devices/{{ device_id }}/meta/{{ device_meta }}'
 
+meta-groups:
+    list:
+        method: get
+        url: '{{ host }}/meta_groups'
+        script: |
+            set_env(200, 'meta_group_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/meta_groups'
+        body: |
+            name: ~power
+        script: |
+            set_env(201, 'meta_group_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/meta_groups'
+    get:
+        method: get
+        url: '{{ host }}/meta_groups/{{ meta_group_id }}'
+    put:
+        method: put
+        url: '{{ host }}/meta_groups/{{ meta_group_id }}'
+        body: |
+            name: ~admin
+    patch:
+        method: patch
+        url: '{{ host }}/meta_groups/{{ meta_group_id }}'
+        body: |
+            name: ~admin
+    delete:
+        method: delete
+        url: '{{ host }}/meta_groups/{{ meta_group_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/meta_groups/{{ meta_group_id }}'
+
 org-units:
     list:
         method: get
