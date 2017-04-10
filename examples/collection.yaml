@@ -588,6 +588,7 @@ partners:
         body: |
             name: POST Partner
             description: A Partner that doesn't really exist.
+            is_manufacturer: true
             location:
                 addr1: 123 Foo St.
                 city: Jupiter
@@ -610,6 +611,7 @@ partners:
         body: |
             name: PUT Partner
             description: A Partner that _really_ doesn't exist.
+            is_manufacturer: true
             location:
                 addr1: 345 Bar Ave.
                 city: Saint Petersburg
@@ -637,3 +639,97 @@ product-types:
     get:
         method: get
         url: '{{ host }}/product_types/{{ product_type_name }}'
+
+products:
+    list:
+        method: get
+        url: '{{ host }}/products'
+        script: |
+            set_env(200, 'product_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/products'
+        body: |
+            name: POST WIM
+            type: wim
+            description: A test WIM.
+            sku: 862397387
+            manufacturer: {{ partner_id }}
+        script: |
+            set_env(201, 'product_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/products'
+    get:
+        method: get
+        url: '{{ host }}/products/{{ product_id }}'
+        script: |
+            set_env(200, 'product_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/products/{{ product_id }}'
+        body: |
+            name: PUT WIM
+            type: wim
+            description: A test WIM.
+            sku: 862397387
+            manufacturer: {{ partner_id }}
+    patch:
+        method: patch
+        url: '{{ host }}/products/{{ product_id }}'
+        body: |
+            name: PUT WIM
+    delete:
+        method: delete
+        url: '{{ host }}/products/{{ product_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/products/{{ product_id }}'
+
+product-meta:
+    list:
+        method: get
+        url: '{{ host }}/products/{{ product_id }}/meta'
+        script: |
+            set_env(200, 'product_meta', [0, 'name'])
+    post:
+        method: post
+        url: '{{ host }}/products/{{ product_id }}/meta'
+        body: |
+            -
+                name: serial_number
+                display_name: Serial Number
+                value: ABC123
+            -
+                name: temperature
+                display_name: Temperature
+                value: 1.23
+        script: |
+            set_env(201, 'product_meta', [0, 'name'])
+    opt-list:
+        method: options
+        url: '{{ host }}/products/{{ product_id }}/meta'
+    get:
+        method: get
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+    put:
+        method: put
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+        body: |
+            display_name: PUT Meta
+            value: 'foo'
+    patch:
+        method: patch
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+        body: |
+            display_name: PATCH Meta
+    delete:
+        method: delete
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+    history:
+        method: get
+        url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
+
