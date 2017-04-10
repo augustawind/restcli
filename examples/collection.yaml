@@ -733,3 +733,47 @@ product-meta:
         method: get
         url: '{{ host }}/products/{{ product_id }}/meta/{{ product_meta }}'
 
+roles:
+    list:
+        method: get
+        url: '{{ host }}/roles'
+        script: |
+            set_env(200, 'role_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/roles'
+        body: |
+            name: POST Role
+            permission_sets:
+                - control_fixtures
+        script: |
+            set_env(201, 'role_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/roles'
+    get:
+        method: get
+        url: '{{ host }}/roles/{{ role_id }}'
+        script: |
+            set_env(200, 'role_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/roles/{{ role_id }}'
+        body: |
+            name: PUT Role
+            permission_sets:
+                - control_fixtures
+    patch:
+        method: patch
+        url: '{{ host }}/roles/{{ role_id }}'
+        body: |
+            name: PATCH Role
+    delete:
+        method: delete
+        url: '{{ host }}/roles/{{ role_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/roles/{{ role_id }}'
+    permission_sets:
+        method: get
+        url: '{{ host }}/roles/permission_sets'
