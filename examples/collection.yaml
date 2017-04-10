@@ -9,6 +9,37 @@ defaults:
         Authorization: 'JWT {{ jwt_token }}'
 
 ---
+api-tokens:
+    user:
+        method: get
+        url: '{{ host }}/users/{{ user_id }}/api_token'
+    usage:
+        method: get
+        url: '{{ host }}/customers/{{ customer_id }}/usage'
+    list:
+        method: get
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens'
+        script: |
+            set_env(200, 'customer_api_token', [0, 'api_token'], ignore_missing_index=True)
+    post:
+        method: post
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens'
+        body: '{}'
+        script: |
+            set_env(201, 'customer_api_token', ['api_token'])
+    get:
+        method: get
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens/{{ customer_api_token}}'
+    delete:
+        method: delete
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens/{{ customer_api_token}}'
+    activate:
+        method: post
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens/{{ customer_api_token}}/activate'
+    deactivate:
+        method: post
+        url: '{{ host }}/customers/{{ customer_id }}/api_tokens/{{ customer_api_token}}/deactivate'
+
 action-types:
     list:
         method: get
@@ -205,7 +236,7 @@ building-meta:
         method: options
         url: '{{ host }}/buildings/{{ building_id }}/meta/{{ building_meta }}'
 
-connected_products:
+connected-products:
     list:
         method: get
         url: '{{ host }}/connected_products'
@@ -258,7 +289,7 @@ connected_products:
         method: options
         url: '{{ host }}/connected_products/{{ connected_product_id }}'
 
-connected_product-meta:
+connected-product-meta:
     list:
         method: get
         url: '{{ host }}/connected_products/{{ connected_product_id }}/meta'
@@ -560,3 +591,13 @@ partners:
     opt-detail:
         method: options
         url: '{{ host }}/partners/{{ partner_id }}'
+
+product-types:
+    list:
+        method: get
+        url: '{{ host }}/product_types'
+        script: |
+            set_env(200, 'product_type_name', [0, 'name'], ignore_missing_index=True)
+    get:
+        method: get
+        url: '{{ host }}/product_types/{{ product_type_name }}'
