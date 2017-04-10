@@ -847,3 +847,96 @@ rules:
     meta-options:
         method: get
         url: '{{ host }}/rules/meta/options'
+
+scenes:
+    list:
+        method: get
+        url: '{{ host }}/scenes'
+        script: |
+            set_env(200, 'scene_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/scenes'
+        body: |
+            name: POST Scene
+            space: {{ space_id }}
+            states:
+                {{ device_id }}:
+                    dim: 75
+                    onoff: true
+        script: |
+            set_env(201, 'scene_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/scenes'
+    get:
+        method: get
+        url: '{{ host }}/scenes/{{ scene_id }}'
+        script: |
+            set_env(200, 'scene_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/scenes/{{ scene_id }}'
+        body: |
+            name: PUT Scene
+            space: {{ space_id }}
+            states:
+                {{ device_id }}:
+                    dim: 75
+                    onoff: true
+    patch:
+        method: patch
+        url: '{{ host }}/scenes/{{ scene_id }}'
+        body: |
+            name: PATCH Scene
+    delete:
+        method: delete
+        url: '{{ host }}/scenes/{{ scene_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/scenes/{{ scene_id }}'
+
+schedules:
+    list:
+        method: get
+        url: '{{ host }}/schedules'
+        script: |
+            set_env(200, 'schedule_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/schedules'
+        body: |
+            name: POST Schedule
+            building: {{ building_id }}
+            time_of_day: '13:00:00'
+            day_of_week:
+                - tue
+                - wed
+            enabled: false
+        script: |
+            set_env(201, 'schedule_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/schedules'
+    get:
+        method: get
+        url: '{{ host }}/schedules/{{ schedule_id }}'
+        script: |
+            set_env(200, 'schedule_id', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/schedules/{{ schedule_id }}'
+        body: |
+            name: PUT Schedule
+            building: {{ building_id }}
+            time_of_day: '13:00:00'
+            day_of_week:
+                - tue
+                - wed
+            enabled: false
+    delete:
+        method: delete
+        url: '{{ host }}/schedules/{{ schedule_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/schedules/{{ schedule_id }}'
