@@ -896,6 +896,50 @@ scenes:
         method: options
         url: '{{ host }}/scenes/{{ scene_id }}'
 
+scene-meta:
+    list:
+        method: get
+        url: '{{ host }}/scenes/{{ scene_id }}/meta'
+        script: |
+            set_env(200, 'scene_meta', [0, 'name'])
+    post:
+        method: post
+        url: '{{ host }}/scenes/{{ scene_id }}/meta'
+        body: |
+            -
+                name: serial_number
+                display_name: Serial Number
+                value: ABC123
+            -
+                name: temperature
+                display_name: Temperature
+                value: 1.23
+        script: |
+            set_env(201, 'scene_meta', [0, 'name'])
+    opt-list:
+        method: options
+        url: '{{ host }}/scenes/{{ scene_id }}/meta'
+    get:
+        method: get
+        url: '{{ host }}/scenes/{{ scene_id }}/meta/{{ scene_meta }}'
+    put:
+        method: put
+        url: '{{ host }}/scenes/{{ scene_id }}/meta/{{ scene_meta }}'
+        body: |
+            display_name: PUT Meta
+            value: 'foo'
+    patch:
+        method: patch
+        url: '{{ host }}/scenes/{{ scene_id }}/meta/{{ scene_meta }}'
+        body: |
+            display_name: PATCH Meta
+    delete:
+        method: delete
+        url: '{{ host }}/scenes/{{ scene_id }}/meta/{{ scene_meta }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/scenes/{{ scene_id }}/meta/{{ scene_meta }}'
+
 schedules:
     list:
         method: get
