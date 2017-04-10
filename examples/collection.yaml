@@ -940,3 +940,43 @@ schedules:
     opt-detail:
         method: options
         url: '{{ host }}/schedules/{{ schedule_id }}'
+
+service-profiles:
+    list:
+        method: get
+        url: '{{ host }}/service_profiles'
+        script: |
+            set_env(200, 'service_profile_name', [0, 'name'])
+    post:
+        method: post
+        url: '{{ host }}/service_profiles'
+        body: |
+            name: sp1
+            display_name: POST Service Profile
+        script: |
+            set_env(201, 'service_profile_name', ['name'])
+    opt-list:
+        method: options
+        url: '{{ host }}/service_profiles'
+    get:
+        method: get
+        url: '{{ host }}/service_profiles/{{ service_profile_name }}'
+        script: |
+            set_env(200, 'service_profile_name', ['id'])
+    put:
+        method: put
+        url: '{{ host }}/service_profiles/{{ service_profile_name }}'
+        body: |
+            name: sp1
+            display_name: PUT Service Profile
+    patch:
+        method: patch
+        url: '{{ host }}/service_profiles/{{ service_profile_name }}'
+        body: |
+            display_name: PATCH Service Profile
+    delete:
+        method: delete
+        url: '{{ host }}/service_profiles/{{ service_profile_name }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/service_profiles/{{ service_profile_name }}'
