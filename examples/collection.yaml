@@ -777,3 +777,73 @@ roles:
     permission_sets:
         method: get
         url: '{{ host }}/roles/permission_sets'
+
+rules:
+    list:
+        method: get
+        url: '{{ host }}/rules'
+        script: |
+            set_env(200, 'rule_id', [0, 'id'])
+    post:
+        method: post
+        url: '{{ host }}/rules'
+        body: |
+            device: {{ device_id }}
+            name: bright ambient light
+            conditions:
+                -
+                    variable: ambient_light
+                    operator: '>'
+                    value: 55
+                    logical_operator: null
+            operations:
+                -
+                    spaces:
+                        - {{ space_id }}
+                    actions:
+                        -
+                            name: dim
+                            parameters:
+                                value: 2
+                                level: 2
+                                transition_time: 3
+        script: |
+            set_env(201, 'rule_id', ['id'])
+    opt-list:
+        method: options
+        url: '{{ host }}/rules'
+    get:
+        method: get
+        url: '{{ host }}/rules/{{ rule_id }}'
+    put:
+        method: put
+        url: '{{ host }}/rules/{{ rule_id }}'
+        body: |
+            device: {{ device_id }}
+            name: bright ambient light
+            conditions:
+                -
+                    variable: ambient_light
+                    operator: '>'
+                    value: 55
+                    logical_operator: null
+            operations:
+                -
+                    spaces:
+                        - {{ space_id }}
+                    actions:
+                        -
+                            name: dim
+                            parameters:
+                                value: 2
+                                level: 2
+                                transition_time: 3
+    delete:
+        method: delete
+        url: '{{ host }}/rules/{{ rule_id }}'
+    opt-detail:
+        method: options
+        url: '{{ host }}/rules/{{ rule_id }}'
+    meta-options:
+        method: get
+        url: '{{ host }}/rules/meta/options'
