@@ -3,7 +3,9 @@ import enum
 import json
 import re
 import shlex
-from collections import Mapping, OrderedDict
+from collections import OrderedDict
+
+from restcli.utils import recursive_update, is_ascii, fmt_arg
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
@@ -104,34 +106,6 @@ PATTERN_MAP = {
     PATTERNS.str_field.name: (parse_str_field, 'body'),
     PATTERNS.header.name: (parse_header, 'headers'),
 }
-
-
-def recursive_update(mapping, *args, **kwargs):
-    """Like dict.update, but recursively updates nested dicts as well."""
-    mapping_cls = type(mapping)
-    other_mapping = mapping_cls(*args, **kwargs)
-
-    for key, val in other_mapping.items():
-        if isinstance(val, Mapping):
-            nested_mapping = mapping.setdefault(key, mapping_cls())
-            recursive_update(nested_mapping, val.items())
-        else:
-            mapping[key] = val
-
-
-def is_ascii(s):
-    """Return True if the given string contains only ASCII characters."""
-    return len(s) == len(s.encode())
-
-
-def fmt_arg(action, key, value):
-    """Form token data into a common structure.."""
-    return OrderedDict((
-        (key, OrderedDict((
-            (action, value),
-        ))),
-    ))
-
 
 examples = [
     '''Authorization:'JWT abc123\'''',         # Set a header (:)
