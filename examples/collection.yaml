@@ -57,6 +57,8 @@ actions:
     list:
         method: get
         url: '{{ host }}/actions'
+        query: |
+            order_by: '-created'
         script: |
             set_env(200, 'action_id', [0, 'id'])
     post:
@@ -1201,14 +1203,15 @@ users:
             token: '4l3-c900fd652afd7abdd94c'
             password: 'fooF00barB4zzz'
             password_confirm: 'fooF00barB4zzz'
-
-me:
-    get:
+    permissions:
+        method: get
+        url: '{{ host }}/users/{{ user_id }}/permissions'
+    me:
         method: get
         url: '{{ host }}/me'
         script: |
             set_env(200, 'user_id', ['id'])
             set_env(200, 'user_username', ['username'])
-    permissions:
+    my-permissions:
         method: get
         url: '{{ host }}/me/permissions'
