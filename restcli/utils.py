@@ -1,7 +1,10 @@
 import re
 import shlex
 import string
-from collections import deque, Mapping, OrderedDict
+from collections import Mapping, OrderedDict
+
+QUOTES = '"\''
+BACKSLASH = '\\'
 
 
 def shlex_token(s, **kwargs):
@@ -19,36 +22,41 @@ def shlex_token(s, **kwargs):
 def split_quoted(s, sep=string.whitespace):
     """Split a string on whitespace, respecting quotations (incl. escapes)."""
     words = []
-    open_quotes = deque()
+    current_quote = None
 
     chars = iter(s)
-    char = next(chars, None)
+    char = next(chars, '')
 
     word = ''
     while char:
+        # Quotation marks begin or end a quoted section
+        if char in QUOTES:
+            if char == current_quote:
+                current_quote = None
+            elif not current_quote:
+                current_quote = char
+
+        # Unconditionally add anything after a backslash
+        elif char == BACKSLASH:
+            word += char
+            char = next(chars, '')
+
         # Skip past whitespace (if not quoted), then finish the word
-        if char in sep and not open_quotes:
+        elif not current_quote and char in sep:
             while char in sep:
                 char = next(chars, '')
             words.append(word)
             word = ''
 
-        # Unconditionally add anything after a backslash
-        elif char == '\\':
-            word += char
-            char = next(chars, '')
-
-        # Quotation marks begin or end a quoted section
-        elif char in ('"', "'"):
-            if open_quotes and char == open_quotes[0]:
-                open_quotes.popleft()
-            else:
-                open_quotes.appendleft(char)
+            # Since we stopped at the first non-whitespace character, it
+            # must be processed.
+            continue
 
         # Add the current character to the word
         word += char
-        char = next(chars)
+        char = next(chars, '')
 
+    words.append(word)
     return words
 
 

@@ -21,7 +21,7 @@ def test_recursive_update():
             'age': 89
         }
     }
-    restcli.utils.recursive_update(d0, updates)
+    utils.recursive_update(d0, updates)
     expected = OrderedDict((
         ('foo', 'quux'),
         ('bar', OrderedDict((
@@ -34,13 +34,13 @@ def test_recursive_update():
 
 
 def test_is_ascii():
-    assert restcli.utils.is_ascii(get_random_unicode(50)) is False
-    assert restcli.utils.is_ascii(get_random_unicode(50)) is False
-    assert restcli.utils.is_ascii(get_random_unicode(50)) is False
+    assert utils.is_ascii(get_random_unicode(50)) is False
+    assert utils.is_ascii(get_random_unicode(50)) is False
+    assert utils.is_ascii(get_random_unicode(50)) is False
 
-    assert restcli.utils.is_ascii(get_random_ascii(50)) is True
-    assert restcli.utils.is_ascii(get_random_ascii(50)) is True
-    assert restcli.utils.is_ascii(get_random_ascii(50)) is True
+    assert utils.is_ascii(get_random_ascii(50)) is True
+    assert utils.is_ascii(get_random_ascii(50)) is True
+    assert utils.is_ascii(get_random_ascii(50)) is True
 
 
 def get_random_unicode(length):
