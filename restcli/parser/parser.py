@@ -20,7 +20,7 @@ class PATTERNS(enum.Enum):
     header = re.compile(r'^(.+):(.*)$')
 
 
-def parse_overrides(tokens, request):
+def parse(tokens, request):
     """Parse a sequence of tokens with the override syntax."""
     overrides = OrderedDict()
 
@@ -42,6 +42,8 @@ def parse_overrides(tokens, request):
                 break
         else:
             raise Exception('Unexpected argument: `{}`'.format(token))
+
+    return overrides
 
 
 def parse_url_param(action, key, value):

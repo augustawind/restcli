@@ -1,33 +1,76 @@
 import random
+import string
 from collections import OrderedDict
 
 import pytest
 
+from restcli import yaml_utils as yaml
 from restcli.parser import lexer, parser
 
 from ..helpers import get_random_ascii, get_random_unicode
 
-
-def get_random_action():
-    return random.choice(tuple(lexer.ACTIONS))
+odict = OrderedDict
 
 
-class ParserBaseTest:
+@pytest.fixture()
+def request(_):
+    req = odict()
+
+    req['method'] = random.choice(('get', 'post', 'put', 'delete'))
+    req['url'] = '%s.org' % random.sample(string.ascii_lowercase, 10)
+
+    if req['method'] in ('post', 'put'):
+        name = 'Fr%snken Fr%snkenfrank' % (
+            'a' * random.randint(1, 6),
+            'a' * random.randint(1, 6),
+        )
+        req['body'] = yaml.dump(odict((
+            ('name', name),
+            ('age', random.randint(10, 20)),
+            ('color', random.choice(('red', 'yellow', 'blue'))),
+            ('warranty', random.choice((True, False))),
+            ('insurance', None),
+        )))
+
+    req['headers'] = odict((
+        ('Content-Type', 'application/json'),
+        ('Accept', 'application/json')
+    ))
+
+    return req
+
+
+class TestParse:
+
+    def test_valid(self, request):
+        tokens = (
+            (lexer.ACTIONS.assign, ["Authorization:JWT abc123.foo"]),
+            (lexer.ACTIONS.append, None),
+            (lexer.ACTIONS.delete, None),
+        )
+
+
+class SubParserTestMixin:
+    """Helper mixin for classes that test the sub-parser functions."""
 
     @classmethod
     def run_test(cls, in_val, out_val, key=None, out_key=None):
-        action = get_random_action()
+        action = cls.get_random_action()
         key = out_key or key or get_random_ascii(11)
         result = cls.parse(action, key, in_val)
-        expected = OrderedDict((
-            (key, OrderedDict((
+        expected = odict((
+            (key, odict((
                 (action, out_val),
             ))),
         ))
         assert result == expected
 
+    @staticmethod
+    def get_random_action():
+        return random.choice(tuple(lexer.ACTIONS))
 
-class TestParseURLParam(ParserBaseTest):
+
+class TestParseURLParam(SubParserTestMixin):
     # TODO: maybe add more tests? may not be necessary
 
     parse = parser.parse_url_param
@@ -41,14 +84,14 @@ class TestParseURLParam(ParserBaseTest):
         )
 
     def test_invalid(self):
-        action = get_random_action()
+        action = self.get_random_action()
         key = get_random_unicode(10)
         value = get_random_unicode(10)
         with pytest.raises(AssertionError):
             parser.parse_url_param(action, key, value)
 
 
-class TestParseStrField(ParserBaseTest):
+class TestParseStrField(SubParserTestMixin):
 
     parse = parser.parse_str_field
 
@@ -59,7 +102,7 @@ class TestParseStrField(ParserBaseTest):
         )
 
 
-class TestParseJSONField(ParserBaseTest):
+class TestParseJSONField(SubParserTestMixin):
     # TODO: add tests for invalid input, once error handling is implemented
 
     parse = parser.parse_json_field
