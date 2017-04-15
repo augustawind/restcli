@@ -28,6 +28,7 @@ class ParserBaseTest:
 
 
 class TestParseURLParam(ParserBaseTest):
+    # TODO: maybe add more tests? may not be necessary
 
     parse = parser.parse_url_param
 
@@ -48,9 +49,14 @@ class TestParseURLParam(ParserBaseTest):
 
 
 class TestParseStrField(ParserBaseTest):
-    pass
 
+    parse = parser.parse_str_field
 
+    def test_simple(self):
+        self.run_test(
+            in_val='foobarbaz',
+            out_val='foobarbaz',
+        )
 
 
 class TestParseJSONField(ParserBaseTest):
