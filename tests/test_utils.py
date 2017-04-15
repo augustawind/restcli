@@ -2,8 +2,15 @@ import random
 import string
 from collections import OrderedDict
 
-import restcli.utils
-from restcli import parser
+from restcli import utils
+
+
+def test_split_quoted():
+    s = r"""When I said "hi, foo", foo said 'hi, "hi, foo"' \a\1\3 \4."""
+    words = utils.split_quoted(s)
+    expected = ['When', 'I', 'said', '"hi, foo",', 'foo', 'said',
+                '\'hi, "hi, foo"\'', '\\a\\1\\3', '\\4.']
+    assert words == expected
 
 
 def test_recursive_update():

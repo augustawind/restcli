@@ -36,12 +36,12 @@ def split_quoted(s, sep=string.whitespace):
             elif not current_quote:
                 current_quote = char
 
-        # Unconditionally add anything after a backslash
+        # Backslash makes the following character literal
         elif char == BACKSLASH:
             word += char
             char = next(chars, '')
 
-        # Skip past whitespace (if not quoted), then finish the word
+        # Unless in quotes, whitespace is skipped and signifies the word end.
         elif not current_quote and char in sep:
             while char in sep:
                 char = next(chars, '')
@@ -52,7 +52,6 @@ def split_quoted(s, sep=string.whitespace):
             # must be processed.
             continue
 
-        # Add the current character to the word
         word += char
         char = next(chars, '')
 
