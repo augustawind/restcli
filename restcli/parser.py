@@ -134,7 +134,7 @@ def fmt_arg(action, key, value):
 
 
 examples = [
-    '''Authorization:'JWT abc123''',         # Set a header (:)
+    '''Authorization:'JWT abc123\'''',         # Set a header (:)
     '''-d Authorization:''',                 # Delete a header (-d)
     '''description="A test Device."''',      # Set a JSON param (string only) (=)
     '''-a _annotate==,counts''',             # Append (-a) to a url parameter (==)
