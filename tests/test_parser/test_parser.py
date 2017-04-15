@@ -8,7 +8,7 @@ from restcli.parser import lexer, parser
 from ..helpers import get_random_unicode
 
 
-def test_parse_url_params():
+def test_parse_url_param():
     action = lexer.ACTIONS.assign.name
     key = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
     value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
@@ -21,9 +21,13 @@ def test_parse_url_params():
     assert result == expected
 
 
-def test_parse_url_params_invalid():
+def test_parse_url_param_invalid():
     action = lexer.ACTIONS.assign.name
     key = get_random_unicode(10)
     value = get_random_unicode(10)
     with pytest.raises(AssertionError):
         parser.parse_url_param(action, key, value)
+
+
+def test_parse_json_field():
+    pass
