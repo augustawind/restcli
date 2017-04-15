@@ -29,10 +29,8 @@ def parse_overrides(tokens, request):
             match = pattern.value.match(token)
 
             if match:
-                # Obtain parameter key/value using shell-like syntax
-                # TODO: verify that `shlex.split` returns a single-item list
-                key, value = (shlex.split(g, posix=True)[0]
-                              for g in match.groups())
+                # Obtain parameter key/value
+                key, value = match.groups()
 
                 # Obtain parser function
                 parser, request_attr = PATTERN_MAP[pattern.name]
