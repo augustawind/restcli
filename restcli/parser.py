@@ -106,11 +106,15 @@ PATTERN_MAP = {
 }
 
 
-def recursive_update(mapping, *items):
+def recursive_update(mapping, *args, **kwargs):
     """Like dict.update, but recursively updates nested dicts as well."""
-    for key, val in items:
+    mapping_cls = type(mapping)
+    other_mapping = mapping_cls(*args, **kwargs)
+
+    for key, val in other_mapping.items():
         if isinstance(val, Mapping):
-            recursive_update(val, val.items())
+            nested_mapping = mapping.setdefault(key, mapping_cls())
+            recursive_update(nested_mapping, val.items())
         else:
             mapping[key] = val
 
