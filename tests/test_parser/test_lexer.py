@@ -1,12 +1,12 @@
-from restcli import parser
+from restcli.parser import lexer
 
 
 def test_assign_headers():
     arg = "Authorization:'JWT abc123.foo'"
-    tokens = parser.lex(arg)
-    expected = ((parser.ACTIONS.assign.name, ["Authorization:JWT abc123.foo"]),
-                (parser.ACTIONS.append.name, None),
-                (parser.ACTIONS.delete.name, None))
+    tokens = lexer.lex(arg)
+    expected = ((lexer.ACTIONS.assign.name, ["Authorization:JWT abc123.foo"]),
+                (lexer.ACTIONS.append.name, None),
+                (lexer.ACTIONS.delete.name, None))
     assert contents_equal(tokens, expected)
 
 
