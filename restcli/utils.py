@@ -24,30 +24,32 @@ def split_quoted(s, sep=string.whitespace):
     chars = iter(s)
     char = next(chars, None)
 
+    word = ''
     while char:
-        word = ''
-
         # Skip past whitespace (if not quoted), then finish the word
         if char in sep and not open_quotes:
             while char in sep:
-                char = next(chars, None)
+                char = next(chars, '')
             words.append(word)
             word = ''
-            continue
 
         # Unconditionally add anything after a backslash
-        if char == '\\':
+        elif char == '\\':
             word += char
-            word += next(chars, '')
+            char = next(chars, '')
 
-        if char in ('"', "'"):
+        # Quotation marks begin or end a quoted section
+        elif char in ('"', "'"):
             if open_quotes and char == open_quotes[0]:
                 open_quotes.popleft()
             else:
                 open_quotes.appendleft(char)
-            word += char
 
+        # Add the current character to the word
+        word += char
         char = next(chars)
+
+    return words
 
 
 def recursive_update(mapping, *args, **kwargs):
