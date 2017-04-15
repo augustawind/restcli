@@ -4,7 +4,7 @@ import re
 import shlex
 from collections import OrderedDict
 
-from restcli.utils import recursive_update, is_ascii, fmt_arg
+from restcli.utils import recursive_update, is_ascii
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
@@ -77,6 +77,15 @@ def parse_header(action, key, value):
         'Invalid char(s) found in header. Only ASCII chars are supported.'
     )
     return fmt_arg(action, key, value)
+
+
+def fmt_arg(action, key, value):
+    """Form token data into a common structure.."""
+    return OrderedDict((
+        (key, OrderedDict((
+            (action, value),
+        ))),
+    ))
 
 
 PATTERN_MAP = {

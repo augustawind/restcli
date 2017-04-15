@@ -1,7 +1,7 @@
 import re
 import shlex
 import string
-from collections import Mapping, OrderedDict
+from collections import Mapping
 
 QUOTES = '"\''
 BACKSLASH = '\\'
@@ -75,12 +75,3 @@ def recursive_update(mapping, *args, **kwargs):
 def is_ascii(s):
     """Return True if the given string contains only ASCII characters."""
     return len(s) == len(s.encode())
-
-
-def fmt_arg(action, key, value):
-    """Form token data into a common structure.."""
-    return OrderedDict((
-        (key, OrderedDict((
-            (action, value),
-        ))),
-    ))
