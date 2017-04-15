@@ -7,27 +7,15 @@ QUOTES = '"\''
 BACKSLASH = '\\'
 
 
-def shlex_token(s, **kwargs):
-    """Do a `shlex.split` but return a single string instead of a list.
-    
-    This is basically abusing `shlex.split` for its quoting and escaping logic.
-    """
-    words = re.split(r'(\s+)', s)
-    for i, word in enumerate(words):
-        if any(char not in string.whitespace for char in word):
-            words[i] = ''.join(shlex.split(word))
-    return ''.join(words)
-
-
 def split_quoted(s, sep=string.whitespace):
     """Split a string on whitespace, respecting quotations (incl. escapes)."""
     words = []
+    word = ''
     current_quote = None
 
     chars = iter(s)
     char = next(chars, '')
 
-    word = ''
     while char:
         # Quotation marks begin or end a quoted section
         if char in QUOTES:
