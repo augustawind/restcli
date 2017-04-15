@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from restcli import utils
 
-from .utils import get_random_ascii, get_random_unicode
+from .helpers import get_random_ascii, get_random_unicode
 
 
 def test_split_quoted():
