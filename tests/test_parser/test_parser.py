@@ -8,19 +8,36 @@ from restcli.parser import lexer, parser
 from ..helpers import get_random_ascii, get_random_unicode
 
 
-class TestParseURLParam:
+def get_random_action():
+    return random.choice(tuple(lexer.ACTIONS))
 
-    def test_valid(self):
+
+class ParserBaseTest:
+
+    @classmethod
+    def run_test(cls, in_val, out_val, key=None, out_key=None):
         action = get_random_action()
-        key = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
-        value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
-        result = parser.parse_url_param(action, key, value)
+        key = out_key or key or get_random_ascii(11)
+        result = cls.parse(action, key, in_val)
         expected = OrderedDict((
             (key, OrderedDict((
-                (action, value),
+                (action, out_val),
             ))),
         ))
         assert result == expected
+
+
+class TestParseURLParam(ParserBaseTest):
+
+    parse = parser.parse_url_param
+
+    def test_valid(self):
+        value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
+        self.run_test(
+            in_val=value,
+            out_val=value,
+            key=''.join(random.sample(parser.VALID_URL_CHARS, 10)),
+        )
 
     def test_invalid(self):
         action = get_random_action()
@@ -30,22 +47,16 @@ class TestParseURLParam:
             parser.parse_url_param(action, key, value)
 
 
-class TestParseJSONField:
+class TestParseStrField(ParserBaseTest):
+    pass
 
-    @staticmethod
-    def run_test(in_val, out_val, key=None, out_key=None):
-        action = get_random_action()
-        key = out_key or key or get_random_ascii(11)
-        result = parser.parse_json_field(action, key, in_val)
-        expected = OrderedDict((
-            (key, OrderedDict((
-                (action, out_val),
-            ))),
-        ))
-        from pprint import pformat
-        print('ACTUAL ==>', pformat(result))
-        print('EXPECT ==>', pformat(expected))
-        assert result == expected
+
+
+
+class TestParseJSONField(ParserBaseTest):
+    # TODO: add tests for invalid input, once error handling is implemented
+
+    parse = parser.parse_json_field
 
     def test_bool(self):
         self.run_test(
@@ -100,7 +111,3 @@ class TestParseJSONField:
                  "whomst'd've": {'x': 11, 'y': [2, 2], 'z': [0, [], {}]}}
             ),
         )
-
-
-def get_random_action():
-    return random.choice(tuple(lexer.ACTIONS))
