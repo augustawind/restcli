@@ -3,7 +3,6 @@ import string
 from collections import OrderedDict
 
 import pytest
-import pytest_mock
 
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
@@ -44,21 +43,13 @@ def request():
 
 class TestParse:
 
-    @staticmethod
-    def mktokens(*tokens):
-        default_tokens = OrderedDict((
-            (ACTIONS.assign, None),
-            (ACTIONS.append, None),
-            (ACTIONS.delete, None),
-        ))
-        default_tokens.update(tokens)
-        return tuple(default_tokens.items())
-
-    def test_assign(self, request, mocker):
-        tokens = self.mktokens((ACTIONS.assign, [
-            "Authorization:JWT abc123.foo",
-        ]))
-        result = parser.parse(tokens, request)
+    def test_assign(self, request):
+        lexemes = (
+            (ACTIONS.assign, [
+                "Authorization:JWT abc123.foo",
+            ]),
+        )
+        result = parser.parse(lexemes, request)
         expected = odict((
             ('Content-Type', 'application/json'),
             ('Accept', 'application/json'),
