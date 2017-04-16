@@ -5,15 +5,16 @@ from collections import OrderedDict
 import pytest
 
 from restcli import yaml_utils as yaml
-from restcli.parser import lexer, parser
+from restcli.parser import parser
+from restcli.parser.lexer import ACTIONS
 
-from ..helpers import get_random_ascii, get_random_unicode
+from ..helpers import contents_equal, get_random_ascii, get_random_unicode
 
 odict = OrderedDict
 
 
 @pytest.fixture()
-def request(_):
+def request():
     req = odict()
 
     req['method'] = random.choice(('get', 'post', 'put', 'delete'))
@@ -42,12 +43,27 @@ def request(_):
 
 class TestParse:
 
-    def test_valid(self, request):
-        tokens = (
-            (lexer.ACTIONS.assign, ["Authorization:JWT abc123.foo"]),
-            (lexer.ACTIONS.append, None),
-            (lexer.ACTIONS.delete, None),
-        )
+    @staticmethod
+    def mktokens(tokens=()):
+        default_tokens = OrderedDict((
+            (ACTIONS.assign, None),
+            (ACTIONS.append, None),
+            (ACTIONS.delete, None),
+        ))
+        default_tokens.update(tokens)
+        return tuple(default_tokens.items())
+
+    def test_assign(self, request):
+        tokens = self.mktokens((ACTIONS.assign, [
+            "Authorization:JWT abc123.foo",
+        ]))
+        result = parser.parse(tokens, request)
+        expected = odict((
+            ('Content-Type', 'application/json'),
+            ('Accept', 'application/json'),
+            ('Authorization', 'JWT abc123.foo'),
+        ))
+        assert contents_equal(result['headers'], expected)
 
 
 class SubParserTestMixin:
@@ -67,7 +83,7 @@ class SubParserTestMixin:
 
     @staticmethod
     def get_random_action():
-        return random.choice(tuple(lexer.ACTIONS))
+        return random.choice(tuple(ACTIONS))
 
 
 class TestParseURLParam(SubParserTestMixin):
