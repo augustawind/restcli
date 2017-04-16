@@ -1,18 +1,34 @@
 import abc
 import importlib
 import inspect
-from collections import Mapping, OrderedDict
-from typing import Iterable
+from collections import Mapping, OrderedDict, namedtuple
 
+from restcli import yaml_utils as yaml
 from restcli.exceptions import (
     CollectionError,
     EnvError,
     LibError,
     FileContentError,
 )
-from restcli import yaml_utils as yaml
 
 __all__ = ['Collection', 'Environment']
+
+Attribute = namedtuple('Attribute', ['name', 'type'])
+
+REQUIRED_REQUEST_ATTRS = {
+    'method': str,
+    'url': str,
+}
+REQUEST_ATTRS = {
+    **REQUIRED_REQUEST_ATTRS,
+    'headers': dict,
+    'body': str,
+    'script': str,
+}
+META_ATTRS = {
+    'defaults': dict,
+    'lib': list,
+}
 
 
 class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
@@ -47,34 +63,10 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
-def heads(iterables: Iterable) -> tuple:
-    """Return the first item of each iterable in `iterables`."""
-    return tuple(head for head, *args in iterables)
-
-
 class Collection(YamlDictReader):
     """A Collection reader and parser."""
 
     error_class = CollectionError
-
-    REQUIRED_REQ_ATTRS = (
-        ('method', str),
-        ('url', str)
-    )
-    REQUIRED_REQ_ATTR_KEYS = heads(REQUIRED_REQ_ATTRS)
-
-    REQ_ATTRS = REQUIRED_REQ_ATTRS + (
-        ('headers', dict),
-        ('body', str),
-        ('script', str)
-    )
-    REQ_ATTR_KEYS = heads(REQ_ATTRS)
-
-    META_ATTRS = (
-        ('defaults', dict),
-        ('lib', list),
-    )
-    META_ATTR_KEYS = heads(META_ATTRS)
 
     def __init__(self, source):
         self.defaults = {}
@@ -105,7 +97,7 @@ class Collection(YamlDictReader):
         """Parse and validate Collection Meta."""
         # Verify all fields are known
         for key in meta.keys():
-            if key not in self.META_ATTR_KEYS:
+            if key not in META_ATTRS:
                 self.raise_error(
                     'Unexpected key in meta: "{}"'.format(key), [])
 
@@ -122,7 +114,7 @@ class Collection(YamlDictReader):
             self.assert_mapping(defaults, 'Defaults', path)
 
             for key in defaults.keys():
-                if key not in self.REQ_ATTR_KEYS:
+                if key not in REQUEST_ATTRS:
                     self.raise_error(
                         'Unexpected key in defaults "{}"'.format(key), path)
 
@@ -142,13 +134,13 @@ class Collection(YamlDictReader):
                 self.assert_mapping(request, 'Request', path)
                 new_req = new_group[req_name] = OrderedDict()
 
-                for key, type_ in self.REQ_ATTRS:
+                for key, type_ in REQUEST_ATTRS.items():
                     if key in request:
                         new_req[key] = request[key]
                     elif key in self.defaults:
                         new_req[key] = self.defaults[key]
                     # Check required attributes
-                    elif key in self.REQUIRED_REQ_ATTRS:
+                    elif key in REQUIRED_REQUEST_ATTRS:
                         self.raise_error(
                             'Required attribute "%s" not found' % key,
                             path,
