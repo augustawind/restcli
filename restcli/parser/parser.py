@@ -33,7 +33,7 @@ def parse(tokens, request):
                 key, value = match.groups()
 
                 # Obtain parser function
-                parser, request_attr = PATTERN_MAP[pattern.name]
+                parser, request_attr = PATTERN_MAP[pattern]
 
                 # Parse parameter and update result
                 result = parser(action, key, value)
@@ -89,10 +89,10 @@ def fmt_arg(action, key, value):
 
 
 PATTERN_MAP = {
-    PATTERNS.url_param.name: (parse_url_param, 'query'),
-    PATTERNS.json_field.name: (parse_json_field, 'body'),
-    PATTERNS.str_field.name: (parse_str_field, 'body'),
-    PATTERNS.header.name: (parse_header, 'headers'),
+    PATTERNS.url_param: (parse_url_param, 'query'),
+    PATTERNS.json_field: (parse_json_field, 'body'),
+    PATTERNS.str_field: (parse_str_field, 'body'),
+    PATTERNS.header: (parse_header, 'headers'),
 }
 
 examples = [
