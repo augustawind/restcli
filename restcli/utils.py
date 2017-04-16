@@ -48,14 +48,17 @@ def split_quoted(s, sep=string.whitespace):
     return words
 
 
-def recursive_update(mapping, *args, **kwargs):
+def recursive_update(mapping, arg=None, **kwargs):
     """Like dict.update, but recursively updates nested dicts as well."""
-    mapping_cls = type(mapping)
-    other_mapping = mapping_cls(*args, **kwargs)
+    cls = type(mapping)
+    if arg is None:
+        other_mapping = cls(**kwargs)
+    else:
+        other_mapping = cls(arg, **kwargs)
 
     for key, val in other_mapping.items():
         if isinstance(val, Mapping):
-            nested_mapping = mapping.setdefault(key, mapping_cls())
+            nested_mapping = mapping.setdefault(key, cls())
             recursive_update(nested_mapping, val.items())
         else:
             mapping[key] = val

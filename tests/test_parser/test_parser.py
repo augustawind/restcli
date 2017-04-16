@@ -3,6 +3,7 @@ import string
 from collections import OrderedDict
 
 import pytest
+import pytest_mock
 
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
@@ -13,13 +14,18 @@ from ..helpers import contents_equal
 odict = OrderedDict
 
 
-@pytest.fixture()
+@pytest.fixture
 def request():
+    """Generate a semi-random request object."""
     req = odict()
-
     req['method'] = random.choice(('get', 'post', 'put', 'delete'))
-    req['url'] = '%s.org' % random.sample(string.ascii_lowercase, 10)
+    req['url'] = '%s.org' % ''.join(random.sample(string.ascii_lowercase, 10))
+    req['headers'] = odict((
+        ('Content-Type', 'application/json'),
+        ('Accept', 'application/json')
+    ))
 
+    # Add body if method supports writes
     if req['method'] in ('post', 'put'):
         name = 'Fr%snken Fr%snkenfrank' % (
             'a' * random.randint(1, 6),
@@ -33,18 +39,13 @@ def request():
             ('insurance', None),
         )))
 
-    req['headers'] = odict((
-        ('Content-Type', 'application/json'),
-        ('Accept', 'application/json')
-    ))
-
     return req
 
 
 class TestParse:
 
     @staticmethod
-    def mktokens(tokens=()):
+    def mktokens(*tokens):
         default_tokens = OrderedDict((
             (ACTIONS.assign, None),
             (ACTIONS.append, None),
@@ -53,7 +54,7 @@ class TestParse:
         default_tokens.update(tokens)
         return tuple(default_tokens.items())
 
-    def test_assign(self, request):
+    def test_assign(self, request, mocker):
         tokens = self.mktokens((ACTIONS.assign, [
             "Authorization:JWT abc123.foo",
         ]))

@@ -1,10 +1,11 @@
 import enum
 import json
 import re
-import shlex
 from collections import OrderedDict
 
 from restcli.utils import recursive_update, is_ascii
+
+odict = OrderedDict
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
@@ -20,30 +21,31 @@ class PATTERNS(enum.Enum):
     header = re.compile(r'^(.+):(.*)$')
 
 
-def parse(tokens, request):
-    """Parse a sequence of tokens with the override syntax."""
-    overrides = OrderedDict()
+def parse(lexemes, request):
+    """Parse a sequence of lexemes with the override syntax."""
+    result = odict()
 
-    for action, token in tokens:
-        for pattern in PATTERNS:
-            match = pattern.value.match(token)
+    for action, tokens in lexemes:
+        for token in tokens:
+            for pattern in PATTERNS:
+                match = pattern.value.match(token)
 
-            if match:
-                # Obtain parameter key/value
-                key, value = match.groups()
+                if match:
+                    # Obtain parameter key/value
+                    key, value = match.groups()
 
-                # Obtain parser function
-                parser, request_attr = PATTERN_MAP[pattern]
+                    # Obtain parser function
+                    parser, request_attr = PATTERN_MAP[pattern]
 
-                # Parse parameter and update result
-                result = parser(action, key, value)
-                recursive_update(overrides, (request_attr, result))
+                    # Parse parameter and update result
+                    result = parser(action, key, value)
+                    recursive_update(result, {request_attr: result})
+                    break
+            else:
+                # TODO: refine error handling here
+                raise Exception('Unexpected argument: `{}`'.format(tokens))
 
-                break
-        else:
-            raise Exception('Unexpected argument: `{}`'.format(token))
-
-    return overrides
+    return result
 
 
 def parse_url_param(action, key, value):
@@ -81,8 +83,8 @@ def parse_header(action, key, value):
 
 def fmt_arg(action, key, value):
     """Form token data into a common structure.."""
-    return OrderedDict((
-        (key, OrderedDict((
+    return odict((
+        (key, odict((
             (action, value),
         ))),
     ))
