@@ -46,7 +46,7 @@ setup(
     include_package_data=True,
     license="Apache",
     zip_safe=False,
-    keywords='rest, HTTP, client, cli, api, testing',
+    keywords='rest, http, api, client, cli, testing',
     packages=['restcli'],
     package_dir={'restcli': 'restcli'},
     classifiers=[
