@@ -1,7 +1,4 @@
-from itertools import chain
-
 from invoke import task
-
 
 # ----------------------------------------------------------------------
 # Simple tasks
@@ -29,16 +26,25 @@ def lint(ctx):
     ctx.run('flake8 restcli/ tests/', pty=True)
 
 
-def test(ctx, cmdargs=''):
-    """Run the unit tests."""
-    cmd = 'pytest {}'.format(cmdargs)
-    ctx.run(cmd, pty=True)
+@task
+def test(ctx):
+    """Run unit tests."""
+    ctx.run('pytest', pty=True)
+
+
+@task(aliases=('cov',))
+def coverage(ctx, html=False):
+    """Run unit tests and generate a coverage report."""
+    ctx.run('pytest --cov=restcli', pty=True)
+    ctx.run('coverage combine', pty=True)
+    if html:
+        ctx.run('coverage html', pty=True)
 
 
 @task
 def install(ctx, editable=False):
     """Install the app and its dependencies using pip.
-    
+
     If the --editable option is given, install it with the -e flag.
     """
     ctx.run('pip install -r requirements.txt', pty=True)
@@ -50,18 +56,14 @@ def install(ctx, editable=False):
 # Composite tasks
 
 
-@task(pre=('clean', 'lint'), post=('test',))
+@task(pre=(clean, lint), post=(test,))
 def check(ctx):
     """Run unit tests and sanity checks."""
-    ctx.run('python setup.py clean -rms')
+    ctx.run('python setup.py clean -rms', pty=True)
 
 
-@task(aliases=('cov',))
-def coverage(ctx):
-    test(ctx, cmdargs='--cov=restcli')
-    ctx.run('coverage combine')
-
-
-@task(default=True, pre=('check', 'install'))
-def build(ctx):
-    pass
+@task(default=True)
+def build(ctx, editable=False):
+    """Safely build the app, running checks and installing."""
+    check(ctx)
+    install(ctx, editable=editable)
