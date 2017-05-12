@@ -3,9 +3,7 @@ import json
 import re
 from collections import OrderedDict
 
-from restcli.utils import recursive_update, is_ascii
-
-__all__ = ['parse']
+from restcli.utils import is_ascii
 
 odict = OrderedDict
 

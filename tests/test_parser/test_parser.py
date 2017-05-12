@@ -1,14 +1,15 @@
 import random
 import string
 from collections import OrderedDict
+from unittest.mock import call
 
 import pytest
+import pytest_mock  # noqa: F401
 
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
-
-from tests.helpers import contents_equal, attrs_list
+from restcli.parser.parser import PATTERNS
 
 odict = OrderedDict
 
@@ -43,12 +44,12 @@ def request():
 
 class TestParse:
 
-    keys = ('attr', 'action', 'key', 'value')
-
     attr = 'headers'
     action = ACTIONS.assign
+    pattern_key = PATTERNS.header
+    parser_name = 'parse_header'
 
-    def test_assign_headers(self, request):
+    def test_assign_headers(self, request, mocker):
         lexemes = (
             (ACTIONS.assign, [
                 "Content-Type:application/json",
@@ -56,11 +57,16 @@ class TestParse:
                 "Authorization:'JWT abc123.foo'",
             ]),
         )
-        updaters = parser.parse(lexemes, request)
-        updater_vars = [attrs_list(up, self.keys) for up in updaters]
-        expected_vars = [
-            [self.attr, self.action, 'Content-Type', 'application/json'],
-            [self.attr, self.action, 'Accept', 'application/json'],
-            [self.attr, self.action, 'Authorization', 'JWT abc123.foo'],
+
+        in_dict = 'restcli.parser.parser.PATTERN_MAP'
+        mock_parser = mocker.MagicMock()
+        values = {self.pattern_key: (mock_parser, self.attr)}
+        mocker.patch.dict(in_dict, values)
+        parser.parse(lexemes, request)
+        calls = [
+            call(self.attr, self.action, 'Content-Type', 'application/json'),
+            call(self.attr, self.action, 'Accept', 'application/json'),
+            call(self.attr, self.action, 'Authorization', "'JWT abc123.foo'"),
         ]
-        assert updater_vars == expected_vars
+        assert mock_parser.call_count == 3
+        assert mock_parser.call_args_list == calls
