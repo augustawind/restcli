@@ -6,7 +6,7 @@ import pytest
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
 
-from tests.helpers import get_random_ascii, get_random_unicode
+from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
 
 odict = OrderedDict
 
@@ -18,9 +18,10 @@ class SubParserTestMixin:
     def run_test(cls, in_val, out_val, key=None, out_key=None):
         action = cls.get_random_action()
         key = out_key or key or get_random_ascii(11)
-        result = cls.parse(cls.attr, action, key, in_val)
-        expected = (cls.attr, action, key, out_val)
-        assert result == expected
+        updater = cls.parse(cls.attr, action, key, in_val)
+        values = attrs_list(updater, ('attr', 'action', 'key', 'value'))
+        expected = [cls.attr, action, key, out_val]
+        assert values == expected
 
     @staticmethod
     def get_random_action():

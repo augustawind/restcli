@@ -8,7 +8,7 @@ from restcli import yaml_utils as yaml
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
 
-from tests.helpers import contents_equal, getattrs
+from tests.helpers import contents_equal, attrs_list
 
 odict = OrderedDict
 
@@ -57,10 +57,10 @@ class TestParse:
             ]),
         )
         updaters = parser.parse(lexemes, request)
-        updater_vars = [tuple(getattrs(up, self.keys)) for up in updaters]
+        updater_vars = [attrs_list(up, self.keys) for up in updaters]
         expected_vars = [
-            (self.attr, self.action, 'Content-Type', 'application/json'),
-            (self.attr, self.action, 'Accept', 'application/json'),
-            (self.attr, self.action, 'Authorization', 'JWT abc123.foo'),
+            [self.attr, self.action, 'Content-Type', 'application/json'],
+            [self.attr, self.action, 'Accept', 'application/json'],
+            [self.attr, self.action, 'Authorization', 'JWT abc123.foo'],
         ]
-        assert contents_equal(updater_vars, expected_vars)
+        assert updater_vars == expected_vars

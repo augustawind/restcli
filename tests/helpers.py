@@ -99,11 +99,11 @@ def pick(mapping, keys):
     return {k: v for k, v in mapping.items() if k in keys}
 
 
-def getitems(mapping, items):
-    """Iterate values from `mapping` in order of the given `items`."""
-    return (mapping[item] for item in items)
+def items_list(mapping, items):
+    """Return a list of values from `mapping` in order of the given `items`."""
+    return [mapping[item] for item in items]
 
 
-def getattrs(obj, attrs):
-    """Iterate values from 'obj' in order of the given `attrs`."""
-    return (getattr(obj, attr) for attr in attrs)
+def attrs_list(obj, attrs):
+    """Return a list of values from 'obj' in order of the given `attrs`."""
+    return [getattr(obj, attr) for attr in attrs]
