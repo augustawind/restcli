@@ -49,7 +49,18 @@ class TestParse:
     pattern_key = PATTERNS.header
     parser_name = 'parse_header'
 
+    @staticmethod
+    def mock_subparser(mocker, key, attr):
+        in_dict = 'restcli.parser.parser.PATTERN_MAP'
+        mock_parser = mocker.MagicMock()
+        values = {key: (mock_parser, attr)}
+        mocker.patch.dict(in_dict, values)
+        return mock_parser
+
     def test_assign_headers(self, request, mocker):
+        mock_parser = self.mock_subparser(mocker, self.pattern_key, self.attr)
+
+        # Call parser.parse
         lexemes = (
             (ACTIONS.assign, [
                 "Content-Type:application/json",
@@ -57,12 +68,9 @@ class TestParse:
                 "Authorization:'JWT abc123.foo'",
             ]),
         )
-
-        in_dict = 'restcli.parser.parser.PATTERN_MAP'
-        mock_parser = mocker.MagicMock()
-        values = {self.pattern_key: (mock_parser, self.attr)}
-        mocker.patch.dict(in_dict, values)
         parser.parse(lexemes, request)
+
+        # Check call args
         calls = [
             call(self.attr, self.action, 'Content-Type', 'application/json'),
             call(self.attr, self.action, 'Accept', 'application/json'),
