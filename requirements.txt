@@ -1,4 +1,7 @@
 click==6.7
+docutils==0.13.1
+flake8==3.3.0
+invoke==0.17.0
 jinja2==2.9.5
 prompt_toolkit==1.0.13
 Pygments==2.2.0

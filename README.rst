@@ -137,9 +137,9 @@ can contain Jinja2 templates.
 ``script`` is a Python3 script that is executed after the request is performed,
 and is provided the ``response`` (which is a `Response
 <http://docs.python-requests.org/en/stable/api/#requests.Response>`_ instance
-from the Python `requests <http://docs.python-requests.org/en/stable/>`_
-library) as well as ``env``, which is the current Environment and can be
-modified by the script.
+from the Python `requests library
+<http://docs.python-requests.org/en/stable/>`_) as well as ``env``, which is
+the current Environment and can be modified by the script.
 
 
 Environment
@@ -241,9 +241,8 @@ convenience:
 You may run ``help COMMAND`` on any command for more information about
 arguments and usage of the given command.
 
-
-License
--------
+Software License
+----------------
 
 This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_

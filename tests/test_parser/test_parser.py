@@ -56,5 +56,3 @@ class TestParse:
             ('Authorization', 'JWT abc123.foo'),
         ))
         assert contents_equal(result['headers'], expected)
-
-

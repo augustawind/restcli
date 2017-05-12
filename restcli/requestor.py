@@ -1,5 +1,3 @@
-from collections import Mapping
-
 import jinja2
 import requests
 

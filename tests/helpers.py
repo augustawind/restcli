@@ -5,19 +5,19 @@ import string
 def get_random_unicode(length):
     """Helper to generate a random Unicode string."""
     include_ranges = [
-        ( 0x0021, 0x0021 ),
-        ( 0x0023, 0x0026 ),
-        ( 0x0028, 0x007E ),
-        ( 0x00A1, 0x00AC ),
-        ( 0x00AE, 0x00FF ),
-        ( 0x0100, 0x017F ),
-        ( 0x0180, 0x024F ),
-        ( 0x2C60, 0x2C7F ),
-        ( 0x16A0, 0x16F0 ),
-        ( 0x0370, 0x0377 ),
-        ( 0x037A, 0x037E ),
-        ( 0x0384, 0x038A ),
-        ( 0x038C, 0x038C ),
+        (0x0021, 0x0021),
+        (0x0023, 0x0026),
+        (0x0028, 0x007E),
+        (0x00A1, 0x00AC),
+        (0x00AE, 0x00FF),
+        (0x0100, 0x017F),
+        (0x0180, 0x024F),
+        (0x2C60, 0x2C7F),
+        (0x16A0, 0x16F0),
+        (0x0370, 0x0377),
+        (0x037A, 0x037E),
+        (0x0384, 0x038A),
+        (0x038C, 0x038C),
     ]
     alphabet = [
         chr(code_point)
@@ -34,7 +34,7 @@ def get_random_ascii(length):
 
 def contents_equal(*seqs):
     """Return True if the contents of each sequence are equal.
-    
+
     Specifically, this function checks that each sequence has the same length,
     and that each item in each sequence is equal to (==) exactly one item in
     every other sequence, regardless of ordering.

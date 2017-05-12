@@ -5,6 +5,8 @@ from collections import OrderedDict
 
 from restcli.utils import recursive_update, is_ascii
 
+__all__ = ['parse']
+
 odict = OrderedDict
 
 VALID_URL_CHARS = (
@@ -98,11 +100,18 @@ PATTERN_MAP = {
 }
 
 examples = [
-    '''Authorization:'JWT abc123\'''',         # Set a header (:)
-    '''-d Authorization:''',                 # Delete a header (-d)
-    '''description="A test Device."''',      # Set a JSON param (string only) (=)
-    '''-a _annotate==,counts''',             # Append (-a) to a url parameter (==)
-    '''.location.postal_code:=33705''',      # Set a nested (.) JSON field (non-string) (:=)
-    '''.conditions[0].variable=ambient_light''',  # Set a nested (. / []) JSON field (string) (=)
-    '''-d .location.addr2''',                # Delete (-d) a nested (.) JSON field
+    # Set a header (:)
+    '''Authorization:'JWT abc123\'''',
+    # Delete a header (-d)
+    '''-d Authorization:''',
+    # Set a JSON param (string only) (=)
+    '''description="A test Device."''',
+    # Append (-a) to a url parameter (==)
+    '''-a _annotate==,counts''',
+    # Set a nested (.) JSON field (non-string) (:=)
+    '''.location.postal_code:=33705''',
+    # Set a nested (. / []) JSON field (string) (=)
+    '''.conditions[0].variable=ambient_light''',
+    # Delete (-d) a nested (.) JSON field
+    '''-d .location.addr2''',
 ]
