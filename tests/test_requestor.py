@@ -2,7 +2,7 @@ import io
 from types import SimpleNamespace
 
 import pytest
-import pytest_mock
+import pytest_mock  # noqa: F401
 
 from restcli.requestor import Requestor
 

@@ -38,7 +38,7 @@ with open('HISTORY.rst', 'r') as f:
 setup(
     name='restcli',
     version=__version__,
-    description='An API client library and CLI written in Python. Postman for terminal lovers!',
+    description='An API exploration and testing tool written in Python.',
     long_description=readme + '\n\n' + history,
     author='Dustin Rohde',
     author_email='dustin.rohde@gmail.com',
