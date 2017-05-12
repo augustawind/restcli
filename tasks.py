@@ -25,9 +25,12 @@ def lint(ctx):
 
 
 @task(aliases=('t',))
-def test(ctx):
+def test(ctx, verbose=False):
     """Run unit tests."""
-    ctx.run('pytest', pty=True)
+    cmd = 'pytest'
+    if verbose:
+        cmd += ' -v'
+    ctx.run(cmd, pty=True)
 
 
 @task(aliases=('cov',))

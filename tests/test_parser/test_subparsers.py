@@ -6,7 +6,7 @@ import pytest
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
 
-from ..helpers import get_random_ascii, get_random_unicode
+from tests.helpers import get_random_ascii, get_random_unicode
 
 odict = OrderedDict
 
@@ -18,12 +18,8 @@ class SubParserTestMixin:
     def run_test(cls, in_val, out_val, key=None, out_key=None):
         action = cls.get_random_action()
         key = out_key or key or get_random_ascii(11)
-        result = cls.parse(action, key, in_val)
-        expected = odict((
-            (key, odict((
-                (action, out_val),
-            ))),
-        ))
+        result = cls.parse(cls.attr, action, key, in_val)
+        expected = (cls.attr, action, key, out_val)
         assert result == expected
 
     @staticmethod
@@ -34,6 +30,7 @@ class SubParserTestMixin:
 class TestParseURLParam(SubParserTestMixin):
     # TODO: maybe add more tests? may not be necessary
 
+    attr = 'query'
     parse = parser.parse_url_param
 
     def test_valid(self):
@@ -49,11 +46,12 @@ class TestParseURLParam(SubParserTestMixin):
         key = get_random_unicode(10)
         value = get_random_unicode(10)
         with pytest.raises(AssertionError):
-            parser.parse_url_param(action, key, value)
+            parser.parse_url_param(self.attr, action, key, value)
 
 
 class TestParseStrField(SubParserTestMixin):
 
+    attr = 'body'
     parse = parser.parse_str_field
 
     def test_simple(self):
@@ -66,6 +64,7 @@ class TestParseStrField(SubParserTestMixin):
 class TestParseJSONField(SubParserTestMixin):
     # TODO: add tests for invalid input, once error handling is implemented
 
+    attr = 'body'
     parse = parser.parse_json_field
 
     def test_bool(self):

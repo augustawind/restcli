@@ -4,13 +4,11 @@ from collections import OrderedDict, namedtuple
 
 from restcli.utils import AttrSeq, split_quoted
 
-
 ACTIONS = AttrSeq(
     'append',
     'assign',
     'delete',
 )
-
 
 lexer = argparse.ArgumentParser(prog='lexer', add_help=False)
 lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
@@ -23,7 +21,6 @@ def lex(argument_str):
     """Lex a string into a sequence of (action, tokens) pairs."""
     argv = split_quoted(argument_str)
     opts, args = lexer.parse_known_args(argv)
-    from pprint import pformat
     tokens = OrderedDict(
         Node(action=k, token=v)
         for k, v in vars(opts).items()

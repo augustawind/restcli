@@ -63,3 +63,47 @@ def contents_equal(*seqs):
                 return False
 
     return True
+
+
+def dicts_equal(*dicts, include=None, exclude=None):
+    """Like `contents_equal`, but compares both keys and values of each dict.
+
+    Args:
+        dicts: Two or more dicts to compare.
+        include: A subset of keys to use, ignoring others.
+        exclude: A subset of keys to ignore.
+
+    `include` and `exclude` are mutually exclusive and cannot both be given.
+
+    Returns:
+        True or False depending on the outcome of the comparison.
+    """
+    assert not (include and exclude)
+    # if include:
+    #     dicts = [{k: v for k, v in dict_ if k in include}
+    #              for dict_ in dicts]
+    # elif exclude:
+    #     dicts = [{k: v for k, v in dict_ if k not in exclude}
+    #              for dict_ in dicts]
+    items = (
+        (k, v)
+        for k, v in (d.items() for d in dicts)
+        if (not include or k in include)
+        or (not exclude or k not in exclude)
+    )
+    return contents_equal(*items)
+
+
+def pick(mapping, keys):
+    """Return a new dict using only the given keys."""
+    return {k: v for k, v in mapping.items() if k in keys}
+
+
+def getitems(mapping, items):
+    """Iterate values from `mapping` in order of the given `items`."""
+    return (mapping[item] for item in items)
+
+
+def getattrs(obj, attrs):
+    """Iterate values from 'obj' in order of the given `attrs`."""
+    return (getattr(obj, attr) for attr in attrs)

@@ -23,9 +23,23 @@ class PATTERNS(enum.Enum):
     header = re.compile(r'^(.+):(.*)$')
 
 
+class Updater:
+    """Callable for updating a Request object."""
+
+    def __init__(self, attr, action, key, value=None):
+        self.attr = attr
+        self.action = action
+        self.key = key
+        self.value = value
+
+    def __call__(self, request):
+        # TODO: implement updating a Request here
+        pass
+
+
 def parse(lexemes, request):
     """Parse a sequence of lexemes with the override syntax."""
-    result = odict()
+    results = []
 
     for action, tokens in lexemes:
         for token in tokens:
@@ -40,26 +54,26 @@ def parse(lexemes, request):
                     parser, request_attr = PATTERN_MAP[pattern]
 
                     # Parse parameter and update result
-                    result = parser(action, key, value)
-                    recursive_update(result, {request_attr: result})
+                    updater = parser(request_attr, action, key, value)
+                    results.append(updater)
                     break
             else:
                 # TODO: refine error handling here
                 raise Exception('Unexpected argument: `{}`'.format(tokens))
 
-    return result
+    return results
 
 
-def parse_url_param(action, key, value):
+def parse_url_param(attr, action, key, value):
     """Parse a URL parameter."""
     assert all(char in VALID_URL_CHARS for char in key + value), (
         'Invalid char(s) found in URL parameter. Accepted chars are: {}'
         '\nAll other chars must be percent-encoded.'.format(VALID_URL_CHARS)
     )
-    return fmt_arg(action, key, value)
+    return Updater(attr, action, key, value)
 
 
-def parse_json_field(action, key, value):
+def parse_json_field(attr, action, key, value):
     """Parse a fully qualified JSON field."""
     try:
         json_value = json.loads(value)
@@ -67,29 +81,20 @@ def parse_json_field(action, key, value):
         # TODO: implement error handling
         raise
 
-    return fmt_arg(action, key, json_value)
+    return Updater(attr, action, key, json_value)
 
 
-def parse_str_field(action, key, value):
+def parse_str_field(attr, action, key, value):
     """Parse a JSON field as a string."""
-    return fmt_arg(action, key, value)
+    return Updater(attr, action, key, value)
 
 
-def parse_header(action, key, value):
+def parse_header(attr, action, key, value):
     """Parse a header value."""
     assert is_ascii(key + value), (
         'Invalid char(s) found in header. Only ASCII chars are supported.'
     )
-    return fmt_arg(action, key, value)
-
-
-def fmt_arg(action, key, value):
-    """Form token data into a common structure.."""
-    return odict((
-        (key, odict((
-            (action, value),
-        ))),
-    ))
+    return Updater(attr, action, key, value)
 
 
 PATTERN_MAP = {
