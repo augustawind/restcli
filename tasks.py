@@ -1,43 +1,63 @@
+from itertools import chain
+
 from invoke import task
 
 
-@task
-def lint(ctx):
-    """Run the linter(s)."""
-    ctx.run('flake8 restcli/ tests/')
-
-
-@task
-def test(ctx):
-    """Run the unit tests."""
-    ctx.run('python setup.py test', pty=True)
-
-
-@task
-def dev(ctx):
-    """Install the app in editable mode."""
-    ctx.run('pip install -e .', pty=True)
-
-
-@task
-def install(ctx):
-    """Install the app."""
-    ctx.run('pip install -U pip setuptools')
-    ctx.run('pip install .')
-    ctx.run('pip install -r requirements.txt')
+# ----------------------------------------------------------------------
+# Simple tasks
 
 
 @task
 def clean(ctx):
     """Delete build files."""
-    ctx.run('rm -rf `find . -name __pycache__`')
-    ctx.run("rm -f `find . -type f -name '*.py[co]' `")
-    ctx.run("rm -f `find . -type f -name '*~' `")
-    ctx.run("rm -f `find . -type f -name '.*~' `")
-    ctx.run('rm -rf .cache')
-    ctx.run('rm -rf htmlcov')
-    ctx.run('rm -rf *.egg-info')
-    ctx.run('rm -f .coverage')
-    ctx.run('rm -f .coverage.*')
-    ctx.run('rm -rf build')
-    ctx.run('python setup.py check -rms')
+    ctx.run('rm -rf `find . -name __pycache__`', pty=True)
+    ctx.run("rm -f `find . -type f -name '*.py[co]' `", pty=True)
+    ctx.run("rm -f `find . -type f -name '*~' `", pty=True)
+    ctx.run("rm -f `find . -type f -name '.*~' `", pty=True)
+    ctx.run('rm -rf .cache', pty=True)
+    ctx.run('rm -rf htmlcov', pty=True)
+    ctx.run('rm -rf *.egg-info', pty=True)
+    ctx.run('rm -f .coverage', pty=True)
+    ctx.run('rm -f .coverage.*', pty=True)
+    ctx.run('rm -rf build', pty=True)
+    ctx.run('python setup.py check -rms', pty=True)
+
+
+@task
+def lint(ctx):
+    """Run the linter(s)."""
+    ctx.run('flake8 restcli/ tests/', pty=True)
+
+
+def test(ctx, cmdargs=''):
+    """Run the unit tests."""
+    cmd = 'pytest {}'.format(cmdargs)
+    ctx.run(cmd, pty=True)
+
+
+@task
+def install(ctx):
+    """Install the app in editable mode."""
+    ctx.run('pip install -e .', pty=True)
+    ctx.run('pip install -r requirements.txt', pty=True)
+
+
+# ----------------------------------------------------------------------
+# Composite tasks
+
+
+@task(pre=('clean', 'lint'), post=('test',))
+def check(ctx):
+    """Run unit tests and sanity checks."""
+    ctx.run('python setup.py clean -rms')
+
+
+@task(aliases=('cov',))
+def coverage(ctx):
+    test(ctx, cmdargs='--cov=restcli')
+    ctx.run('coverage combine')
+
+
+@task(default=True, pre=('check', 'install'))
+def build(ctx):
+    pass

@@ -27,7 +27,7 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 if sys.argv[-1] == 'test':
-    os.system('py.test')
+    os.system('pytest')
     sys.exit()
 
 with open('README.rst', 'r') as f:
