@@ -36,10 +36,14 @@ def test(ctx, cmdargs=''):
 
 
 @task
-def install(ctx):
-    """Install the app in editable mode."""
-    ctx.run('pip install -e .', pty=True)
+def install(ctx, editable=False):
+    """Install the app and its dependencies using pip.
+    
+    If the --editable option is given, install it with the -e flag.
+    """
     ctx.run('pip install -r requirements.txt', pty=True)
+    install_cmd = 'pip install {} .'.format('-e' if editable else '')
+    ctx.run(install_cmd, pty=True)
 
 
 # ----------------------------------------------------------------------
