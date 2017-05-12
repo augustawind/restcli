@@ -1,8 +1,5 @@
-import re
-import shlex
 import string
 from collections import Mapping
-from typing import Iterable
 
 QUOTES = '"\''
 BACKSLASH = '\\'

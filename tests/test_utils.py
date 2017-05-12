@@ -25,8 +25,8 @@ def test_recursive_update():
     updates = {
         'baz': [5],
         'bar': {
-            'age': 89
-        }
+            'age': 89,
+        },
     }
     utils.recursive_update(d0, updates)
     expected = OrderedDict((
