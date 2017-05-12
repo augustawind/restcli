@@ -4,7 +4,7 @@ from invoke import task
 # Simple tasks
 
 
-@task
+@task(aliases=('cl',))
 def clean(ctx):
     """Delete build files."""
     ctx.run('rm -rf `find . -name __pycache__`', pty=True)
@@ -16,17 +16,15 @@ def clean(ctx):
     ctx.run('rm -rf *.egg-info', pty=True)
     ctx.run('rm -f .coverage', pty=True)
     ctx.run('rm -f .coverage.*', pty=True)
-    ctx.run('rm -rf build', pty=True)
-    ctx.run('python setup.py check -rms', pty=True)
 
 
-@task
+@task(aliases=('l',))
 def lint(ctx):
     """Run the linter(s)."""
     ctx.run('flake8 restcli/ tests/', pty=True)
 
 
-@task
+@task(aliases=('t',))
 def test(ctx):
     """Run unit tests."""
     ctx.run('pytest', pty=True)
@@ -41,29 +39,32 @@ def coverage(ctx, html=False):
         ctx.run('coverage html', pty=True)
 
 
-@task
+@task(aliases=('deps',))
+def dependencies(ctx):
+    ctx.run('pip install -r requirements.txt', pty=True)
+
+
+@task(aliases=('i',))
 def install(ctx, editable=False):
     """Install the app and its dependencies using pip.
 
     If the --editable option is given, install it with the -e flag.
     """
-    ctx.run('pip install -r requirements.txt', pty=True)
-    install_cmd = 'pip install {} .'.format('-e' if editable else '')
-    ctx.run(install_cmd, pty=True)
+    cmd = 'pip install{} .'.format(' -e' if editable else '')
+    ctx.run(cmd, pty=True)
 
 
 # ----------------------------------------------------------------------
 # Composite tasks
 
 
-@task(pre=(clean, lint), post=(test,))
+@task(aliases=('ch',), pre=(clean, lint), post=(test,))
 def check(ctx):
     """Run unit tests and sanity checks."""
-    ctx.run('python setup.py clean -rms', pty=True)
+    ctx.run('python setup.py check -rms', pty=True)
 
 
-@task(default=True)
+@task(default=True, aliases=('b',), pre=(dependencies, check, install))
 def build(ctx, editable=False):
     """Safely build the app, running checks and installing."""
-    check(ctx)
-    install(ctx, editable=editable)
+    pass
