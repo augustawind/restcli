@@ -2,18 +2,19 @@ import argparse
 import enum
 from collections import OrderedDict, namedtuple
 
-from restcli.utils import split_quoted
+from restcli.utils import AttrSeq, split_quoted
 
 
-class ACTIONS(enum.Enum):
-    append = 'append'
-    assign = 'assign'
-    delete = 'delete'
+ACTIONS = AttrSeq(
+    'append',
+    'assign',
+    'delete',
+)
 
 
 lexer = argparse.ArgumentParser(prog='lexer', add_help=False)
-lexer.add_argument('-d', '--{}'.format(ACTIONS.delete.value), action='append')
-lexer.add_argument('-a', '--{}'.format(ACTIONS.append.value), action='append')
+lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
+lexer.add_argument('-a', '--{}'.format(ACTIONS.append), action='append')
 
 Node = namedtuple('Node', ['action', 'token'])
 
@@ -29,5 +30,5 @@ def lex(argument_str):
         if v is not None
     )
     if args:
-        tokens[ACTIONS.assign.name] = split_quoted(' '.join(args))
+        tokens[ACTIONS.assign] = split_quoted(' '.join(args))
     return tuple(tokens.items())

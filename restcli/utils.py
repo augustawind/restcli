@@ -1,6 +1,20 @@
 import string
 from collections import Mapping
 
+
+class AttrSeq:
+    """An object whose attributes are iterable."""
+
+    def __init__(self, *args):
+        self._dict = {x: x for x in args}
+
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __getattr__(self, item):
+        return self._dict[item]
+
+
 QUOTES = '"\''
 BACKSLASH = '\\'
 

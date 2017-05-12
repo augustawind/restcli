@@ -39,7 +39,7 @@ class LexerTestMixin:
 
 class TestAssign(LexerTestMixin):
 
-    action = lexer.ACTIONS.assign.value
+    action = lexer.ACTIONS.assign
 
     def transform_args(self, args):
         return args
@@ -47,7 +47,7 @@ class TestAssign(LexerTestMixin):
 
 class TestAppend(LexerTestMixin):
 
-    action = lexer.ACTIONS.append.value
+    action = lexer.ACTIONS.append
 
     def transform_args(self, args):
         return ['-a {}'.format(arg) for arg in args]
