@@ -32,10 +32,8 @@ if sys.argv[-1] == 'test':
 
 with open('README.rst', 'r') as f:
     readme = f.read()
-    f.close()
 with open('HISTORY.rst', 'r') as f:
     history = f.read()
-    f.close()
 
 setup(
     name='restcli',
