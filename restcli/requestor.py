@@ -1,5 +1,6 @@
 import jinja2
 import requests
+import six
 
 from restcli import yaml_utils as yaml
 from restcli.workspace import Collection, Environment
@@ -24,7 +25,7 @@ class Requestor(object):
         script = request.get('script')
         if script:
             script_locals = {'response': response, 'env': self.env}
-            for lib in self.collection.libs.values():
+            for lib in six.itervalues(self.collection.libs):
                 script_locals.update(lib.define(response, self.env))
             self.run_script(script, script_locals)
 
@@ -47,7 +48,7 @@ class Requestor(object):
         headers = request.get('headers')
         if headers:
             obj['headers'] = {k: cls.interpolate(v, env)
-                              for k, v in headers.items()}
+                              for k, v in six.iteritems(headers)}
 
         return obj
 

@@ -2,6 +2,7 @@ import inspect
 from contextlib import contextmanager
 
 import click
+import six
 
 __all__ = ['expect', 'Error', 'InputError', 'FileContentError',
            'NotFoundError', 'GroupNotFoundError', 'RequestNotFoundError',
@@ -42,7 +43,7 @@ class Error(Exception):
         return (
             not callable(attr)
             and attr != 'args'
-            and not (type(attr) is str and attr.startswith('__'))
+            and not (type(attr) in six.string_types and attr.startswith('__'))
         )
 
     def _attr_dict(self):

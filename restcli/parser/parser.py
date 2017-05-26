@@ -18,7 +18,7 @@ class PATTERNS(enum.Enum):
     header = re.compile(r'^(.+):(.*)$')
 
 
-class Updater:
+class Updater(object):
     """Callable for updating a Request object."""
 
     def __init__(self, attr, action, key, value=None):

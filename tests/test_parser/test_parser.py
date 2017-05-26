@@ -40,7 +40,7 @@ def request():
     return req
 
 
-class TestParse:
+class TestParse(object):
 
     attr = 'headers'
     action = ACTIONS.assign

@@ -103,7 +103,7 @@ class Collection(YamlDictReader):
     def load_meta(self, meta):
         """Parse and validate Collection Meta."""
         # Verify all fields are known
-        for key in meta.keys():
+        for key in six.iterkeys(meta):
             if key not in META_ATTRS:
                 self.raise_error(
                     'Unexpected key in meta: "{}"'.format(key), [])
@@ -120,7 +120,7 @@ class Collection(YamlDictReader):
             path = ['defaults']
             self.assert_mapping(defaults, 'Defaults', path)
 
-            for key in defaults.keys():
+            for key in six.iterkeys(defaults):
                 if key not in REQUEST_ATTRS:
                     self.raise_error(
                         'Unexpected key in defaults "{}"'.format(key), path)
@@ -131,17 +131,17 @@ class Collection(YamlDictReader):
     def load_collection(self, collection):
         """Parse and validate a Collection."""
         new_collection = OrderedDict()
-        for group_name, group in collection.items():
+        for group_name, group in six.iteritems(collection):
             path = [group_name]
             self.assert_mapping(group, 'Group', path)
             new_group = new_collection[group_name] = OrderedDict()
 
-            for req_name, request in group.items():
+            for req_name, request in six.iteritems(group):
                 path.append('req_name')
                 self.assert_mapping(request, 'Request', path)
                 new_req = new_group[req_name] = OrderedDict()
 
-                for key, type_ in REQUEST_ATTRS.items():
+                for key, type_ in six.iteritems(REQUEST_ATTRS):
                     if key in request:
                         new_req[key] = request[key]
                     elif key in self.defaults:
@@ -216,7 +216,7 @@ class Libs(YamlDictReader):
                 assert hasattr(lib, 'define')
                 assert inspect.isfunction(lib.define)
                 sig = inspect.signature(lib.define)
-                params = tuple(sig.parameters.values())
+                params = tuple(six.itervalues(sig.parameters))
                 assert len(params) == 4
                 assert params[0].name == 'response'
                 assert params[1].name == 'env'

@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import six
 import yaml
 from yaml.resolver import BaseResolver
 
@@ -40,7 +41,7 @@ SafeCustomLoader.add_constructor(
 
 def dict_representer(dumper, data):
     return dumper.represent_mapping(
-        BaseResolver.DEFAULT_MAPPING_TAG, data.items())
+        BaseResolver.DEFAULT_MAPPING_TAG, six.iteritems(data))
 
 
 CustomDumper.add_representer(OrderedDict, dict_representer)

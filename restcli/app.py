@@ -2,6 +2,7 @@ import json
 import re
 from string import Template
 
+import six
 from pygments import highlight
 from pygments.formatters.terminal256 import Terminal256Formatter
 from pygments.lexers.data import JsonLexer
@@ -204,4 +205,4 @@ class App(object):
     @staticmethod
     def key_value_pairs(obj):
         """Format a dict-like object into lines of 'KEY: VALUE'."""
-        return '\n'.join(['%s: %s' % (k, v) for k, v in obj.items()])
+        return '\n'.join(['%s: %s' % (k, v) for k, v in six.iteritems(obj)])

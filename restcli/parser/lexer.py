@@ -1,6 +1,8 @@
 import argparse
 from collections import OrderedDict, namedtuple
 
+import six
+
 from restcli.utils import AttrSeq, split_quoted
 
 ACTIONS = AttrSeq(
@@ -27,4 +29,4 @@ def lex(argument_str):
     )
     if args:
         tokens[ACTIONS.assign] = split_quoted(' '.join(args))
-    return tuple(tokens.items())
+    return tuple(six.iteritems(tokens))

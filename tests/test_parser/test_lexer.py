@@ -2,7 +2,7 @@ from restcli.parser import lexer
 from tests.helpers import contents_equal
 
 
-class LexerTestMixin:
+class LexerTestMixin(object):
 
     action = NotImplemented
 

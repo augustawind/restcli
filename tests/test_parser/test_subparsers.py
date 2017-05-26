@@ -7,7 +7,7 @@ from restcli.parser.lexer import ACTIONS
 from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
 
 
-class SubParserTestMixin:
+class SubParserTestMixin(object):
     """Helper mixin for classes that test the sub-parser functions."""
 
     @classmethod

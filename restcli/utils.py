@@ -1,8 +1,10 @@
 import string
 from collections import Mapping
 
+import six
 
-class AttrSeq:
+
+class AttrSeq(object):
     """An object whose attributes are iterable."""
 
     def __init__(self, *args):
@@ -61,7 +63,7 @@ def split_quoted(s, sep=string.whitespace):
 
 def recursive_update(mapping, data):
     """Like dict.update, but recursively updates nested dicts as well."""
-    for key, val in data.items():
+    for key, val in six.iteritems(data):
         if isinstance(val, Mapping):
             if key in mapping:
                 recursive_update(mapping[key], val)
