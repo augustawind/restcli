@@ -22,7 +22,7 @@ __all__ = ['App']
 ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
-class App:
+class App(object):
     """Input/output agnostic application runner for restcli."""
 
     HTTP_TPL = Template('\n'.join((

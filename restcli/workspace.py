@@ -3,6 +3,8 @@ import importlib
 import inspect
 from collections import Mapping, OrderedDict, namedtuple
 
+import six
+
 from restcli import yaml_utils as yaml
 from restcli.exceptions import (
     CollectionError,
@@ -19,31 +21,36 @@ REQUIRED_REQUEST_ATTRS = {
     'method': str,
     'url': str,
 }
-REQUEST_ATTRS = {
-    **REQUIRED_REQUEST_ATTRS,
+REQUEST_ATTRS = REQUIRED_REQUEST_ATTRS.copy()
+REQUEST_ATTRS.update({
     'headers': dict,
     'body': str,
     'script': str,
-}
+})
 META_ATTRS = {
     'defaults': dict,
     'lib': list,
 }
 
 
-class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class YamlDictReader(OrderedDict):
     """Base class for dicts that read from YAML files."""
 
     error_class = FileContentError
 
     def __init__(self, source):
-        super().__init__()
+        super(YamlDictReader, self).__init__()
         self.source = source
         self.load()
 
     @abc.abstractmethod
     def load(self):
         pass
+
+    def copy(self):
+        """Override copy() so that ``source`` can be copied over."""
+        return self.__class__(self.source)
 
     def raise_error(self, msg, path, error_class=None, source=None, **kwargs):
         """Helper for raising an error for a Reader instance."""
@@ -71,7 +78,7 @@ class Collection(YamlDictReader):
     def __init__(self, source):
         self.defaults = {}
         self.libs = []
-        super().__init__(source)
+        super(Collection, self).__init__(source)
 
     def load(self):
         """Reload the current Collection, changing it to ``path`` if given."""

@@ -7,7 +7,7 @@ from restcli.workspace import Collection, Environment
 __all__ = ['Requestor']
 
 
-class Requestor:
+class Requestor(object):
     """Parser and executor of requests."""
 
     def __init__(self, collection_file, env_file=None):
@@ -33,7 +33,8 @@ class Requestor:
     @classmethod
     def parse_request(cls, request, env, **env_override):
         """Parse a Request object in the context of an Environment."""
-        env = {**env, **env_override}
+        env = env.copy()
+        env.update(env_override)
         obj = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),

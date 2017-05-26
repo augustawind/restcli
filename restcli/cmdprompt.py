@@ -19,7 +19,7 @@ class Cmd(cmd.Cmd):
     )
 
     def __init__(self, app, stdout=None):
-        super().__init__(stdout=stdout)
+        super(Cmd, self).__init__(stdout=stdout)
         self.app = app
 
     @staticmethod

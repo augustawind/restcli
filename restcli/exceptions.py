@@ -55,7 +55,7 @@ class InputError(Error):
     base_msg = "Invalid input '%(input)s'"
 
     def __init__(self, line, item, msg='', action=None):
-        super().__init__(msg, action)
+        super(InputError, self).__init__(msg, action)
         self.line = line
         self.item = item
 
@@ -67,7 +67,7 @@ class FileContentError(Error):
     file_type = 'CONTENT'
 
     def __init__(self, file, msg='', path=None, action=None):
-        super().__init__(msg, action)
+        super(FileContentError, self).__init__(msg, action)
         self.file = file
         self.path = path
 
@@ -75,7 +75,7 @@ class FileContentError(Error):
         line = self.file
         if self.path:
             line += ' => {}'.format(self._fmt_path(self.path))
-        return '{}\n{}'.format(line, super().show())
+        return '{}\n{}'.format(line, super(FileContentError, self).show())
 
     @property
     def name(self):
