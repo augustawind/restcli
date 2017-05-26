@@ -1,7 +1,7 @@
 import click
+from click_repl import register_repl
 
 from restcli.app import App
-from restcli.cmdprompt import Cmd
 from restcli.exceptions import (
     CollectionError,
     EnvError,
@@ -53,8 +53,18 @@ def view(app, group, request, attr):
     click.echo(output)
 
 
-@cli.command(help='Start an interactive command prompt.')
+@cli.command(help='View or set Environment variables.'
+                  ' If no args are given, print the current environment.'
+                  ' Otherwise, change the Environment via the given args.')
+@click.argument('args', nargs=-1)
 @pass_app
-def repl(app):
-    cmd = Cmd(app, stdout=click.get_text_stream('stdout'))
-    cmd.cmdloop()
+def env(app, args):
+    if args:
+        app.autosave = True
+        output = app.set_env(*args)
+    else:
+        output = app.show_env()
+    click.echo(output)
+
+
+register_repl(cli)
