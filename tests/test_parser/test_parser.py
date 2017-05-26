@@ -11,16 +11,14 @@ from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
 from restcli.parser.parser import PATTERNS
 
-odict = OrderedDict
-
 
 @pytest.fixture
 def request():
     """Generate a semi-random request object."""
-    req = odict()
+    req = OrderedDict()
     req['method'] = random.choice(('get', 'post', 'put', 'delete'))
     req['url'] = '%s.org' % ''.join(random.sample(string.ascii_lowercase, 10))
-    req['headers'] = odict((
+    req['headers'] = OrderedDict((
         ('Content-Type', 'application/json'),
         ('Accept', 'application/json')
     ))
@@ -31,7 +29,7 @@ def request():
             'a' * random.randint(1, 6),
             'a' * random.randint(1, 6),
         )
-        req['body'] = yaml.dump(odict((
+        req['body'] = yaml.dump(OrderedDict((
             ('name', name),
             ('age', random.randint(10, 20)),
             ('color', random.choice(('red', 'yellow', 'blue'))),

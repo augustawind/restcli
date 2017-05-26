@@ -1,11 +1,8 @@
 import enum
 import json
 import re
-from collections import OrderedDict
 
 from restcli.utils import is_ascii
-
-odict = OrderedDict
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''

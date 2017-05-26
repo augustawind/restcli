@@ -1,5 +1,4 @@
 import argparse
-import enum
 from collections import OrderedDict, namedtuple
 
 from restcli.utils import AttrSeq, split_quoted

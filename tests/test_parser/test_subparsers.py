@@ -1,14 +1,10 @@
 import random
-from collections import OrderedDict
 
 import pytest
 
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
-
 from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
-
-odict = OrderedDict
 
 
 class SubParserTestMixin:
