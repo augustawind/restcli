@@ -41,7 +41,7 @@ class App(object):
         self.python_lexer = Python3Lexer()
         self.formatter = Terminal256Formatter(style=style)
 
-    def run(self, group_name, request_name, *env_args):
+    def run(self, group_name, request_name, *env_args, save=False):
         """Run a Request."""
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
@@ -49,7 +49,7 @@ class App(object):
         set_env, _ = self.parse_env(*env_args)
         response = self.r.request(group_name, request_name, **set_env)
 
-        if self.autosave:
+        if save or self.autosave:
             self.r.env.save()
 
         output = self.show_response(response)
@@ -128,14 +128,14 @@ class App(object):
             set_env[key] = yaml.dump(val)
         return set_env, del_env
 
-    def set_env(self, *args):
+    def set_env(self, *args, save=False):
         """Set some new variables in the Environment."""
         set_env, del_env = self.parse_env(*args)
         self.r.env.update(**set_env)
         self.r.env.remove(*del_env)
 
         output = ''
-        if self.autosave:
+        if save or self.autosave:
             output += self.save_env()
         return output
 

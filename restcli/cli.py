@@ -1,5 +1,5 @@
 import click
-from click_repl import register_repl
+from click_repl import repl as start_repl
 
 from restcli.app import App
 from restcli.exceptions import (
@@ -26,8 +26,9 @@ pass_app = click.make_pass_decorator(App)
               help='Save Environment to disk after changes.')
 @click.pass_context
 def cli(ctx, collection, env, save):
-    with expect(CollectionError, EnvError, LibError):
-        ctx.obj = App(collection, env, autosave=save)
+    if not ctx.obj:
+        with expect(CollectionError, EnvError, LibError):
+            ctx.obj = App(collection, env, autosave=save)
 
 
 @cli.command(help='Run a Request.')
@@ -60,11 +61,55 @@ def view(app, group, request, attr):
 @pass_app
 def env(app, args):
     if args:
-        app.autosave = True
         output = app.set_env(*args)
     else:
         output = app.show_env()
     click.echo(output)
 
 
-register_repl(cli)
+@cli.command(help='Reload the Collection and/or the Environment from disk.'
+                  ' If no options are given, reload both.')
+@click.option('-c/-C', '--collection/--no-collection', default=False,
+              help='Reload the Collection.')
+@click.option('-e/-E', '--env/--no-env', default=False,
+              help='Reload the Environment.')
+@pass_app
+def reload(app, collection, env):
+    output = ''
+    if not (collection or env):
+        collection = True
+        env = True
+    if collection:
+        output += app.load_collection()
+    if env:
+        output += app.load_env()
+    click.echo(output)
+
+
+@cli.command(help='Save the current Environment to disk.')
+@pass_app
+def save(app):
+    output = app.save_env()
+    click.echo(output)
+
+
+@cli.command(help='Change to and load a new Collection file.')
+@click.argument('path')
+@pass_app
+def change_collection(app, path):
+    output = app.load_collection(path)
+    click.echo(output)
+
+
+@cli.command(help='Change to and load a new Environment file.')
+@click.argument('path')
+@pass_app
+def change_env(app, path):
+    output = app.load_env(path)
+    click.echo(output)
+
+
+@cli.command(help='Start an interactive prompt.')
+@click.pass_context
+def repl(ctx):
+    start_repl(ctx)
