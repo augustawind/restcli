@@ -204,7 +204,7 @@ class Libs(YamlDictReader):
                 lib = importlib.import_module(module)
             except (AssertionError, ImportError):
                 self.raise_error('Failed to import lib "%s"' % module, path,
-                                 source=inspect.getsourcefile(lib))
+                                 source=inspect.getsourcefile(module))
             try:
                 assert hasattr(lib, 'define')
                 assert inspect.isfunction(lib.define)
