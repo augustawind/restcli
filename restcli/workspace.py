@@ -33,8 +33,7 @@ META_ATTRS = {
 }
 
 
-@six.add_metaclass(abc.ABCMeta)
-class YamlDictReader(OrderedDict):
+class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
     """Base class for dicts that read from YAML files."""
 
     error_class = FileContentError

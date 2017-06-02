@@ -67,7 +67,7 @@ def env(app, args):
     click.echo(output)
 
 
-@cli.command(help='Reload the Collection and/or the Environment from disk.'
+@cli.command(help='Reload Collection or Environment from disk.'
                   ' If no options are given, reload both.')
 @click.option('-c/-C', '--collection/--no-collection', default=False,
               help='Reload the Collection.')
