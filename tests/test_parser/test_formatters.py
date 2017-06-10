@@ -7,16 +7,14 @@ from restcli.parser.lexer import ACTIONS
 from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
 
 
-class SubParserTestMixin(object):
-    """Helper mixin for classes that test the sub-parser functions."""
+class FormatterTestMixin(object):
+    """Helper mixin for classes that test the formatter functions."""
 
     @classmethod
     def run_test(cls, in_val, out_val, key=None, out_key=None):
-        action = cls.get_random_action()
         key = out_key or key or get_random_ascii(11)
-        updater = cls.parse(key, in_val)
-        values = attrs_list(updater, ('attr', 'action', 'key', 'value'))
-        expected = [cls.attr, action, key, out_val]
+        values = cls.fmt(key, in_val)
+        expected = (key, out_val)
         assert values == expected
 
     @staticmethod
@@ -24,11 +22,11 @@ class SubParserTestMixin(object):
         return random.choice(tuple(ACTIONS))
 
 
-class TestParseURLParam(SubParserTestMixin):
+class TestFormatURLParam(FormatterTestMixin):
     # TODO: maybe add more tests? may not be necessary
 
     attr = 'query'
-    parse = parser.fmt_url_param
+    fmt = parser.fmt_url_param
 
     def test_valid(self):
         value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
@@ -45,10 +43,10 @@ class TestParseURLParam(SubParserTestMixin):
             parser.fmt_url_param(key, value)
 
 
-class TestParseStrField(SubParserTestMixin):
+class TestFormatStrField(FormatterTestMixin):
 
     attr = 'body'
-    parse = parser.fmt_str_field
+    fmt = parser.fmt_str_field
 
     def test_simple(self):
         self.run_test(
@@ -57,11 +55,11 @@ class TestParseStrField(SubParserTestMixin):
         )
 
 
-class TestParseJSONField(SubParserTestMixin):
+class TestFormatJSONField(FormatterTestMixin):
     # TODO: add tests for invalid input, once error handling is implemented
 
     attr = 'body'
-    parse = parser.fmt_json_field
+    fmt = parser.fmt_json_field
 
     def test_bool(self):
         self.run_test(
