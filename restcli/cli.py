@@ -36,12 +36,16 @@ def cli(ctx, collection, env, save):
 @cli.command(help='Run a Request.')
 @click.argument('group')
 @click.argument('request')
-@click.option('-o', '--override', multiple=True,
+@click.option('-p', '--append', multiple=True,
+              help='Add "key:val" pairs that shadow the Environment.')
+@click.option('-a', '--assign', multiple=True,
+              help='Add "key:val" pairs that shadow the Environment.')
+@click.option('-d', '--delete', multiple=True,
               help='Add "key:val" pairs that shadow the Environment.')
 @pass_app
-def run(app, group, request, override):
+def run(app, group, request, append, assign, delete):
     with expect(InputError, NotFoundError):
-        output = app.run(group, request, *override)
+        output = app.run(group, request, *(append + assign + delete))
     click.echo(output)
 
 
