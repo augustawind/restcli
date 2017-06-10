@@ -5,13 +5,10 @@ from unittest.mock import call
 
 import pytest
 import pytest_mock  # noqa: F401
-import six
 
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
-from restcli.utils import AttrMap
-from restcli.parser.parser import FIELD_SPECS
 
 
 @pytest.fixture
