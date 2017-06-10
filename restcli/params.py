@@ -1,5 +1,3 @@
-import re
-
 from restcli.utils import AttrMap
 
 REQUIRED_REQUEST_ATTRS = AttrMap(
@@ -16,4 +14,3 @@ META_ATTRS = AttrMap(
     ('defaults', dict),
     ('lib', list),
 )
-ENV_RE = re.compile(r'([^:]+):(.*)')
