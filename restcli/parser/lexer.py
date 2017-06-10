@@ -1,6 +1,6 @@
 import argparse
 import string
-from collections import OrderedDict
+from collections import namedtuple
 
 import six
 
@@ -21,26 +21,39 @@ lexer.add_argument('-a', '--{}'.format(ACTIONS.append), action='append')
 lexer.add_argument('-n', '--{}'.format(ACTIONS.assign), action='append')
 lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
 
+Node = namedtuple('Node', ['action', 'value'])
+
 
 def lex(argument_str):
-    """Lex a string into a sequence of (action, tokens) pairs.
+    """Lex a string into a list of ``Node``s.
     
     Args:
         argument_str: The string to lex.
         
     Returns:
-        A list of (action, token) pairs.
+        A list of ``Node`` objects.
+        
+    Examples:
+        >>> lex('-a foo:bar -n bar:baz -a baz:quux -d quux:biff a:b x:y')
+        [
+            Node(action='append', value='foo:bar'),
+            Node(action='assign', value='bar:baz'),
+            Node(action='append', value='baz:quux'),
+            Node(action='delete', value='quux:biff'),
+            Node(action='assign', value='a:b'),
+            Node(action='assign', value='x:y'),
+        ]
     """
     argv = tokenize(argument_str)
     opts, args = lexer.parse_known_args(argv)
     opts = ((k, v) for k, v in six.iteritems(vars(opts)) if v is not None)
     nodes = [
-        (action, val) for action, values in opts
+        Node(action, val) for action, values in opts
         for val in values
     ]
     if args:
         assign_tokens = tokenize(' '.join(args))
-        nodes.extend((ACTIONS.assign, token) for token in assign_tokens)
+        nodes.extend(Node(ACTIONS.assign, token) for token in assign_tokens)
     return nodes
 
 
