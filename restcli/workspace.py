@@ -1,7 +1,7 @@
 import abc
 import importlib
 import inspect
-from collections import Mapping, OrderedDict, namedtuple
+from collections import Mapping, OrderedDict
 
 import six
 
@@ -12,25 +12,9 @@ from restcli.exceptions import (
     LibError,
     FileContentError,
 )
+from restcli.params import REQUIRED_REQUEST_ATTRS, REQUEST_ATTRS, META_ATTRS
 
 __all__ = ['Collection', 'Environment']
-
-Attribute = namedtuple('Attribute', ['name', 'type'])
-
-REQUIRED_REQUEST_ATTRS = {
-    'method': str,
-    'url': str,
-}
-REQUEST_ATTRS = REQUIRED_REQUEST_ATTRS.copy()
-REQUEST_ATTRS.update({
-    'headers': dict,
-    'body': str,
-    'script': str,
-})
-META_ATTRS = {
-    'defaults': dict,
-    'lib': list,
-}
 
 
 class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
@@ -133,12 +117,12 @@ class Collection(YamlDictReader):
         for group_name, group in six.iteritems(collection):
             path = [group_name]
             self.assert_mapping(group, 'Group', path)
-            new_group = new_collection[group_name] = OrderedDict()
+            new_group = OrderedDict()
 
             for req_name, request in six.iteritems(group):
                 path.append('req_name')
                 self.assert_mapping(request, 'Request', path)
-                new_req = new_group[req_name] = OrderedDict()
+                new_req = OrderedDict()
 
                 for key, type_ in six.iteritems(REQUEST_ATTRS):
                     if key in request:
@@ -163,6 +147,9 @@ class Collection(YamlDictReader):
                         msg='Request "%s" must be a %s'
                             % (key, type_.__name__),
                     )
+
+                new_group[req_name] = new_req
+            new_collection[group_name] = new_group
 
         self.clear()
         self.update(new_collection)

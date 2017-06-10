@@ -14,7 +14,7 @@ class SubParserTestMixin(object):
     def run_test(cls, in_val, out_val, key=None, out_key=None):
         action = cls.get_random_action()
         key = out_key or key or get_random_ascii(11)
-        updater = cls.parse(cls.attr, action, key, in_val)
+        updater = cls.parse(key, in_val)
         values = attrs_list(updater, ('attr', 'action', 'key', 'value'))
         expected = [cls.attr, action, key, out_val]
         assert values == expected
@@ -28,7 +28,7 @@ class TestParseURLParam(SubParserTestMixin):
     # TODO: maybe add more tests? may not be necessary
 
     attr = 'query'
-    parse = parser.parse_url_param
+    parse = parser.fmt_url_param
 
     def test_valid(self):
         value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
@@ -39,17 +39,16 @@ class TestParseURLParam(SubParserTestMixin):
         )
 
     def test_invalid(self):
-        action = self.get_random_action()
         key = get_random_unicode(10)
         value = get_random_unicode(10)
         with pytest.raises(AssertionError):
-            parser.parse_url_param(self.attr, action, key, value)
+            parser.fmt_url_param(key, value)
 
 
 class TestParseStrField(SubParserTestMixin):
 
     attr = 'body'
-    parse = parser.parse_str_field
+    parse = parser.fmt_str_field
 
     def test_simple(self):
         self.run_test(
@@ -62,7 +61,7 @@ class TestParseJSONField(SubParserTestMixin):
     # TODO: add tests for invalid input, once error handling is implemented
 
     attr = 'body'
-    parse = parser.parse_json_field
+    parse = parser.fmt_json_field
 
     def test_bool(self):
         self.run_test(

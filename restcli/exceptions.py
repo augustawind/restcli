@@ -34,7 +34,7 @@ class Error(Exception):
     def _fmt_label(first, second):
         return '%s%s' % (
             first,
-            ': %s' % second if second else ''
+            ': %s' % second if second else '',
         )
 
     @staticmethod
@@ -53,12 +53,11 @@ class Error(Exception):
 class InputError(Error):
     """Exception for invalid user input."""
 
-    base_msg = "Invalid input '%(input)s'"
+    base_msg = "Invalid input '%(item)s'"
 
-    def __init__(self, line, item, msg='', action=None):
+    def __init__(self, value, msg='', action=None):
         super(InputError, self).__init__(msg, action)
-        self.line = line
-        self.item = item
+        self.value = value
 
 
 class FileContentError(Error):

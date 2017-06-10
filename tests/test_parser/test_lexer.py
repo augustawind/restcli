@@ -13,7 +13,7 @@ class LexerTestMixin(object):
         arg = ' '.join(self.transform_args(args))
         tokens = lexer.lex(arg)
         assert contents_equal(tokens, [
-            (self.action, result),
+            (self.action, token) for token in result
         ])
 
     def test_1_header_single_quotes(self):
@@ -37,12 +37,20 @@ class LexerTestMixin(object):
         self.run_test(args, result)
 
 
-class TestAssign(LexerTestMixin):
+class TestAssignShortForm(LexerTestMixin):
 
     action = lexer.ACTIONS.assign
 
     def transform_args(self, args):
         return args
+
+
+class TestAssign(LexerTestMixin):
+
+    action = lexer.ACTIONS.assign
+
+    def transform_args(self, args):
+        return ['-n {}'.format(arg) for arg in args]
 
 
 class TestAppend(LexerTestMixin):

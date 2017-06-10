@@ -1,64 +1,52 @@
-import string
-from collections import Mapping
+from collections import Mapping, OrderedDict, Sequence
 
 import six
 
 
-class AttrSeq(object):
-    """An object whose attributes are iterable."""
+class AttrSeq(Sequence):
+    """An immutable sequence that supports dot and bracket notation."""
 
     def __init__(self, *args):
         self._dict = {x: x for x in args}
 
-    def __iter__(self):
-        return iter(self._dict)
+    def __copy__(self):
+        return self.__class__(*self._dict.keys())
 
     def __getattr__(self, item):
         return self._dict[item]
 
+    __getitem__ = __getattr__
 
-QUOTES = '"\''
-BACKSLASH = '\\'
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __len__(self):
+        return len(self._dict)
 
 
-def split_quoted(s, sep=string.whitespace):
-    """Split a string on whitespace, respecting quotations (incl. escapes)."""
-    words = []
-    word = ''
-    current_quote = None
+class AttrMap(Mapping):
+    """An immutable, ordered mapping that supports dot and bracket notation.
+    
+    A ``name`` attr is also added to each value which returns the key of that
+    value.
+    """
 
-    chars = iter(s)
-    char = next(chars, '')
+    def __init__(self, *pairs):
+        self._dict = OrderedDict(pairs)
 
-    while char:
-        # Quotation marks begin or end a quoted section
-        if char in QUOTES:
-            if char == current_quote:
-                current_quote = None
-            elif not current_quote:
-                current_quote = char
+    def __copy__(self):
+        return self.__class__(*self._dict.items())
 
-        # Backslash makes the following character literal
-        elif char == BACKSLASH:
-            word += char
-            char = next(chars, '')
+    def __getattr__(self, item):
+        return self._dict[item]
 
-        # Unless in quotes, whitespace is skipped and signifies the word end.
-        elif not current_quote and char in sep:
-            while char in sep:
-                char = next(chars, '')
-            words.append(word)
-            word = ''
+    __getitem__ = __getattr__
 
-            # Since we stopped at the first non-whitespace character, it
-            # must be processed.
-            continue
+    def __iter__(self):
+        return iter(self._dict)
 
-        word += char
-        char = next(chars, '')
-
-    words.append(word)
-    return words
+    def __len__(self):
+        return len(self._dict)
 
 
 def recursive_update(mapping, data):

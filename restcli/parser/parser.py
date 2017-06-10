@@ -1,103 +1,222 @@
-import enum
 import json
 import re
+from collections import namedtuple
 
-from restcli.utils import is_ascii
+from restcli.utils import AttrMap, AttrSeq, is_ascii
+
+from .lexer import ESCAPES, QUOTES
+from .updater import UPDATERS
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
     r'''0123456789-._~:/?#[]@!$&'()*+,;=`'''
 )
 
+ACTIONS = AttrSeq(
+    'append',
+    'assign',
+    'delete',
+)
 
-class PATTERNS(enum.Enum):
-    """Regex patterns for each type of token (syntax)."""
-    url_param = re.compile(r'^(.+)==(.*)$')
-    json_field = re.compile(r'^(.+):=(.+)$')
-    str_field = re.compile(r'^(.+)=(.+)$')
-    header = re.compile(r'^(.+):(.*)$')
-
-
-class Updater(object):
-    """Callable for updating a Request object."""
-
-    def __init__(self, attr, action, key, value=None):
-        self.attr = attr
-        self.action = action
-        self.key = key
-        self.value = value
-
-    def __call__(self, request):
-        # TODO: implement updating a Request here
-        pass
+# Regex patterns for each type of token (syntax).
+PATTERNS = AttrMap(
+    ('header', re.compile(r'^(.+):(.*)$')),
+    ('json_field', re.compile(r'^(.+):=(.+)$')),
+    ('str_field', re.compile(r'^(.+)=(.+)$')),
+    ('url_param', re.compile(r'^(.+)==(.*)$')),
+)
 
 
-def parse(lexemes, request):
-    """Parse a sequence of lexemes with the override syntax."""
+class FieldParser:
+
+    def __init__(self, seq):
+        self._data = str(seq)
+        self._in_quotes = []
+        self._escaping = False
+
+    def consume(self, n=None):
+        """Consume ``n`` characters.
+        
+        If ``n`` is None, consume all remaining characters.
+        """
+        if n is None:
+            n += 1
+        result = self._data[:n]
+        self._data = ''
+        return result
+
+    def _startswith_any(self, charsets):
+        for chars in charsets:
+            if self._data.startswith(chars):
+                return chars
+        return None
+
+    def consume_until(self, *charsets):
+        first = []
+        second = None
+        for char in self._data:
+            if char in ESCAPES:
+                # If escape char, apply escaping rules
+                if self._escaping:
+                    # If escaping, ignore escape char and continue
+                    self._escaping = False
+                    continue
+                else:
+                    # Otherwise, escape next char
+                    self._escaping = True
+
+            elif self._escaping:
+                # If not backslash and escaping, stop escaping
+                self._escaping = False
+
+            elif self._in_quotes:
+                # If inside quotes, process char literally
+                pass
+
+            elif char in QUOTES:
+                if self._in_quotes[-1] == char:
+                    self._in_quotes.pop()
+                else:
+                    self._in_quotes.append(char)
+
+            else:
+                # If condition met, stop parsing
+                second = self._startswith_any(charsets)
+                if second:
+                    break
+
+            first.append(char)
+
+        first = ''.join(first)
+        index = len(first) + len(second)
+        self._data = self._data[index:]
+        return first, second
+        #
+        # def consume_until(self, *charsets):
+        #     """Consume the token until a char is in one of ``charsets``."""
+        #     return self.consume_with_predicate(lambda char: char in sentinel)
+        #
+        # def consume_while(self, *charsets):
+        #     """Consume the token while chars are in one of ``charsets``."""
+        #     return self.consume_with_predicate(lambda char: char not in sentinel)
+
+
+def parse(tokens):
+    """Parse a sequence of tokens with the override syntax."""
     results = []
 
-    for action, tokens in lexemes:
-        for token in tokens:
-            for pattern in PATTERNS:
-                match = pattern.value.match(token)
+    for token in tokens:
+        parser = FieldParser(token)
+        for field_type, spec in FIELD_SPECS.items():
+            has_bang, key, has_plus, operator, value = parse_token(
+                token, spec.delimiter)
+            if not (key and operator):
+                continue
 
-                if match:
-                    # Obtain parameter key/value
-                    key, value = match.groups()
+            # Determine Action
+            action = determine_action(has_bang, has_plus)
 
-                    # Obtain parser function
-                    parser, request_attr = PATTERN_MAP[pattern]
+            # Instantiate Updater
+            updater_cls = UPDATERS[action]
 
-                    # Parse parameter and update result
-                    updater = parser(request_attr, action, key, value)
-                    results.append(updater)
-                    break
-            else:
-                # TODO: refine error handling here
-                raise Exception('Unexpected argument: `{}`'.format(tokens))
+            # Parse parameters
+            params = spec.formatter(key, value)
+            updater = updater_cls(spec.field, *params)
+            results.append(updater)
+            break
+        else:
+            # TODO: refine error handling here
+            raise Exception('Unexpected argument: `{}`'.format(tokens))
 
     return results
 
 
-def parse_url_param(attr, action, key, value):
+def parse_token(token, delimiter):
+    has_bang = token.consume_char('!')
+    key, has_plus = token.consume_until('+')
+    operator = token.consume_until(delimiter)
+    value = token.consume()
+    return bool(has_bang), key, bool(has_plus), operator, value
+
+
+def determine_action(has_bang, has_plus):
+    if has_bang:
+        return ACTIONS.delete
+    elif has_plus:
+        return ACTIONS.append
+    else:
+        return ACTIONS.assign
+
+
+def fmt_url_param(key, value):
     """Parse a URL parameter."""
     assert all(char in VALID_URL_CHARS for char in key + value), (
         'Invalid char(s) found in URL parameter. Accepted chars are: {}'
         '\nAll other chars must be percent-encoded.'.format(VALID_URL_CHARS)
     )
-    return Updater(attr, action, key, value)
+    return key, value
 
 
-def parse_json_field(attr, action, key, value):
+def fmt_json_field(key, value):
     """Parse a fully qualified JSON field."""
     try:
         json_value = json.loads(value)
     except json.JSONDecodeError:
         # TODO: implement error handling
         raise
+    return key, json_value
 
-    return Updater(attr, action, key, json_value)
 
-
-def parse_str_field(attr, action, key, value):
+def fmt_str_field(key, value):
     """Parse a JSON field as a string."""
-    return Updater(attr, action, key, value)
+    return key, value
 
 
-def parse_header(attr, action, key, value):
+def fmt_header(key, value):
     """Parse a header value."""
-    assert is_ascii(key + value), (
-        'Invalid char(s) found in header. Only ASCII chars are supported.'
-    )
-    return Updater(attr, action, key, value)
+    msg = "Non-ASCII character(s) found in header %(section) '%(text)'."
+    assert is_ascii(str(key)), (msg % {'section': 'name', 'text': key})
+    assert is_ascii(str(value)), (msg % {'section': 'value', 'text': value})
+    return key, value
+#
+#
+# def mkregex(delimiter):
+#     return re.compile(
+#         r'''
+#         ^
+#         (?P<bang> !?)       # 1) Bang "!" (optional).
+#         (?P<q1> ["']?)      # 2) Start quote (optional).
+#         (?(q1)              # 3) IFDEF start quote [2]:
+#           (?P<name>         #     3.1) Field name.
+#             [^%(del)s]      #          Must have at least 1 non-delimiter,
+#               |             #          OR
+#             (?:\\%(del)s)   #          at least 1 backslash-escaped delimiter.
+#           )+?               #
+#           (?P=q1)           #     3.2) End quote.
+#             |               # 4) ELSE:
+#           ([^!+%(del)s]+)   #     4.1) Field name.
+#         )                   #          Do not match `!`, `+`, or delimiter.
+#         (?(bang) $          # 5) IFDEF leading bang [1], finish match.
+#             |               # 6) ELSE:
+#           (\+?)             #    6.1) Plus sign "+" (optional).
+#           %(del)s           #    6.2) Delimiter.
+#           (?P<q2> ["']?)    #    6.3) Start quote (optional).
+#           (.*?)             #    6.4) Field value (optional).
+#           (?(q2) (?P=q2))   #    6.5) IFDEF start quote [6.3], end quote.
+#           $
+#         )
+#         '''
+#         % locals(), re.VERBOSE,
+#     )
 
 
-PATTERN_MAP = {
-    PATTERNS.url_param: (parse_url_param, 'query'),
-    PATTERNS.json_field: (parse_json_field, 'body'),
-    PATTERNS.str_field: (parse_str_field, 'body'),
-    PATTERNS.header: (parse_header, 'headers'),
-}
+FieldSpec = namedtuple('FieldSpec', ('field', 'delimiter', 'formatter'))
+FIELD_SPECS = AttrMap(
+    ('header', FieldSpec('headers', ':', fmt_header)),
+    ('json_field', FieldSpec('body', ':=', fmt_json_field)),
+    ('str_field', FieldSpec('body', '=', fmt_str_field)),
+    ('url_param', FieldSpec('query', '==', fmt_url_param)),
+)
 
 examples = [
     # Set a header (:)

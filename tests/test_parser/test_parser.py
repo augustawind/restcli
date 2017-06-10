@@ -9,7 +9,7 @@ import pytest_mock  # noqa: F401
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
-from restcli.parser.parser import PATTERNS
+from restcli.parser.parser import FIELD_SPECS
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ class TestParse(object):
 
     attr = 'headers'
     action = ACTIONS.assign
-    pattern_key = PATTERNS.header
+    pattern_key = FIELD_SPECS.header
     parser_name = 'parse_header'
 
     @staticmethod
