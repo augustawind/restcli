@@ -5,15 +5,17 @@ from unittest.mock import call
 
 import pytest
 import pytest_mock  # noqa: F401
+import six
 
 from restcli import yaml_utils as yaml
 from restcli.parser import parser
 from restcli.parser.lexer import ACTIONS
+from restcli.utils import AttrMap
 from restcli.parser.parser import FIELD_SPECS
 
 
 @pytest.fixture
-def request():
+def request(pytestconfig):
     """Generate a semi-random request object."""
     req = OrderedDict()
     req['method'] = random.choice(('get', 'post', 'put', 'delete'))
@@ -42,37 +44,24 @@ def request():
 
 class TestParse(object):
 
+    formatter_name = 'fmt_header'
+    field_type = 'header'
     attr = 'headers'
     action = ACTIONS.assign
-    pattern_key = FIELD_SPECS.header
-    parser_name = 'parse_header'
-
-    @staticmethod
-    def mock_subparser(mocker, key, attr):
-        in_dict = 'restcli.parser.parser.PATTERN_MAP'
-        mock_parser = mocker.MagicMock()
-        values = {key: (mock_parser, attr)}
-        mocker.patch.dict(in_dict, values)
-        return mock_parser
 
     def test_assign_headers(self, request, mocker):
-        mock_parser = self.mock_subparser(mocker, self.pattern_key, self.attr)
+        # TODO: this test is useless
+        mock_parser = mocker.patch('restcli.parser.parser.parse')
 
         # Call parser.parse
         lexemes = (
-            (ACTIONS.assign, [
-                "Content-Type:application/json",
-                "Accept:application/json",
-                "Authorization:'JWT abc123.foo'",
-            ]),
+            (ACTIONS.assign, "Content-Type:application/json"),
+            (ACTIONS.assign, "Accept:application/json"),
+            (ACTIONS.assign, "Authorization:'JWT abc123.foo'"),
         )
-        parser.parse(lexemes, request)
+        parser.parse(lexemes)
 
         # Check call args
-        calls = [
-            call(self.attr, self.action, 'Content-Type', 'application/json'),
-            call(self.attr, self.action, 'Accept', 'application/json'),
-            call(self.attr, self.action, 'Authorization', "'JWT abc123.foo'"),
-        ]
-        assert mock_parser.call_count == 3
+        calls = [call(lexemes)]
+        assert mock_parser.call_count == 1
         assert mock_parser.call_args_list == calls
