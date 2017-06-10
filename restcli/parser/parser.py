@@ -1,6 +1,5 @@
 import json
-import re
-from collections import namedtuple
+from collections import deque, namedtuple
 
 from restcli.utils import AttrMap, AttrSeq, is_ascii
 
@@ -18,70 +17,138 @@ ACTIONS = AttrSeq(
     'delete',
 )
 
-# Regex patterns for each type of token (syntax).
-PATTERNS = AttrMap(
-    ('header', re.compile(r'^(.+):(.*)$')),
-    ('json_field', re.compile(r'^(.+):=(.+)$')),
-    ('str_field', re.compile(r'^(.+)=(.+)$')),
-    ('url_param', re.compile(r'^(.+)==(.*)$')),
-)
+FieldSpec = namedtuple('FieldSpec', ('field', 'delimiter', 'formatter'))
 
 
-class FieldParser:
+def parse(nodes):
+    """Parse a sequence of ``Node``s with the override syntax.
+    
+    Args:
+        nodes: An iterable of ``Node`` objects.
+        
+    Returns:
+        A list of ``Updater`` objects.
+    """
+    results = []
 
-    def __init__(self, seq):
-        self._data = str(seq)
-        self._in_quotes = []
-        self._escaping = False
+    for node in nodes:
+        for field_type, spec in FIELD_SPECS.items():
+            key, operator, value = parse_node(node.value, spec.delimiter)
+            if not (key and operator):
+                continue
+
+            # Instantiate Updater
+            updater_cls = UPDATERS[node.action]
+
+            # Parse parameters
+            key, value = spec.formatter(key, value)
+            updater = updater_cls(spec.field, key, value)
+            results.append(updater)
+            break
+        else:
+            # TODO: refine error handling here
+            raise Exception('Unexpected argument: `{}`'.format(nodes))
+
+    return results
+
+
+def parse_node(node, delimiter):
+    """Parse an individual ``Node`` value."""
+    parser = NodeParser(node)
+    key, operator = parser.consume_until(delimiter)
+    value = parser.consume()
+    return key, operator, value
+
+
+class NodeParser:
+    """Parser class for Nodes that provides generic tools for parsing.
+    
+    Args:
+        value (str): The value being parsed.
+    """
+
+    def __init__(self, value):
+        self._data = str(value)
+        self._start_quotes = deque()
+        self._escape_next = False
+
+    def _startswith_any(self, *charsets):
+        for chars in charsets:
+            if self._data.startswith(chars):
+                return chars
+        return ''
 
     def consume(self, n=None):
         """Consume ``n`` characters.
         
-        If ``n`` is None, consume all remaining characters.
+        Args:
+            n (int): The number of chars to consume. If n is None,
+                consume all remaining characters.
+                
+        Returns:
+            The chars that were consumed.
         """
-        if n is None:
-            n += 1
-        result = self._data[:n]
+        result = self._data[n:]
         self._data = ''
         return result
 
-    def _startswith_any(self, charsets):
-        for chars in charsets:
-            if self._data.startswith(chars):
-                return chars
-        return None
+    def consume_chars(self, *charsets):
+        """Consume a specific sequence of characters.
+        
+        Args:
+            *charsets: Any number of character sequences (strings) to try, 
+                in order. The first string that matches will be consumed.
+                
+        Returns:
+            The chars that were consumed.
+        """
+        result = self._startswith_any(*charsets)
+        if result is not None:
+            index = len(result)
+            self._data = self._data[index:]
+        return result
 
     def consume_until(self, *charsets):
+        """Consume characters until one of the given strings is found.
+        
+        Args:
+            *charsets: Any number of character sequences (strings) to try, 
+                in order. The first string that matches will be consumed.
+                
+        Returns:
+            A 2-tuple of the chars consumed before the match, and the charset
+            that did match. Note that this consumes the matching charset.
+        """
         first = []
-        second = None
+        second = ''
         for char in self._data:
             if char in ESCAPES:
                 # If escape char, apply escaping rules
-                if self._escaping:
+                if self._escape_next:
                     # If escaping, ignore escape char and continue
-                    self._escaping = False
+                    self._escape_next = False
                     continue
                 else:
                     # Otherwise, escape next char
-                    self._escaping = True
+                    self._escape_next = True
 
-            elif self._escaping:
+            elif self._escape_next:
                 # If not backslash and escaping, stop escaping
-                self._escaping = False
+                self._escape_next = False
 
-            elif self._in_quotes:
+            elif self._start_quotes:
                 # If inside quotes, process char literally
                 pass
 
             elif char in QUOTES:
-                if self._in_quotes[-1] == char:
-                    self._in_quotes.pop()
+                if self._start_quotes and self._start_quotes[-1] == char:
+                    self._start_quotes.pop()
                 else:
-                    self._in_quotes.append(char)
+                    self._start_quotes.append(char)
 
             else:
                 # If condition met, stop parsing
-                second = self._startswith_any(charsets)
+                second = self._startswith_any(*charsets)
                 if second:
                     break
 
@@ -91,61 +158,6 @@ class FieldParser:
         index = len(first) + len(second)
         self._data = self._data[index:]
         return first, second
-        #
-        # def consume_until(self, *charsets):
-        #     """Consume the token until a char is in one of ``charsets``."""
-        #     return self.consume_with_predicate(lambda char: char in sentinel)
-        #
-        # def consume_while(self, *charsets):
-        #     """Consume the token while chars are in one of ``charsets``."""
-        #     return self.consume_with_predicate(lambda char: char not in sentinel)
-
-
-def parse(tokens):
-    """Parse a sequence of tokens with the override syntax."""
-    results = []
-
-    for token in tokens:
-        parser = FieldParser(token)
-        for field_type, spec in FIELD_SPECS.items():
-            has_bang, key, has_plus, operator, value = parse_token(
-                token, spec.delimiter)
-            if not (key and operator):
-                continue
-
-            # Determine Action
-            action = determine_action(has_bang, has_plus)
-
-            # Instantiate Updater
-            updater_cls = UPDATERS[action]
-
-            # Parse parameters
-            params = spec.formatter(key, value)
-            updater = updater_cls(spec.field, *params)
-            results.append(updater)
-            break
-        else:
-            # TODO: refine error handling here
-            raise Exception('Unexpected argument: `{}`'.format(tokens))
-
-    return results
-
-
-def parse_token(token, delimiter):
-    has_bang = token.consume_char('!')
-    key, has_plus = token.consume_until('+')
-    operator = token.consume_until(delimiter)
-    value = token.consume()
-    return bool(has_bang), key, bool(has_plus), operator, value
-
-
-def determine_action(has_bang, has_plus):
-    if has_bang:
-        return ACTIONS.delete
-    elif has_plus:
-        return ACTIONS.append
-    else:
-        return ACTIONS.assign
 
 
 def fmt_url_param(key, value):
@@ -178,39 +190,8 @@ def fmt_header(key, value):
     assert is_ascii(str(key)), (msg % {'section': 'name', 'text': key})
     assert is_ascii(str(value)), (msg % {'section': 'value', 'text': value})
     return key, value
-#
-#
-# def mkregex(delimiter):
-#     return re.compile(
-#         r'''
-#         ^
-#         (?P<bang> !?)       # 1) Bang "!" (optional).
-#         (?P<q1> ["']?)      # 2) Start quote (optional).
-#         (?(q1)              # 3) IFDEF start quote [2]:
-#           (?P<name>         #     3.1) Field name.
-#             [^%(del)s]      #          Must have at least 1 non-delimiter,
-#               |             #          OR
-#             (?:\\%(del)s)   #          at least 1 backslash-escaped delimiter.
-#           )+?               #
-#           (?P=q1)           #     3.2) End quote.
-#             |               # 4) ELSE:
-#           ([^!+%(del)s]+)   #     4.1) Field name.
-#         )                   #          Do not match `!`, `+`, or delimiter.
-#         (?(bang) $          # 5) IFDEF leading bang [1], finish match.
-#             |               # 6) ELSE:
-#           (\+?)             #    6.1) Plus sign "+" (optional).
-#           %(del)s           #    6.2) Delimiter.
-#           (?P<q2> ["']?)    #    6.3) Start quote (optional).
-#           (.*?)             #    6.4) Field value (optional).
-#           (?(q2) (?P=q2))   #    6.5) IFDEF start quote [6.3], end quote.
-#           $
-#         )
-#         '''
-#         % locals(), re.VERBOSE,
-#     )
 
 
-FieldSpec = namedtuple('FieldSpec', ('field', 'delimiter', 'formatter'))
 FIELD_SPECS = AttrMap(
     ('header', FieldSpec('headers', ':', fmt_header)),
     ('json_field', FieldSpec('body', ':=', fmt_json_field)),
