@@ -50,7 +50,7 @@ class TestAssign(LexerTestMixin):
     action = lexer.ACTIONS.assign
 
     def transform_args(self, args):
-        return ['-n {}'.format(arg) for arg in args]
+        return ['-n %s' % (arg,) for arg in args]
 
 
 class TestAppend(LexerTestMixin):
@@ -58,4 +58,12 @@ class TestAppend(LexerTestMixin):
     action = lexer.ACTIONS.append
 
     def transform_args(self, args):
-        return ['-a {}'.format(arg) for arg in args]
+        return ['-a %s' % (arg,) for arg in args]
+
+
+class TestDelete(LexerTestMixin):
+
+    action = lexer.ACTIONS.delete
+
+    def transform_args(self, args):
+        return ['-d %s' % (arg,) for arg in args]
