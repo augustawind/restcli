@@ -2,14 +2,12 @@
 
 ## Short Term
 
-- [ ] Get all tests passing again.
-- [ ] Update docstrings.
-- [ ] Flesh out documentation.
 - [ ] Do a solid review of error handling.
+- [ ] Document `reqmod` system.
+- [ ] Automate grabbing --help output and inserting it into README.
 
 ## Roadmap
 
-- [ ] Implement commandline Environment override system.
 - [ ] Implement localization using ugettext.
 - [ ] Write a terminal UI using `prompt_toolkit`.
 - [ ] Support running multiple Requests in sequence.

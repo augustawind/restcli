@@ -11,54 +11,22 @@ It's Postman for terminal lovers!
 Usage
 -----
 
-.. code-block:: text
+.. code-block:: console
 
     Usage: restcli [OPTIONS] COMMAND [ARGS]...
 
     Options:
-        -c, --collection PATH       Collection file.  [required]
-        -e, --env PATH              Environment file.
-        -s, --save / -S, --no-save  Save Environment to disk after changes.
-        --help                      Show this message and exit.
+      -v, --version               Show the version and exit.
+      -c, --collection PATH       Collection file.  [required]
+      -e, --env PATH              Environment file.
+      -s, --save / -S, --no-save  Save Environment to disk after changes.
+      --help                      Show this message and exit.
 
     Commands:
-        repl
-        run
-        view
-
-``restcli run``:
-
-.. code-block:: text
-
-    Usage: restcli run [OPTIONS] GROUP REQUEST [ENV]...
-
-      Run a Request.
-
-    Options:
-      -o, --override TEXT  Add "key:val" pairs that shadow the Environment.
-      --help               Show this message and exit.
-
-``restcli view``:
-
-.. code-block:: text
-
-    Usage: restcli view [OPTIONS] GROUP [REQUEST] [ATTR]
-
-      View a Group, Request, or Request Attribute.
-
-    Options:
-      --help  Show this message and exit.
-
-``restcli repl``:
-
-.. code-block:: text
-
-    Usage: restcli repl [OPTIONS]
-
-      Start an interactive command prompt.
-
-    Options:
-      --help  Show this message and exit.
+      env   View or set Environment variables.
+      repl  Start an interactive prompt.
+      run   Run a Request.
+      view  View a Group, Request, or Request Parameter.
 
 
 Overview
