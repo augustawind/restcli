@@ -2,6 +2,7 @@ import argparse
 import string
 from collections import namedtuple
 
+import click
 import six
 
 from restcli.utils import AttrSeq
@@ -17,43 +18,49 @@ ACTIONS = AttrSeq(
 
 Lexeme = namedtuple('Lexeme', ['action', 'value'])
 
-lexer = argparse.ArgumentParser(prog='lexer', add_help=False)
+
+class ClickArgumentParser(argparse.ArgumentParser):
+    """Override `ArgumentParser#error()` to raise a `click.UsageError()`."""
+
+    def error(self, message):
+        raise click.UsageError(message)
+
+
+lexer = ClickArgumentParser(prog='lexer', add_help=False)
 lexer.add_argument('-a', '--{}'.format(ACTIONS.append), action='append')
 lexer.add_argument('-n', '--{}'.format(ACTIONS.assign), action='append')
 lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
+lexer.add_argument('args', nargs='*')
 
 
-def lex(argument_str):
-    """Lex a string into a list of Lexemes.
+def lex(argv):
+    """Lex an argv style sequence into a list of Lexemes.
 
     Args:
-        argument_str: The string to lex.
+        argv: An iterable of strings.
 
     Returns:
         [ Lexeme(action, value) , ... ]
 
     Examples:
-        >>> lex('-a foo:bar -n bar:baz -a baz:quux -d quux:biff a:b x:y')
+        >>> lex(('-a', 'foo:bar', '-d', 'baz==', 'a=b', 'x:=true'))
         [
             Lexeme(action='append', value='foo:bar'),
-            Lexeme(action='assign', value='bar:baz'),
-            Lexeme(action='append', value='baz:quux'),
-            Lexeme(action='delete', value='quux:biff'),
-            Lexeme(action='assign', value='a:b'),
-            Lexeme(action='assign', value='x:y'),
+            Lexeme(action='delete', value='baz=='),
+            Lexeme(action='assign', value='a=b'),
+            Lexeme(action='assign', value='x:=true'),
         ]
     """
-    argv = tokenize(argument_str)
-    opts, args = lexer.parse_known_args(argv)
-    opts = ((k, v) for k, v in six.iteritems(vars(opts)) if v is not None)
+    opts = vars(lexer.parse_args(argv))
+    args = opts.pop('args')
+    # Lex flagged options
     lexemes = [
-        Lexeme(action, val) for action, values in opts
+        Lexeme(action, val)
+        for action, values in six.iteritems(opts)
         for val in values
     ]
-    if args:
-        assign_tokens = tokenize(' '.join(args))
-        lexemes.extend(
-            Lexeme(ACTIONS.assign, token) for token in assign_tokens)
+    # Lex short-form `ACTIONS.assign` args
+    lexemes.extend(Lexeme(ACTIONS.assign, token) for token in args)
     return lexemes
 
 
@@ -82,7 +89,7 @@ def tokenize(s, sep=string.whitespace):
     current_quote = None
 
     chars = iter(s)
-    char = next(chars, '')
+    char = six.next(chars, '')
 
     while char:
         # Quotation marks begin or end a quoted section
@@ -95,12 +102,12 @@ def tokenize(s, sep=string.whitespace):
         # Backslash makes the following character literal
         elif char in ESCAPES:
             token += char
-            char = next(chars, '')
+            char = six.next(chars, '')
 
         # Unless in quotes, whitespace is skipped and signifies the token end.
         elif not current_quote and char in sep:
             while char in sep:
-                char = next(chars, '')
+                char = six.next(chars, '')
             tokens.append(token)
             token = ''
 
@@ -109,7 +116,7 @@ def tokenize(s, sep=string.whitespace):
             continue
 
         token += char
-        char = next(chars, '')
+        char = six.next(chars, '')
 
     tokens.append(token)
     return tokens

@@ -31,14 +31,15 @@ class ModValueError(ModError):
 
 def parse_mod(mod_str):
     """Attempt to parse a str into a Mod."""
-    err = None
+    error = None
     for mod_cls in MODS.values():
         try:
             mod = mod_cls.match(mod_str)
         except ModSyntaxError as err:
+            error = err
             continue
         return mod
-    raise err
+    raise error
 
 
 class Mod(six.with_metaclass(abc.ABCMeta, object)):

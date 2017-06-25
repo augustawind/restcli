@@ -33,19 +33,16 @@ def cli(ctx, collection, env, save):
         ctx.invoke(repl)
 
 
-@cli.command(help='Run a Request.')
+@cli.command(help='Run a Request.', context_settings=dict(
+    ignore_unknown_options=True,
+))
 @click.argument('group')
 @click.argument('request')
-@click.option('-p', '--append', multiple=True,
-              help='Add "key:val" pairs that shadow the Environment.')
-@click.option('-a', '--assign', multiple=True,
-              help='Add "key:val" pairs that shadow the Environment.')
-@click.option('-d', '--delete', multiple=True,
-              help='Add "key:val" pairs that shadow the Environment.')
+@click.argument('env_modifiers', nargs=-1, type=click.UNPROCESSED)
 @pass_app
-def run(app, group, request, append, assign, delete):
+def run(app, group, request, env_modifiers):
     with expect(InputError, NotFoundError):
-        output = app.run(group, request, *(append + assign + delete))
+        output = app.run(group, request, *env_modifiers)
     click.echo(output)
 
 

@@ -23,12 +23,15 @@ class Error(Exception):
     base_msg = ''
 
     def __init__(self, msg='', action=None):
+        # TODO: determine if `action` is still needed (I think no)
         self.action = action
         self.msg = msg
 
     def show(self):
-        msg = self._fmt_label(self.base_msg, self.msg) % self._attr_dict()
-        return self._fmt_label(self.action, msg)
+        msg = self._fmt_label(self.base_msg, self.msg) % vars(self)
+        if self.action:
+            return self._fmt_label(self.action, msg)
+        return msg
 
     @staticmethod
     def _fmt_label(first, second):
@@ -46,14 +49,11 @@ class Error(Exception):
             and not (type(attr) in six.string_types and attr.startswith('__'))
         )
 
-    def _attr_dict(self):
-        return dict(inspect.getmembers(self, self._is_custom_attr))
-
 
 class InputError(Error):
     """Exception for invalid user input."""
 
-    base_msg = "Invalid input '%(item)s'"
+    base_msg = "Invalid input '%(value)s'"
 
     def __init__(self, value, msg='', action=None):
         super(InputError, self).__init__(msg, action)
