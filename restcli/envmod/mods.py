@@ -18,7 +18,27 @@ ATTR_TYPES = AttrSeq(
 
 
 class ModError(InputError):
-    """Error class for badly formed mod strings."""
+    """Invalid Mod input."""
+
+
+class ModSyntaxError(ModError):
+    """Badly structured Mod input."""
+
+
+class ModValueError(ModError):
+    """Invalid Mod key or value."""
+
+
+def parse_mod(mod_str,):
+    """Attempt to parse a str into a Mod."""
+    err = None
+    for mod_cls in MODS:
+        try:
+            mod = mod_cls.match(mod_str)
+        except ModSyntaxError as err:
+            continue
+        return mod
+    raise err
 
 
 class Mod(six.with_metaclass(abc.ABCMeta, object)):
@@ -32,18 +52,31 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
 
     split_re_tpl = string.Template(r'[^\\]${delimiter}')
 
-    def __init__(self, key, value, action):
-        self.key, self.value = self.fmt_params(key, value)
-        self.action = action
+    def __init__(self, key, value):
+        self.raw_key = key
+        self.raw_value = value
+        self.key = None
+        self.value = None
+        self.validated = False
 
     @classmethod
-    def match(cls, action, mod_str):
+    @abc.abstractmethod
+    def clean_params(cls, key, value):
+        """Validate and format the Mod's key and/or value."""
+
+    @classmethod
+    def match(cls, mod_str):
         parts = cls.pattern.split(mod_str)
-        if len(parts) != 3:
+        if len(parts) not in (2, 3):
             # TODO: custom error class
-            raise ModError(value=mod_str, msg='Mod structure is ambiguous')
-        key, delimiter, value = cls.fmt_params(*parts)
-        return cls(key=key, value=value, action=action)
+            raise ModSyntaxError(
+                value=mod_str, msg='Mod structure is ambiguous')
+        key, value = parts
+        return cls(key=key, value=value)
+
+    def clean(self):
+        self.key, self.value = self.clean_params(self.raw_key, self.raw_value)
+        self.validated = True
 
     @classproperty
     def pattern(cls):
@@ -53,19 +86,6 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
             cls._pattern = re.compile(re_str)
         return cls._pattern
 
-    @classproperty
-    def types(cls):
-        """Tuple of all available Mod types."""
-        # The order here is important (still? we'll see)
-        if not cls._types:
-            cls._types = AttrSeq(*cls.__subclasses__())
-        return cls._types
-
-    @classmethod
-    @abc.abstractmethod
-    def fmt_params(self, key, value):
-        """Validate and format the Mod's key and/or value."""
-
 
 class JsonFieldMod(Mod):
 
@@ -74,12 +94,12 @@ class JsonFieldMod(Mod):
     delimiter = ':='
 
     @classmethod
-    def fmt_params(cls, key, value):
+    def clean_params(cls, key, value):
         try:
             json_value = json.loads(value)
         except json.JSONDecodeError as err:
             # TODO: implement error handling
-            raise ModError(value=value, msg='invalid JSON - %s' % err)
+            raise ModValueError(value=value, msg='invalid JSON - %s' % err)
         return key, json_value
 
 
@@ -90,7 +110,7 @@ class StrFieldMod(Mod):
     delimiter = '='
 
     @classmethod
-    def fmt_params(cls, key, value):
+    def clean_params(cls, key, value):
         return key, value
 
 
@@ -101,13 +121,13 @@ class HeaderMod(Mod):
     delimiter = ':'
 
     @classmethod
-    def fmt_params(cls, key, value):
+    def clean_params(cls, key, value):
         # TODO: legit error messages
         msg = "non-ASCII character(s) found in header"
         if not is_ascii(str(key)):
-            raise ModError(value=key, msg=msg)
+            raise ModValueError(value=key, msg=msg)
         if not is_ascii(str(value)):
-            raise ModError(value=value, msg=msg)
+            raise ModValueError(value=value, msg=msg)
         return key, value
 
 
@@ -118,12 +138,19 @@ class UrlParamMod(Mod):
     delimiter = '=='
 
     @classmethod
-    def fmt_params(cls, key, value):
+    def clean_params(cls, key, value):
         if not all(char in VALID_URL_CHARS for char in key + value):
-            raise ModError(
+            raise ModValueError(
                 value=cls.delimiter.join((key, value)),
                 msg='Invalid char(s) found in URL parameter.'
                     ' Accepted chars are: %s' % (VALID_URL_CHARS,)
         )
         return key, value
 
+# Tuple of Mod classes, in order of specificity of delimiters
+MODS = (
+    JsonFieldMod,
+    UrlParamMod,
+    HeaderMod,
+    StrFieldMod
+)

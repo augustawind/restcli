@@ -24,15 +24,13 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
     Args:
         request_attr (str): The name of the Request Attribute to update.
         key (str): The key that will be updated within the Request Attribute.
-
-    Keyword Args:
-        value: The value to use for the update. 
+        value: The new value.
 
     Notes:
         Child classes must implement the ``update_request`` method.
     """
 
-    def __init__(self, request_attr, key, value=None):
+    def __init__(self, request_attr, key, value):
         self.request_attr = request_attr
         self.key = key
         self.value = value

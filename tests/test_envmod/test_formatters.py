@@ -4,7 +4,8 @@ import pytest
 
 from restcli.envmod import parser
 from restcli.envmod.lexer import ACTIONS
-from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
+from restcli.params import VALID_URL_CHARS
+from tests.helpers import get_random_ascii, get_random_unicode
 
 
 class FormatterTestMixin(object):
@@ -29,11 +30,11 @@ class TestFormatURLParam(FormatterTestMixin):
     fmt = parser.fmt_url_param
 
     def test_valid(self):
-        value = ''.join(random.sample(parser.VALID_URL_CHARS, 10))
+        value = ''.join(random.sample(VALID_URL_CHARS, 10))
         self.run_test(
             in_val=value,
             out_val=value,
-            key=''.join(random.sample(parser.VALID_URL_CHARS, 10)),
+            key=''.join(random.sample(VALID_URL_CHARS, 10)),
         )
 
     def test_invalid(self):
