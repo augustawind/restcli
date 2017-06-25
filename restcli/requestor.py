@@ -15,10 +15,10 @@ class Requestor(object):
         self.collection = Collection(collection_file)
         self.env = Environment(env_file)
 
-    def request(self, group, name, **env_override):
+    def request(self, group, name, updaters=()):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        request_kwargs = self.parse_request(request, self.env, **env_override)
+        request_kwargs = self.parse_request(request, self.env, updaters)
 
         response = requests.request(**request_kwargs)
 
@@ -32,10 +32,12 @@ class Requestor(object):
         return response
 
     @classmethod
-    def parse_request(cls, request, env, **env_override):
+    def parse_request(cls, request, env, updaters=()):
         """Parse a Request object in the context of an Environment."""
         env = env.copy()
-        env.update(env_override)
+        for updater in updaters:
+            updater.update_request(request)
+
         obj = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),

@@ -7,8 +7,8 @@ import pytest
 import pytest_mock  # noqa: F401
 
 from restcli import yaml_utils as yaml
-from restcli.parser import parser
-from restcli.parser.lexer import ACTIONS
+from restcli.envmod import parser
+from restcli.envmod.lexer import ACTIONS
 
 
 @pytest.fixture
@@ -48,9 +48,8 @@ class TestParse(object):
 
     def test_assign_headers(self, request, mocker):
         # TODO: this test is useless
-        mock_parser = mocker.patch('restcli.parser.parser.parse')
+        mock_parser = mocker.patch('restcli.envmod.parser.parse')
 
-        # Call parser.parse
         lexemes = (
             (ACTIONS.assign, "Content-Type:application/json"),
             (ACTIONS.assign, "Accept:application/json"),
@@ -58,7 +57,6 @@ class TestParse(object):
         )
         parser.parse(lexemes)
 
-        # Check call args
         calls = [call(lexemes)]
         assert mock_parser.call_count == 1
         assert mock_parser.call_args_list == calls

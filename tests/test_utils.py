@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import restcli.parser.lexer
+import restcli.envmod.lexer
 from restcli import utils
 
 from .helpers import get_random_ascii, get_random_unicode
@@ -8,7 +8,7 @@ from .helpers import get_random_ascii, get_random_unicode
 
 def test_split_quoted():
     s = r"""When I said "hi, foo", foo said 'hi, "hi, foo"' \a\1\3 \4."""
-    words = restcli.parser.lexer.tokenize(s)
+    words = restcli.envmod.lexer.tokenize(s)
     expected = ['When', 'I', 'said', '"hi, foo",', 'foo', 'said',
                 '\'hi, "hi, foo"\'', '\\a\\1\\3', '\\4.']
     assert words == expected

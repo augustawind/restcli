@@ -1,68 +1,69 @@
 import json
-from collections import deque, namedtuple
+from collections import namedtuple, deque
 
-from restcli.utils import AttrMap, AttrSeq, is_ascii
+from restcli.envmod.mods import Mod
+from restcli.envmod.lexer import ESCAPES, QUOTES
 
-from .lexer import ESCAPES, QUOTES
-from .updater import UPDATERS
+from restcli.envmod.mods import MOD_TYPES
+from restcli.envmod.updater import UPDATERS, Updates
 
 VALID_URL_CHARS = (
     r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
     r'''0123456789-._~:/?#[]@!$&'()*+,;=`'''
 )
 
-ACTIONS = AttrSeq(
-    'append',
-    'assign',
-    'delete',
-)
 
-FieldSpec = namedtuple('FieldSpec', ('field', 'delimiter', 'formatter'))
+def parse(lexemes):
+    """Parse a sequence of Lexemes.
 
-
-def parse(nodes):
-    """Parse a sequence of ``Node``s with the override syntax.
-    
     Args:
-        nodes: An iterable of ``Node`` objects.
-        
-    Returns:
-        A list of ``Updater`` objects.
-    """
-    results = []
+        lexemes: An iterable of Lexeme objects.
 
-    for node in nodes:
-        for field_type, spec in FIELD_SPECS.items():
-            key, operator, value = parse_node(node.value, spec.delimiter)
+    Returns:
+        An Updates object that can be used to update Requests.
+    """
+    updates = Updates()
+
+    for lexeme in lexemes:
+        for mod_cls in MOD_TYPES:
+            mod = mod_cls(action=lexeme.action, mod_str=lexeme.value)
             if not (key and operator):
                 continue
 
-            # Instantiate Updater
-            updater_cls = UPDATERS[node.action]
+            # Format Mod params
+            key, value = mod_type.formatter(key, value)
 
-            # Parse parameters
-            key, value = spec.formatter(key, value)
-            updater = updater_cls(spec.field, key, value)
-            results.append(updater)
+            # Create Updaters
+            updater_cls = UPDATERS[lexeme.action]
+            updater = updater_cls(mod_type.field, key, value)
+            updates.append(updater)
             break
         else:
             # TODO: refine error handling here
-            raise Exception('Unexpected argument: `{}`'.format(nodes))
+            raise Exception('Unexpected argument: `{}`'.format(lexemes))
 
-    return results
+    return updates
 
 
-def parse_node(node, delimiter):
-    """Parse an individual ``Node`` value."""
-    parser = NodeParser(node)
+def parse_mod(lexeme, delimiter):
+    """Parse a Modifier.
+
+    Args:
+        lexeme (str): The Mod string to parse.
+        delimiter (str): The operator to split on.
+
+    Returns:
+        Mod(key, operator, value)
+    """
+    parser = ModParser(lexeme)
     key, operator = parser.consume_until(delimiter)
     value = parser.consume()
-    return key, operator, value
+    return Mod(key=key, operator=operator, value=value)
 
 
-class NodeParser:
-    """Parser class for Nodes that provides generic tools for parsing.
-    
+class ModParser:
+    """Wrapper for Modifiers that provides generic tools for parsing.
+
     Args:
         value (str): The value being parsed.
     """
@@ -80,11 +81,11 @@ class NodeParser:
 
     def consume(self, n=None):
         """Consume ``n`` characters.
-        
+
         Args:
             n (int): The number of chars to consume. If n is None,
                 consume all remaining characters.
-                
+
         Returns:
             The chars that were consumed.
         """
@@ -94,11 +95,11 @@ class NodeParser:
 
     def consume_chars(self, *charsets):
         """Consume a specific sequence of characters.
-        
+
         Args:
             *charsets: Any number of character sequences (strings) to try, 
                 in order. The first string that matches will be consumed.
-                
+
         Returns:
             The chars that were consumed.
         """
@@ -108,13 +109,14 @@ class NodeParser:
             self._data = self._data[index:]
         return result
 
+    # TODO: combine this with lexer.tokenize
     def consume_until(self, *charsets):
         """Consume characters until one of the given strings is found.
-        
+
         Args:
             *charsets: Any number of character sequences (strings) to try, 
                 in order. The first string that matches will be consumed.
-                
+
         Returns:
             A 2-tuple of the chars consumed before the match, and the charset
             that did match. Note that this consumes the matching charset.
@@ -159,45 +161,6 @@ class NodeParser:
         self._data = self._data[index:]
         return first, second
 
-
-def fmt_url_param(key, value):
-    """Parse a URL parameter."""
-    assert all(char in VALID_URL_CHARS for char in key + value), (
-        'Invalid char(s) found in URL parameter. Accepted chars are: {}'
-        '\nAll other chars must be percent-encoded.'.format(VALID_URL_CHARS)
-    )
-    return key, value
-
-
-def fmt_json_field(key, value):
-    """Parse a fully qualified JSON field."""
-    try:
-        json_value = json.loads(value)
-    except json.JSONDecodeError:
-        # TODO: implement error handling
-        raise
-    return key, json_value
-
-
-def fmt_str_field(key, value):
-    """Parse a JSON field as a string."""
-    return key, value
-
-
-def fmt_header(key, value):
-    """Parse a header value."""
-    msg = "Non-ASCII character(s) found in header %(section) '%(text)'."
-    assert is_ascii(str(key)), (msg % {'section': 'name', 'text': key})
-    assert is_ascii(str(value)), (msg % {'section': 'value', 'text': value})
-    return key, value
-
-
-FIELD_SPECS = AttrMap(
-    ('header', FieldSpec('headers', ':', fmt_header)),
-    ('json_field', FieldSpec('body', ':=', fmt_json_field)),
-    ('str_field', FieldSpec('body', '=', fmt_str_field)),
-    ('url_param', FieldSpec('query', '==', fmt_url_param)),
-)
 
 examples = [
     # Set a header (:)

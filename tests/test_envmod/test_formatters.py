@@ -2,8 +2,8 @@ import random
 
 import pytest
 
-from restcli.parser import parser
-from restcli.parser.lexer import ACTIONS
+from restcli.envmod import parser
+from restcli.envmod.lexer import ACTIONS
 from tests.helpers import attrs_list, get_random_ascii, get_random_unicode
 
 

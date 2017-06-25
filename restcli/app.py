@@ -1,5 +1,4 @@
 import json
-import re
 from string import Template
 
 import six
@@ -12,19 +11,30 @@ from pygments.lexers.textfmts import HttpLexer
 from restcli.exceptions import (
     AttributeNotFoundError,
     GroupNotFoundError,
-    InputError,
     RequestNotFoundError,
 )
+from restcli.envmod import lexer, parser
 from restcli.requestor import Requestor
-from restcli import yaml_utils as yaml
 
 __all__ = ['App']
 
-ENV_RE = re.compile(r'([^:]+):(.*)')
-
 
 class App(object):
-    """Input/output agnostic application runner for restcli."""
+    """High-level execution logic for restcli.
+
+    Args:
+        collection_file (str): Path to a Collection file.
+        env_file (str): Path to an Environment file.
+
+    Keyword Args:
+        autosave (bool): Whether to automatically save changes to disk.
+            Default: False
+        style (str): Pygments colorscheme name. Default: 'fruity'
+
+    Attributes:
+        r: The Requestor object. Handles almost all I/O.
+        autosave (bool): Same as above. Can be modified.
+    """
 
     HTTP_TPL = Template('\n'.join((
         'HTTP/${http_version} ${status_code} ${reason}',
@@ -43,12 +53,17 @@ class App(object):
         self.formatter = Terminal256Formatter(style=style)
 
     def run(self, group_name, request_name, *env_args, save=False):
-        """Run a Request."""
+        """Run a Request.
+
+        Args:
+            group_name (str): A Group name in the Collection.
+            request_name (str): A Request name in the Collection.
+        """
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
 
-        set_env, _ = self.parse_env(*env_args)
-        response = self.r.request(group_name, request_name, **set_env)
+        updaters = self.parse_env(env_args)
+        response = self.r.request(group_name, request_name, updaters)
 
         if save or self.autosave:
             self.r.env.save()
@@ -104,35 +119,15 @@ class App(object):
         return ''
 
     @staticmethod
-    def parse_env(*args):
+    def parse_env(args):
         """Parse some string args with Environment syntax."""
-        del_env = []
-        set_env = {}
-        for arg in args:
-            # Parse deletion syntax
-            if arg.startswith('!'):
-                var = arg[1:]
-                del_env.append(var)
-                if var in set_env:
-                    del set_env[var]
-                continue
-
-            # Parse assignment syntax
-            match = ENV_RE.match(arg)
-            if not match:
-                raise InputError(
-                    line=' '.join(args),
-                    item=arg,
-                    msg="env args must have the format 'KEY:VALUE'",
-                )
-            key, val = match.groups()
-            set_env[key] = yaml.dump(val)
-        return set_env, del_env
+        lexemes = lexer.lex(args)
+        return parser.parse(lexemes)
 
     def set_env(self, *args, save=False):
         """Set some new variables in the Environment."""
-        set_env, del_env = self.parse_env(*args)
-        self.r.env.update(**set_env)
+        set_env, del_env = self.parse_env(args)
+        self.r.env.update_request(**set_env)
         self.r.env.remove(*del_env)
 
         output = ''

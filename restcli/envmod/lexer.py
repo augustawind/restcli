@@ -6,7 +6,6 @@ import six
 
 from restcli.utils import AttrSeq
 
-
 QUOTES = '"\''
 ESCAPES = '\\'
 
@@ -16,63 +15,63 @@ ACTIONS = AttrSeq(
     'delete',
 )
 
+Lexeme = namedtuple('Lexeme', ['action', 'value'])
+
 lexer = argparse.ArgumentParser(prog='lexer', add_help=False)
 lexer.add_argument('-a', '--{}'.format(ACTIONS.append), action='append')
 lexer.add_argument('-n', '--{}'.format(ACTIONS.assign), action='append')
 lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
 
-Node = namedtuple('Node', ['action', 'value'])
-
 
 def lex(argument_str):
-    """Lex a string into a list of ``Node``s.
-    
+    """Lex a string into a list of Lexemes.
+
     Args:
         argument_str: The string to lex.
-        
+
     Returns:
-        A list of ``Node`` objects.
-        
+        [ Lexeme(action, value) , ... ]
+
     Examples:
         >>> lex('-a foo:bar -n bar:baz -a baz:quux -d quux:biff a:b x:y')
         [
-            Node(action='append', value='foo:bar'),
-            Node(action='assign', value='bar:baz'),
-            Node(action='append', value='baz:quux'),
-            Node(action='delete', value='quux:biff'),
-            Node(action='assign', value='a:b'),
-            Node(action='assign', value='x:y'),
+            Lexeme(action='append', value='foo:bar'),
+            Lexeme(action='assign', value='bar:baz'),
+            Lexeme(action='append', value='baz:quux'),
+            Lexeme(action='delete', value='quux:biff'),
+            Lexeme(action='assign', value='a:b'),
+            Lexeme(action='assign', value='x:y'),
         ]
     """
     argv = tokenize(argument_str)
     opts, args = lexer.parse_known_args(argv)
     opts = ((k, v) for k, v in six.iteritems(vars(opts)) if v is not None)
-    nodes = [
-        Node(action, val) for action, values in opts
+    lexemes = [
+        Lexeme(action, val) for action, values in opts
         for val in values
     ]
     if args:
         assign_tokens = tokenize(' '.join(args))
-        nodes.extend(Node(ACTIONS.assign, token) for token in assign_tokens)
-    return nodes
+        lexemes.extend(Lexeme(ACTIONS.assign, token) for token in assign_tokens)
+    return lexemes
 
 
 def tokenize(s, sep=string.whitespace):
     """Split a string on whitespace.
-    
+
     Whitespace can be present in a token if it is preceded by a backslash or
     contained within non-escaped quotations.
-    
+
     Quotations can be present in a token if they are preceded by a backslash or
     contained within non-escaped quotations of a different kind.
-    
+
     Args:
         s (str) - The string to tokenize.
         sep (str) - Character(s) to use as separators. Defaults to whitespace.
-    
+
     Returns:
         A list of tokens.
-        
+
     Examples:
         >>> tokenize('"Hello world!" I\ love \\\'Python programming!\\\'')
         ['Hello world!', 'I love', '\'Python', 'programming!\'']

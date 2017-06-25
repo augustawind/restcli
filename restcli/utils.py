@@ -5,35 +5,35 @@ import six
 
 class AttrSeq(Sequence):
     """An immutable sequence that supports dot notation.
-    
+
     Args:
         *args: Items to create the sequence from.
     """
 
     def __init__(self, *args):
-        self._dict = OrderedDict((x, x) for x in args)
+        self._seq = args
 
     def __getattr__(self, item):
-        return self._dict[item]
+        return item
 
     def __getitem__(self, item):
-        return self._dict[item]
+        return self._seq[item]
 
     def __iter__(self):
-        return iter(self._dict)
+        return iter(self._seq)
 
     def __len__(self):
-        return len(self._dict)
+        return len(self._seq)
 
     def __copy__(self):
-        return type(self)(*six.iterkeys(self._dict))
+        return self.__class__(*self._seq)
 
     copy = __copy__
 
 
 class AttrMap(Mapping):
     """An immutable, ordered mapping that supports dot notation.
-    
+
     Args:
         *pairs: 2-tuples to create the mapping from.
     """
@@ -53,14 +53,14 @@ class AttrMap(Mapping):
         return len(self._dict)
 
     def __copy__(self):
-        return type(self)(*self._dict.items())
+        return self.__class__(*six.iteritems(self._dict))
 
     copy = __copy__
 
 
 class MultiAttrMap(AttrMap):
     """Like AttrMap, but supports multiple keys for each value.
-    
+
     Each key must be a tuple. When accessing attrs, any key in the tuple works.
     """
 
@@ -73,6 +73,20 @@ class MultiAttrMap(AttrMap):
             expanded_pairs.extend((key, value) for key in multi_key)
 
         super(MultiAttrMap, self).__init__(*expanded_pairs)
+
+
+class classproperty:
+    """Like the @property decorator but for class methods."""
+
+    def __init__(self, method=None):
+        self.fget = method
+
+    def __get__(self, instance, cls=None):
+        return self.fget(cls)
+
+    def getter(self, method):
+        self.fget = method
+        return self
 
 
 def recursive_update(mapping, data):

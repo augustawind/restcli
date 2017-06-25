@@ -5,21 +5,32 @@ import six
 from restcli.utils import AttrMap
 
 
+class Updates(list):
+    """Simple list wrapper that provides update utilities."""
+
+    def apply(self, request):
+        """Apply all updates to a Request object.
+
+        Args:
+            request (object): The Request object to update.
+        """
+        for updater in self:
+            updater(request)
+
+
 class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
     """Base class for callable objects that update Request Attributes.
-    
+
     Args:
         request_attr (str): The name of the Request Attribute to update.
         key (str): The key that will be updated within the Request Attribute.
-        
+
     Keyword Args:
         value: The value to use for the update. 
-        
+
     Notes:
         Child classes must implement the ``update_request`` method.
     """
-
-    action = None
 
     def __init__(self, request_attr, key, value=None):
         self.request_attr = request_attr
@@ -28,12 +39,12 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
 
     def __call__(self, request):
         """Update a Request.
-        
+
         This method dispatches to ``update_request`` to execute the update.
-        
+
         Args:
             request (dict): The Request object.
-            
+
         Returns:
             The updated value.
         """
@@ -44,14 +55,13 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def update_request(self, request_attr):
         """Update a Request Attribute.
-        
+
         Args:
             request_attr: The current value of the Request Attribute to update.
-            
+
         Notes:
             Child classes must implement this method.
         """
-        pass
 
 
 class AppendUpdater(BaseUpdater):

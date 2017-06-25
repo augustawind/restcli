@@ -14,3 +14,7 @@ META_ATTRS = AttrMap(
     ('defaults', dict),
     ('lib', list),
 )
+VALID_URL_CHARS = (
+    r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
+    r'''0123456789-._~:/?#[]@!$&'()*+,;=`'''
+)
