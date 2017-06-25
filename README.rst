@@ -185,6 +185,88 @@ Request Parameters
 Templating
 ^^^^^^^^^^
 
+**restcli** supports `Jinja2`_ templates in the ``url``, ``headers``, and
+``body`` Request parameters as a way to parameterize Requests with
+`Environment`_ files, explained below. Any template variables in these
+parameters, denoted by double curly brackets, will be replaced with concrete
+values from the `Environment`_ before the request is executed.
+
+Let's pretend we're modelling an API for a super secretive, and possibly a
+a little frightening, membership club. Members are invited in, and admins
+can upgrade their memberships when they're deemed "worthy". And it just so
+happens that Wanda, who's been very active in the club this year, has been
+chosen for a membership upgrade.
+
+We'll start with a Collection that looks like this:
+
+.. code-block:: yaml
+
+    # secret_club.yaml
+    ---
+    memberships:
+        upgrade:
+            method: post
+            url: '{{ server }}/memberships/{{ member_id }}/upgrade'
+            headers:
+                Content-Type: application/json
+                X-Secret-Key: '{{ secret_key }}'
+            body: |
+                vip_access: True
+                rank: '{{ next_rank }}'
+                privileges: '{{ priveleges }}'
+
+
+Well how about that! We've got some template variables that need filling. Let's
+create an `Environment`_ file to do just that:
+
+.. code-block:: yaml
+
+    # wanda.yaml
+    ---
+    server: 'https://secret-club.org'
+    member_id: '12345'
+    secret_key: 5up3r53cr37
+    rank: Sultan of Secrets
+    privileges:
+        - penthouse access
+        - cuddling kittens
+
+Now we'll run the request:
+
+.. code-block:: sh
+
+    $ restcli -c secret_club.yaml -e wanda.yaml run memberships upgrade
+
+When we hit enter, **restcli** loads ``secret_club.yaml`` and ``wanda.yaml``
+into memory and calls ``jinja2.Template#render()`` on each parameter
+that supports templating, using the ``wanda.yaml`` `Environment`_ as the
+rendering context. This is what the Request looks like just before being sent
+out:
+
+.. code-block:: yaml
+
+    # secret_club2.yaml
+    ---
+    memberships:
+        upgrade:
+            method: post
+            url: 'https://secret-club.org/memberships/12345/upgrade'
+            headers:
+                Content-Type: application/json
+                X-Secret-Key: 5up3r53cr37
+            body: |
+                vip_access: True
+                rank: Sultan of Secrets
+                privileges:
+                    - penthouse access
+                    - cuddling kittens
+
+Have fun cuddling those kittens Wanda!
+
+We just covered the common case, but there's much more to templating, including
+conditionals and control structures. **restcli** supports the entire
+`Jinja2 template language`_, so click the link to learn more.
+
 
 Scripting
 ^^^^^^^^^
@@ -345,7 +427,9 @@ This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_
 for more information.
 
-.. _block styles: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
-.. _literal style: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
+.. _Jinja2: <http://jinja2.pocoo.org/docs/2.9/>
+.. _Jinja2 template language: <http://jinja.pocoo.org/docs/2.9/templates/>
 .. _response object: <http://docs.python-requests.org/en/stable/api/#requests.Response>
 .. _requests library: <http://docs.python-requests.org/en/stable/>
+.. _block styles: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
+.. _literal style: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
