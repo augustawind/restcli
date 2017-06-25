@@ -98,9 +98,9 @@ Collections
 -----------
 
 **restcli** understands your API through YAML files called *Collections*.
-*Collections are objects composed of *Groups*, which are again objects composed
-*of `*Requests*`_. A Collection is essentially just a bunch of Requests --
-*Groups are purely organizational.
+Collections are objects composed of *Groups*, which are again objects composed
+of `Requests`_. A Collection is essentially just a bunch of Requests --
+Groups are purely organizational.
 
 .. code-block:: yaml
 
@@ -226,7 +226,7 @@ your API.
 ``body`` (string, templates)
     The request body. Only JSON is supported at this time, and in order to
     support `templating`_, it must be encoded as a string. You'll probably
-    want to read the section on `YAML block styles`_ at some point.
+    want to read the section on `block styles`_ at some point.
 
     Our ``body`` parameter has 3 fields, ``name``, ``age``, and ``can_keep_secrets``.
     The first two are parameterized, but we just set the third to ``true``
@@ -245,10 +245,10 @@ Templating
 ----------
 
 **restcli** supports `Jinja2`_ templates in the ``url``, ``headers``, and
-*``body`` parameters to parameterize Requests with the help of `Environment`_
-*files. Any template variables in these parameters, denoted by double curly
-*brackets, will be replaced with concrete values from the `Environment`_ before
-*the request is executed.
+``body`` parameters to parameterize Requests with the help of `Environment`_
+files. Any template variables in these parameters, denoted by double curly
+brackets, will be replaced with concrete values from the `Environment`_ before
+the request is executed.
 
 Remember how we said that admins in The Secretmasons can promote members (if
 they're "worthy")? Well it just so happens that Wanda, who's been very active
@@ -375,7 +375,7 @@ lib definitions
 
 .. note::
     Since Python is whitespace sensitive, you'll probably want to read the
-    section on `YAML block styles`_, too.
+    section on `block styles`_, too.
 
 
 .. _Config document:
@@ -471,7 +471,7 @@ Adding to the example above:
             basket_weaving: 11
 
 The vertical bar (``|``) denotes the start of a literal block, so newlines are
- preserved, as well as any *additional* indentation. In this example, the
+preserved, as well as any *additional* indentation. In this example, the
 result is that the value of ``body`` is 5 lines of text, with the last two
 lines indented 4 spaces.
 
@@ -479,8 +479,8 @@ Note that it is impossible to escape characters within a literal block, so if
 that's something you need you may have to try a different
 
 
-Interactive Prompt
-------------------
+B. Interactive Prompt
+---------------------
 
 The interactive prompt is a read-eval-print loop which supports the same API
 as the commandline interface, but with a few additional commands for
@@ -507,8 +507,8 @@ convenience. Here's the full usage text for the REPL:
       view               View a Group, Request, or Request Parameter.
 
 
-License
--------
+C. License
+----------
 
 This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_
@@ -516,7 +516,7 @@ for more information.
 
 .. _idempotent: <https://en.wikipedia.org/wiki/Idempotence>
 .. _Jinja2: <http://jinja2.pocoo.org/docs/2.9/>
-.. _Jinja2 Template Designer Documentation:: <http://jinja.pocoo.org/docs/2.9/templates/>
+.. _Jinja2 Template Designer Documentation: <http://jinja.pocoo.org/docs/2.9/templates/>
 .. _Jinja2 Template: <http://jinja.pocoo.org/docs/2.9/api/#jinja2.Template>
 .. _template context: <http://jinja.pocoo.org/docs/2.9/api/#the-context>
 .. _Render each template: <http://jinja.pocoo.org/docs/2.9/api/#jinja2.Template.render>
