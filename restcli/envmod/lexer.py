@@ -52,7 +52,8 @@ def lex(argument_str):
     ]
     if args:
         assign_tokens = tokenize(' '.join(args))
-        lexemes.extend(Lexeme(ACTIONS.assign, token) for token in assign_tokens)
+        lexemes.extend(
+            Lexeme(ACTIONS.assign, token) for token in assign_tokens)
     return lexemes
 
 

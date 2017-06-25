@@ -143,8 +143,9 @@ class UrlParamMod(Mod):
                 value=cls.delimiter.join((key, value)),
                 msg='Invalid char(s) found in URL parameter.'
                     ' Accepted chars are: %s' % (VALID_URL_CHARS,)
-        )
+            )
         return key, value
+
 
 # Tuple of Mod classes, in order of specificity of delimiters
 MODS = AttrMap(*(

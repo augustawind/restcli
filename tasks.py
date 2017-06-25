@@ -21,7 +21,7 @@ def clean(ctx):
 @task(aliases=('l',))
 def lint(ctx):
     """Run the linter(s)."""
-    ctx.run('flake8 restcli/ tests/', pty=True)
+    ctx.run('pycodestyle', pty=True)
 
 
 @task(aliases=('t',))
