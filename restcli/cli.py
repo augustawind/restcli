@@ -1,6 +1,9 @@
+import sys
+
 import click
 from click_repl import repl as start_repl
 
+from version import VERSION
 from restcli.app import App
 from restcli.exceptions import (
     CollectionError,
@@ -15,6 +18,15 @@ pass_app = click.make_pass_decorator(App)
 
 
 @click.group(invoke_without_command=True)
+@click.version_option(
+    VERSION,
+    '-v', '--version',
+    prog_name='restcli',
+    message=' '.join((
+        '%(prog)s %(version)s',
+        '(Python %s)' % '.'.join(map(str, sys.version_info[:3])),
+    )),
+)
 @click.option('-c', '--collection', envvar='RESTCLI_COLLECTION', required=True,
               type=click.Path(exists=True, dir_okay=False),
               help='Collection file.')
@@ -70,49 +82,51 @@ def env(app, args):
     click.echo(output)
 
 
-@cli.command(help='Reload Collection or Environment from disk.'
-                  ' If no options are given, reload both.')
-@click.option('-c/-C', '--collection/--no-collection', default=False,
-              help='Reload the Collection.')
-@click.option('-e/-E', '--env/--no-env', default=False,
-              help='Reload the Environment.')
-@pass_app
-def reload(app, collection, env):
-    output = ''
-    if not (collection or env):
-        collection = True
-        env = True
-    if collection:
-        output += app.load_collection()
-    if env:
-        output += app.load_env()
-    click.echo(output)
-
-
-@cli.command(help='Save the current Environment to disk.')
-@pass_app
-def save(app):
-    output = app.save_env()
-    click.echo(output)
-
-
-@cli.command(help='Change to and load a new Collection file.')
-@click.argument('path')
-@pass_app
-def change_collection(app, path):
-    output = app.load_collection(path)
-    click.echo(output)
-
-
-@cli.command(help='Change to and load a new Environment file.')
-@click.argument('path')
-@pass_app
-def change_env(app, path):
-    output = app.load_env(path)
-    click.echo(output)
-
-
 @cli.command(help='Start an interactive prompt.')
 @click.pass_context
 def repl(ctx):
+    # Define REPL-only commands here.
+    # --------------------------------------------
+
+    @cli.command(help='Reload Collection or Environment from disk.'
+                      ' If no options are given, reload both.')
+    @click.option('-c/-C', '--collection/--no-collection', default=False,
+                  help='Reload the Collection.')
+    @click.option('-e/-E', '--env/--no-env', default=False,
+                  help='Reload the Environment.')
+    @pass_app
+    def reload(app, collection, env):
+        output = ''
+        if not (collection or env):
+            collection = True
+            env = True
+        if collection:
+            output += app.load_collection()
+        if env:
+            output += app.load_env()
+        click.echo(output)
+
+    @cli.command(help='Save the current Environment to disk.')
+    @pass_app
+    def save(app):
+        output = app.save_env()
+        click.echo(output)
+
+    @cli.command(help='Change to and load a new Collection file.')
+    @click.argument('path')
+    @pass_app
+    def change_collection(app, path):
+        output = app.load_collection(path)
+        click.echo(output)
+
+    @cli.command(help='Change to and load a new Environment file.')
+    @click.argument('path')
+    @pass_app
+    def change_env(app, path):
+        output = app.load_env(path)
+        click.echo(output)
+
+    # Start REPL.
+    # --------------------------------------------
+
     start_repl(ctx)

@@ -12,7 +12,7 @@ except ImportError:
     from distutils.core import setup
 
 # avoid loading the package before requirements are installed:
-version = SourceFileLoader('version', 'restcli/version.py').load_module()
+version = SourceFileLoader('version', 'version.py').load_module()
 
 __version__ = str(version.VERSION)
 
