@@ -12,7 +12,7 @@ from restcli.exceptions import (
     LibError,
     FileContentError,
 )
-from restcli.params import REQUIRED_REQUEST_PARAMS, REQUEST_PARAMS, META_PARAMS
+from restcli.params import REQUIRED_REQUEST_PARAMS, REQUEST_PARAMS, CONFIG_PARAMS
 
 __all__ = ['Collection', 'Environment']
 
@@ -70,9 +70,9 @@ class Collection(YamlDictReader):
                 data = yaml.load(handle, many=True)
 
             if len(data) == 1:
-                meta, collection = {}, data[0]
+                config, collection = {}, data[0]
             elif len(data) == 2:
-                meta, collection = data
+                config, collection = data
             else:
                 if len(data) == 0:
                     msg = 'Collection document not found'
@@ -80,24 +80,24 @@ class Collection(YamlDictReader):
                     msg = 'Too many documents; expected 1 or 2'
                 self.raise_error(msg, [])
 
-            self.load_meta(meta)
+            self.load_config(config)
             self.load_collection(collection)
 
-    def load_meta(self, meta):
-        """Parse and validate Collection Meta."""
+    def load_config(self, config):
+        """Parse and validate Collection Config."""
         # Verify all fields are known
-        for key in six.iterkeys(meta):
-            if key not in META_PARAMS:
+        for key in six.iterkeys(config):
+            if key not in CONFIG_PARAMS:
                 self.raise_error(
-                    'Unexpected key in meta: "{}"'.format(key), [])
+                    'Unexpected key in config: "{}"'.format(key), [])
 
         # Load libs
-        lib = meta.get('lib')
+        lib = config.get('lib')
         if lib:
             self.libs = Libs(lib)
 
         # Load defaults
-        defaults = meta.get('defaults', OrderedDict())
+        defaults = config.get('defaults', OrderedDict())
 
         if defaults:
             path = ['defaults']

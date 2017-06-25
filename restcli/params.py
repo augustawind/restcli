@@ -15,7 +15,7 @@ REQUEST_PARAMS = AttrMap(
     ('script', str),
     *REQUIRED_REQUEST_PARAMS.items(),
 )
-META_PARAMS = AttrMap(
+CONFIG_PARAMS = AttrMap(
     ('defaults', dict),
     ('lib', list),
 )
