@@ -15,10 +15,10 @@ class Requestor(object):
         self.collection = Collection(collection_file)
         self.env = Environment(env_file)
 
-    def request(self, group, name, updaters=()):
+    def request(self, group, name, updater=None):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        request_kwargs = self.parse_request(request, self.env, updaters)
+        request_kwargs = self.parse_request(request, self.env, updater)
 
         response = requests.request(**request_kwargs)
 
@@ -32,27 +32,28 @@ class Requestor(object):
         return response
 
     @classmethod
-    def parse_request(cls, request, env, updaters=()):
+    def parse_request(cls, request, env, updater=None):
         """Parse a Request object in the context of an Environment."""
         env = env.copy()
-        for updater in updaters:
-            updater.update_request(request)
-
-        obj = {
+        kwargs = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),
         }
 
         body = request.get('body')
         if body:
-            obj['json'] = cls.interpolate(body, env)
-
+            kwargs['body'] = cls.interpolate(body, env)
         headers = request.get('headers')
         if headers:
-            obj['headers'] = {k: cls.interpolate(v, env)
-                              for k, v in six.iteritems(headers)}
+            kwargs['headers'] = {k: cls.interpolate(v, env)
+                                 for k, v in six.iteritems(headers)}
 
-        return obj
+        if updater:
+            updater.apply(kwargs)
+
+        kwargs['json'] = kwargs.pop('body', None)
+
+        return kwargs
 
     @staticmethod
     def interpolate(data, env):

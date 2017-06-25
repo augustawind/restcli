@@ -1,4 +1,4 @@
-from restcli.envmod import lexer
+from restcli.reqmod import lexer
 from tests.helpers import contents_equal
 
 

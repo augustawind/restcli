@@ -12,7 +12,7 @@ from restcli.exceptions import (
     LibError,
     FileContentError,
 )
-from restcli.params import REQUIRED_REQUEST_ATTRS, REQUEST_ATTRS, META_ATTRS
+from restcli.params import REQUIRED_REQUEST_PARAMS, REQUEST_PARAMS, META_PARAMS
 
 __all__ = ['Collection', 'Environment']
 
@@ -87,7 +87,7 @@ class Collection(YamlDictReader):
         """Parse and validate Collection Meta."""
         # Verify all fields are known
         for key in six.iterkeys(meta):
-            if key not in META_ATTRS:
+            if key not in META_PARAMS:
                 self.raise_error(
                     'Unexpected key in meta: "{}"'.format(key), [])
 
@@ -104,7 +104,7 @@ class Collection(YamlDictReader):
             self.assert_mapping(defaults, 'Defaults', path)
 
             for key in six.iterkeys(defaults):
-                if key not in REQUEST_ATTRS:
+                if key not in REQUEST_PARAMS:
                     self.raise_error(
                         'Unexpected key in defaults "{}"'.format(key), path)
 
@@ -124,15 +124,15 @@ class Collection(YamlDictReader):
                 self.assert_mapping(request, 'Request', path)
                 new_req = OrderedDict()
 
-                for key, type_ in six.iteritems(REQUEST_ATTRS):
+                for key, type_ in six.iteritems(REQUEST_PARAMS):
                     if key in request:
                         new_req[key] = request[key]
                     elif key in self.defaults:
                         new_req[key] = self.defaults[key]
-                    # Check required attributes
-                    elif key in REQUIRED_REQUEST_ATTRS:
+                    # Check required parameters
+                    elif key in REQUIRED_REQUEST_PARAMS:
                         self.raise_error(
-                            'Required attribute "%s" not found' % key,
+                            'Required parameter "%s" not found' % key,
                             path,
                         )
                     else:

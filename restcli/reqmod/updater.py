@@ -2,6 +2,7 @@ import abc
 
 import six
 
+from restcli.exceptions import ReqModKeyError
 from restcli.utils import AttrMap
 
 
@@ -19,19 +20,19 @@ class Updates(list):
 
 
 class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
-    """Base class for callable objects that update Request Attributes.
+    """Base class for callable objects that update Request Parameters.
 
     Args:
-        request_attr (str): The name of the Request Attribute to update.
-        key (str): The key that will be updated within the Request Attribute.
+        request_param (str): The name of the Request Parameter to update.
+        key (str): The key that will be updated within the Request Parameter.
         value: The new value.
 
     Notes:
         Child classes must implement the ``update_request`` method.
     """
 
-    def __init__(self, request_attr, key, value):
-        self.request_attr = request_attr
+    def __init__(self, request_param, key, value):
+        self.request_param = request_param
         self.key = key
         self.value = value
 
@@ -46,16 +47,19 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             The updated value.
         """
-        current_request_attr = request[self.request_attr]
-        self.update_request(current_request_attr)
-        return current_request_attr[self.key]
+        current_request_param = request[self.request_param]
+        try:
+            self.update_request(current_request_param)
+        except KeyError:
+            raise ReqModKeyError(value=self.key)
+        return current_request_param[self.key]
 
     @abc.abstractmethod
-    def update_request(self, request_attr):
-        """Update a Request Attribute.
+    def update_request(self, request_param):
+        """Update a Request Parameter.
 
         Args:
-            request_attr: The current value of the Request Attribute to update.
+            request_param: The current value of the Request Parameter to update.
 
         Notes:
             Child classes must implement this method.
@@ -63,24 +67,24 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
 
 
 class AppendUpdater(BaseUpdater):
-    """Appends a value to a Request Attribute field."""
+    """Appends a value to a Request Parameter field."""
 
-    def update_request(self, request_attr):
-        request_attr[self.key] += self.value
+    def update_request(self, request_param):
+        request_param[self.key] += self.value
 
 
 class AssignUpdater(BaseUpdater):
-    """Sets a new value in a Request Attribute field."""
+    """Sets a new value in a Request Parameter field."""
 
-    def update_request(self, request_attr):
-        request_attr[self.key] = self.value
+    def update_request(self, request_param):
+        request_param[self.key] = self.value
 
 
 class DeleteUpdater(BaseUpdater):
-    """Deletes a field in a Request Attribute."""
+    """Deletes a field in a Request Parameter."""
 
-    def update_request(self, request_attr):
-        del request_attr[self.key]
+    def update_request(self, request_param):
+        del request_param[self.key]
 
 
 UPDATERS = AttrMap(

@@ -2,8 +2,9 @@ import random
 
 import pytest
 
-from restcli.envmod import mods
-from restcli.envmod.lexer import ACTIONS
+from restcli.exceptions import ReqModValueError
+from restcli.reqmod import mods
+from restcli.reqmod.lexer import ACTIONS
 from tests.helpers import (
     get_random_ascii,
     get_random_unicode,
@@ -117,7 +118,7 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_invalid_value(self):
         val = get_random_unicode()
         key = get_random_url_chars()
-        with pytest.raises(mods.ModValueError):
+        with pytest.raises(restcli.exceptions.ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -126,7 +127,7 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_invalid_key(self):
         val = get_random_url_chars()
         key = get_random_unicode()
-        with pytest.raises(mods.ModValueError):
+        with pytest.raises(restcli.exceptions.ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -146,7 +147,7 @@ class TestHeaderMod(ModTypesTestMixin):
     def test_invalid_value(self):
         val = get_random_unicode()
         key = get_random_ascii()
-        with pytest.raises(mods.ModValueError):
+        with pytest.raises(restcli.exceptions.ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -155,7 +156,7 @@ class TestHeaderMod(ModTypesTestMixin):
     def test_invalid_key(self):
         val = get_random_ascii()
         key = get_random_unicode()
-        with pytest.raises(mods.ModValueError):
+        with pytest.raises(restcli.exceptions.ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,

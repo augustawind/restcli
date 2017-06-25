@@ -46,7 +46,7 @@ def run(app, group, request, env_modifiers):
     click.echo(output)
 
 
-@cli.command(help='View a Group, Request, or Request Attribute.')
+@cli.command(help='View a Group, Request, or Request Parameter.')
 @click.argument('group')
 @click.argument('request', required=False)
 @click.argument('attr', required=False)

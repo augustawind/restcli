@@ -1,5 +1,5 @@
-from restcli.envmod.mods import parse_mod
-from restcli.envmod.updater import UPDATERS, Updates
+from restcli.reqmod.mods import parse_mod
+from restcli.reqmod.updater import UPDATERS, Updates
 
 
 def parse(lexemes):
@@ -16,10 +16,11 @@ def parse(lexemes):
     for lexeme in lexemes:
         # Parse Mod
         mod = parse_mod(lexeme.value)
+        mod.clean()
 
         # Create Updater
         updater_cls = UPDATERS[lexeme.action]
-        updater = updater_cls(mod.attr, mod.key, mod.value)
+        updater = updater_cls(mod.param, mod.key, mod.value)
         updates.append(updater)
 
     return updates

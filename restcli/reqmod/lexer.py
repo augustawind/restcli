@@ -57,6 +57,7 @@ def lex(argv):
     lexemes = [
         Lexeme(action, val)
         for action, values in six.iteritems(opts)
+        if values is not None
         for val in values
     ]
     # Lex short-form `ACTIONS.assign` args

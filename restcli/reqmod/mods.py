@@ -4,29 +4,16 @@ import re
 import string
 
 import six
-
-from restcli.exceptions import InputError
+from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.params import VALID_URL_CHARS
 from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii
 
-ATTR_TYPES = AttrSeq(
+PARAM_TYPES = AttrSeq(
     'json_field',
     'str_field',
     'header',
     'url_param',
 )
-
-
-class ModError(InputError):
-    """Invalid Mod input."""
-
-
-class ModSyntaxError(ModError):
-    """Badly structured Mod input."""
-
-
-class ModValueError(ModError):
-    """Invalid Mod key or value."""
 
 
 def parse_mod(mod_str):
@@ -35,7 +22,7 @@ def parse_mod(mod_str):
     for mod_cls in MODS.values():
         try:
             mod = mod_cls.match(mod_str)
-        except ModSyntaxError as err:
+        except ReqModSyntaxError as err:
             error = err
             continue
         return mod
@@ -44,8 +31,8 @@ def parse_mod(mod_str):
 
 class Mod(six.with_metaclass(abc.ABCMeta, object)):
 
-    attr_type = NotImplemented
-    attr = NotImplemented
+    param_type = NotImplemented
+    param = NotImplemented
     delimiter = NotImplemented
 
     _types = None
@@ -60,6 +47,21 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
         self.value = None
         self.validated = False
 
+    def __str__(self):
+        if self.validated:
+            attrs = ['key', 'value']
+        else:
+            attrs = ['raw_key', 'raw_value']
+        attrs.append('validated')
+        attr_kwargs = (
+            '%s=%r' % (attr, getattr(self, attr))
+            for attr in attrs
+        )
+        return '%s(%s)' % (
+            type(self).__name__,
+            ', '.join(attr_kwargs),
+        )
+
     @classmethod
     @abc.abstractmethod
     def clean_params(cls, key, value):
@@ -69,8 +71,7 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     def match(cls, mod_str):
         parts = cls.pattern.split(mod_str)
         if len(parts) != 2:
-            raise ModSyntaxError(
-                value=mod_str, msg='Mod structure is ambiguous')
+            raise ReqModSyntaxError(value=mod_str)
         key, value = parts
         return cls(key=key, value=value)
 
@@ -89,8 +90,8 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
 
 class JsonFieldMod(Mod):
 
-    attr_type = ATTR_TYPES.json_field
-    attr = 'body'
+    param_type = PARAM_TYPES.json_field
+    param = 'body'
     delimiter = ':='
 
     @classmethod
@@ -99,14 +100,14 @@ class JsonFieldMod(Mod):
             json_value = json.loads(value)
         except json.JSONDecodeError as err:
             # TODO: implement error handling
-            raise ModValueError(value=value, msg='invalid JSON - %s' % err)
+            raise ReqModValueError(value=value, msg='invalid JSON - %s' % err)
         return key, json_value
 
 
 class StrFieldMod(Mod):
 
-    attr_type = ATTR_TYPES.str_field
-    attr = 'body'
+    param_type = PARAM_TYPES.str_field
+    param = 'body'
     delimiter = '='
 
     @classmethod
@@ -116,8 +117,8 @@ class StrFieldMod(Mod):
 
 class HeaderMod(Mod):
 
-    attr_type = ATTR_TYPES.header
-    attr = 'headers'
+    param_type = PARAM_TYPES.header
+    param = 'headers'
     delimiter = ':'
 
     @classmethod
@@ -125,22 +126,22 @@ class HeaderMod(Mod):
         # TODO: legit error messages
         msg = "non-ASCII character(s) found in header"
         if not is_ascii(str(key)):
-            raise ModValueError(value=key, msg=msg)
+            raise ReqModValueError(value=key, msg=msg)
         if not is_ascii(str(value)):
-            raise ModValueError(value=value, msg=msg)
+            raise ReqModValueError(value=value, msg=msg)
         return key, value
 
 
 class UrlParamMod(Mod):
 
-    attr_type = ATTR_TYPES.url_param
-    attr = 'query'
+    param_type = PARAM_TYPES.url_param
+    param = 'query'
     delimiter = '=='
 
     @classmethod
     def clean_params(cls, key, value):
         if not all(char in VALID_URL_CHARS for char in key + value):
-            raise ModValueError(
+            raise ReqModValueError(
                 value=cls.delimiter.join((key, value)),
                 msg='Invalid char(s) found in URL parameter.'
                     ' Accepted chars are: %s' % (VALID_URL_CHARS,)

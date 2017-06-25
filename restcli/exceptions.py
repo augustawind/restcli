@@ -6,7 +6,7 @@ import six
 
 __all__ = ['expect', 'Error', 'InputError', 'FileContentError',
            'NotFoundError', 'GroupNotFoundError', 'RequestNotFoundError',
-           'AttributeNotFoundError', 'CollectionError', 'EnvError', 'LibError']
+           'ParameterNotFoundError', 'CollectionError', 'EnvError', 'LibError']
 
 
 @contextmanager
@@ -60,6 +60,28 @@ class InputError(Error):
         self.value = value
 
 
+class ReqModError(InputError):
+    """Invalid Mod input."""
+
+    base_msg = "Invalid Request Modifier: '%(value)s'"
+
+
+class ReqModSyntaxError(ReqModError):
+    """Badly structured Mod input."""
+
+    base_msg = "Syntax error in Request Modifier: '%(value)s'"
+
+
+class ReqModValueError(ReqModError):
+    """Badly formed Mod key or value."""
+
+
+class ReqModKeyError(ReqModError):
+    """Mod key does not exist."""
+
+    base_msg = "Key does not exist: '%(value)s'"
+
+
 class FileContentError(Error):
     """Exception for invalid file data."""
 
@@ -97,26 +119,26 @@ class NotFoundError(FileContentError):
     base_msg = 'Not found'
 
 
-class GroupNotFoundError(NotFoundError):
-
-    base_msg = "Group '%(name)s' not found"
-
-
-class RequestNotFoundError(NotFoundError):
-
-    base_msg = "Request '%(name)s' not found"
-
-
-class AttributeNotFoundError(NotFoundError):
-
-    base_msg = "Attribute '%(name)s' not found"
-
-
 class CollectionError(FileContentError):
     """Exception for invalid Collection files."""
 
     base_msg = 'Invalid collection'
     file_type = 'COLLECTION'
+
+
+class GroupNotFoundError(CollectionError):
+
+    base_msg = "Group not found: '%(name)s'"
+
+
+class RequestNotFoundError(CollectionError):
+
+    base_msg = "Request not found: '%(name)s"
+
+
+class ParameterNotFoundError(CollectionError):
+
+    base_msg = "Parameter not found: '%(name)s'"
 
 
 class EnvError(FileContentError):

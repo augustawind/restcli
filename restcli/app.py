@@ -9,11 +9,11 @@ from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
 from restcli.exceptions import (
-    AttributeNotFoundError,
+    ParameterNotFoundError,
     GroupNotFoundError,
     RequestNotFoundError,
 )
-from restcli.envmod import lexer, parser
+from restcli.reqmod import lexer, parser
 from restcli.requestor import Requestor
 
 __all__ = ['App']
@@ -62,8 +62,8 @@ class App(object):
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
 
-        updaters = self.parse_env(env_args)
-        response = self.r.request(group_name, request_name, updaters)
+        updater = self.parse_env(env_args)
+        response = self.r.request(group_name, request_name, updater)
 
         if save or self.autosave:
             self.r.env.save()
@@ -71,8 +71,8 @@ class App(object):
         output = self.show_response(response)
         return output
 
-    def view(self, group_name, request_name=None, attr_name=None):
-        """Inspect a Group, Request, or Request Attribute."""
+    def view(self, group_name, request_name=None, param_name=None):
+        """Inspect a Group, Request, or Request Parameter."""
         group = self.get_group(group_name, action='view')
         output_obj = group
 
@@ -81,20 +81,21 @@ class App(object):
                                        action='view')
             output_obj = request
 
-            if attr_name:
-                attr = self.get_request_attr(request, group_name, request_name,
-                                             attr_name, action='view')
+            if param_name:
+                param = self.get_request_param(
+                    request, group_name, request_name, param_name,
+                    action='view')
 
-                if attr_name == 'script':
-                    return highlight(attr, self.python_lexer, self.formatter)
+                if param_name == 'script':
+                    return highlight(param, self.python_lexer, self.formatter)
 
-                if attr_name == 'headers':
+                if param_name == 'headers':
                     headers = dict(l.split(':')
-                                   for l in attr.strip().split('\n'))
+                                   for l in param.strip().split('\n'))
                     output = self.key_value_pairs(headers)
                     return highlight(output, self.http_lexer, self.formatter)
 
-                output_obj = attr
+                output_obj = param
 
         output = json.dumps(output_obj, indent=2)
         return highlight(output, self.json_lexer, self.formatter)
@@ -157,16 +158,16 @@ class App(object):
                 path=[group_name, request_name]
             )
 
-    def get_request_attr(self, request, group_name, request_name, attr_name,
-                         action):
-        """Retrieve a Request Attribute."""
+    def get_request_param(self, request, group_name, request_name, param_name,
+                          action):
+        """Retrieve a Request Parameter."""
         try:
-            return request[attr_name]
+            return request[param_name]
         except KeyError:
-            raise AttributeNotFoundError(
+            raise ParameterNotFoundError(
                 file=self.r.collection.source,
                 action=action,
-                path=[group_name, request_name, attr_name]
+                path=[group_name, request_name, param_name]
             )
 
     def show_response(self, response):
