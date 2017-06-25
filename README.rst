@@ -122,18 +122,23 @@ at:
     server: http://quux.org
     foo_age: 15
 
+If you don't fully understand it yet, that's quite alright! We'll get lots
+of practice in the tutorial. Let's begin.
+
 
 Tutorial: Secret Club API
 =========================
 
-Now that we have some core concepts under our belts, I think we're ready to
-put our knowledge to use!
+Now that we have a basic understanding of **restcli**, let's get our hands
+dirty and put these concepts to use!
 
-As a learning exercise, we're going to model an API for a super secretive,
+As we move forward we're going to model an API for a super secretive,
 vaguely intimidating, private membership club called "The Secretmasons". New
 members must be invited to get in, and admins can upgrade their membership
 status when they're deemed "worthy". The higher your rank in the club, the
-more secrets you are told. Let's get started!
+more secrets you are told. By the end we'll have a flexible and powerful
+toolbox that will make club management so easy, a gopher tortoise could do it.
+Let's get started!
 
 .. _request:
 .. _requests:
@@ -141,7 +146,7 @@ more secrets you are told. Let's get started!
 Requests
 --------
 
-Requests are the building blocks of **restcli**, so let's dive deep! We'll
+Requests are the building blocks of **restcli**, so let's dive right in! We'll
 start by modelling The Secretmasons' Invitation API. How else did you think
 people got invited?
 
@@ -192,7 +197,6 @@ your API.
     We're using the standard ``Content-Type`` header as well as a custom,
     parameterized header called ``X-Secret-Key``.
 
-
 ``body`` (string, templates)
     The request body. Only JSON is supported at this time, and in order to
     support `templating`_, it must be encoded as a string. You'll probably
@@ -202,37 +206,38 @@ your API.
     The first two are parameterized, but we just set the third to ``true``
     since The Secretmasons won't let anyone in who can't keep secrets anyway.
 
-
 ``script`` (string)
     A Python script to be executed after the request finishes and a response
-    is received. You can modify the `Environment`_ here, or run tests. We'll
-    learn more about this later in `Scripting`_.
+    is received. Scripts can be used to dynamically update the `Environment`_
+    based on the response content. We'll learn more about this later in
+    `Scripting`_.
 
-
+    Our ``invite`` Request doesn't have a script yet.
 
 
 Templating
-^^^^^^^^^^
+----------
 
 **restcli** supports `Jinja2`_ templates in the ``url``, ``headers``, and
-``body`` Request parameters as a way to parameterize Requests with
-`Environment`_ files, explained below. Any template variables in these
-parameters, denoted by double curly brackets, will be replaced with concrete
-values from the `Environment`_ before the request is executed.
+*``body`` parameters to parameterize Requests with the help of `Environment`_
+*files. Any template variables in these parameters, denoted by double curly
+*brackets, will be replaced with concrete values from the `Environment`_ before
+*the request is executed.
 
-Let's pretend we're modelling an API for a super secretive, and possibly a
-a little frightening, membership club. Members are invited in, and admins
-can upgrade their memberships when they're deemed "worthy". And it just so
-happens that Wanda, who's been very active in the club this year, has been
-chosen for a membership upgrade.
+Remember how we said that admins in The Secretmasons can promote members (if
+they're "worthy")? Well it just so happens that Wanda, who's been very active
+in the club this year, has been chosen for this prestigious honor, so let's
+get to work!
 
-We'll start with a Collection that looks like this:
+We'll start by adding another Request to our ``memberships`` Group:
 
 .. code-block:: yaml
 
-    # secret_club.yaml
+    # secretmasons.yaml
     ---
     memberships:
+        invite: ...
+
         upgrade:
             method: post
             url: '{{ server }}/memberships/{{ member_id }}/upgrade'
@@ -240,61 +245,68 @@ We'll start with a Collection that looks like this:
                 Content-Type: application/json
                 X-Secret-Key: '{{ secret_key }}'
             body: |
-                vip_access: True
+                vip_access: true
                 rank: '{{ next_rank }}'
-                privileges: '{{ priveleges }}'
+                secrets_granted: '{{ new_secrets }}'
 
 
-Well how about that! We've got some template variables that need filling. Let's
-create an `Environment`_ file to do just that:
+Whew, lots of variables! Let's get this under control and whip up a good old
+fashioned `Environment`_ file:
 
 .. code-block:: yaml
 
     # wanda.yaml
     ---
-    server: 'https://secret-club.org'
+    server: 'https://secretmasons.org'
     member_id: '12345'
     secret_key: 5up3r53cr37
     rank: Sultan of Secrets
-    privileges:
-        - penthouse access
-        - cuddling kittens
+    new_secrets:
+        - secret basement room full of kittens
+        - turtles all the way down
 
 Now we'll run the request:
 
 .. code-block:: sh
 
-    $ restcli -c secret_club.yaml -e wanda.yaml run memberships upgrade
+    $ restcli -c secretmasons.yaml -e wanda.yaml run memberships upgrade
 
-When we hit enter, **restcli** loads ``secret_club.yaml`` and ``wanda.yaml``
-into memory and calls ``jinja2.Template#render()`` on each parameter
-that supports templating, using the ``wanda.yaml`` `Environment`_ as the
-rendering context. This is what the Request looks like just before being sent
-out:
+Here's what **restcli** does when we hit enter:
+
++ Load the Collection (``secretmasons.yaml``) and find the desired Request.
++ Load the Environment (``wanda.yaml``).
++ Create a `Jinja2 Template`_ from each of the ``url``, ``headers``, and
+  ``body`` parameters, respectively.
++ `Render each template`_, using the Environment as the `template context`_.
++ TODO: reqmod
+
+Before we send the request, though, let's see what it would look like at this
+stage:
 
 .. code-block:: yaml
 
-    # secret_club2.yaml
+    # secretmasons2.yaml
     ---
     memberships:
         upgrade:
             method: post
-            url: 'https://secret-club.org/memberships/12345/upgrade'
+            url: 'https://secretmasons.org/memberships/12345/upgrade'
             headers:
                 Content-Type: application/json
                 X-Secret-Key: 5up3r53cr37
             body: |
-                vip_access: True
+                vip_access: true
                 rank: Sultan of Secrets
-                privileges:
-                    - penthouse access
-                    - cuddling kittens
+                secrets_granted:
+                    - secret basement room full of kittens
+                    - turtles all the way down
 
-Have fun cuddling those kittens Wanda!
+Have fun cuddling all those kittens, Wanda!
 
-We just covered the common case, but there's much more to templating, including
-conditionals and control structures. **restcli** supports the entire
-`Jinja2 template language`_, so click the link to learn more.
+What we just learned should cover the most common use cases, but if you need more
+power or just want to play around, there's much more to templating than what
+was covered here! **restcli** supports the entire Jinja2 template language, so
+check out `Jinja2 Template Designer Documentation`_ for the whole scoop.
 
 
 Scripting
@@ -481,7 +493,10 @@ for more information.
 
 .. _idempotent: <https://en.wikipedia.org/wiki/Idempotence>
 .. _Jinja2: <http://jinja2.pocoo.org/docs/2.9/>
-.. _Jinja2 template language: <http://jinja.pocoo.org/docs/2.9/templates/>
+.. _Jinja2 Template Designer Documentation:: <http://jinja.pocoo.org/docs/2.9/templates/>
+.. _Jinja2 Template: <http://jinja.pocoo.org/docs/2.9/api/#jinja2.Template>
+.. _template context: <http://jinja.pocoo.org/docs/2.9/api/#the-context>
+.. _Render each template: <http://jinja.pocoo.org/docs/2.9/api/#jinja2.Template.render>
 .. _response object: <http://docs.python-requests.org/en/stable/api/#requests.Response>
 .. _requests library: <http://docs.python-requests.org/en/stable/>
 .. _block styles: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
