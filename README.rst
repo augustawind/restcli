@@ -310,19 +310,25 @@ check out `Jinja2 Template Designer Documentation`_ for the whole scoop.
 
 
 Scripting
-^^^^^^^^^
+---------
 
-The ``script`` Request parameter is evaluated as a Python script which is
-executed after the request is performed and a response is received. The Python
-version is always the same as **restcli**'s. Run the following command to get
-the current Python version along with other information (TODO):
+As previously mentioned, each Request has an optional ``script`` parameter
+which takes a Python script. These scripts are evaluated *after* a Request is
+performed, once the response is received.
 
-.. code-block:: sh
+.. note::
+    The Python interpreter used for script execution is always the same
+    interpreter that **restcli** is running on. To get the version number,
+    along with other information about your **restcli** installation, use
+    the ``info`` command:
 
-    $ restcli info
+    .. code-block:: sh
 
-Scripts are provided with an execution environment containing the following
-variables:
+        $ restcli info
+
+Under the hood, scripts are executed with the Python builtin ``exec()``, which
+is called with a code object containing the script as well as a ``globals``
+dict containing the following variables:
 
 ``response``
     A `Response object`_ from the Python `requests library`_, which contains
@@ -330,17 +336,22 @@ variables:
     out the `Response API <response_object>`_ for a detailed list.
 
 ``env``
-    A Python ``dict`` which contains the entire hierarchy of the current
-    Collection. It is mutable, and any changes made here will be persisted
-    into the current Environment. If ``autosave`` is enabled, the changes
-    will be saved to disk as well.
+    A Python dict which contains the entire hierarchy of the current
+    Collection. It is mutable, and editing its contents may result in one or
+    both of the following effects:
 
-In addition, any functions or variables defined in the ``lib`` section
-of the `Config`_ document will be available in your scripts as well. This
-feature is covered in greater detail when we look at `Config`_.
+    A. If running in interactive mode, any changes made will persist in the
+       active Environment until the session ends.
+    B. If ``autosave`` is enabled, the changes will be saved to disk.
 
-Since Python is whitespace sensitive, you'll probably want to read the section
-on `YAML block styles`_, too.
+lib definitions
+    Any functions or variables imported in ``lib`` in the `Config`_ document
+    will be available in your scripts as well. We will learn about the
+    `Config`_ document shortly.
+
+.. note::
+    Since Python is whitespace sensitive, you'll probably want to read the
+    section on `YAML block styles`_, too.
 
 
 YAML Block Styles
