@@ -63,18 +63,26 @@ Then run it with:
     $ docker run -it restcli [OPTIONS] ARGS
 
 
-Configuring Your API
-====================
+Overview: The Two Pillars of restcli
+====================================
 
-**restcli** reads requests from YAML files called *Collections*. Collections
-are objects composed of *Groups*, which are again objects composed of
-*Requests*:
+We'll start with a bird's eye view of some core concepts in **restcli**, and
+then move into the tutorial.
+
+
+Collections
+-----------
+
+**restcli** understands your API through YAML files called *Collections*.
+*Collections are objects composed of *Groups*, which are again objects composed
+*of `*Requests*`_. A Collection is essentially just a bunch of Requests --
+*Groups are purely organizational.
 
 .. code-block:: yaml
 
     ---
     foo:
-        new:
+        bar:
             method: post
             url: "{{ server }}/foo"
             headers:
@@ -88,50 +96,43 @@ are objects composed of *Groups*, which are again objects composed of
                 if response.status_code == 201:
                     env['foo_name'] = response.json()['name']
 
-See `Requests`_ for a more detailed explanation of the available
-`Parameters <request_parameters>`_.
+This Collection has one Group called ``foo``, and the Group ``foo`` has one
+Request called ``bar``. We'll explore `Requests`_ and their
+`Parameters <request_parameters>`_ in greater depth later, but take note of
+the stuff in between the double curly brackets: ``{{ server }}``,
+``age: {{ foo_age }}``. These are `template variables <templating>`_, which
+is how you parameterize your Requests in **restcli**. In order for this
+Request to execute successfully, these template variables must be given
+concrete values, which brings us to...
 
 
-Meta
-----
+Environments
+------------
 
-A Collection can also have a second YAML
-`document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
-referred to as **Meta**. This document must appear *before* the Collection
-document, and contains data which applies to the Collection as a whole.
+*Environments* are also YAML files, but they are about as simple as it gets.
+An Environment is an object which defines values to be used with the
+`template variables <templating>`_ we just learned about. Environments can also
+be modified programmatically, which we'll learn about later in `Scripting`_.
+
+Here's an example Environment that compliments the Collection we just looked
+at:
 
 .. code-block:: yaml
 
-    ---
-    defaults:
-        headers:
-            Content-Type: application/json
-            Authorization: {{ username }}:{{ password }}
-    lib:
-        - restcli.contrib.scripts
+    server: http://quux.org
+    foo_age: 15
 
-    ---
-    # Your Groups and Requests go down here...
 
-.. _meta_parameters:
+Tutorial: Secret Club API
+=========================
 
-Meta Parameters
-~~~~~~~~~~~~~~~
+Now that we have some core concepts under our belts, I think we're ready to
+put our knowledge to use!
 
-``defaults``
-    Each item in ``defaults`` must be a valid `Request`_ attribute. These
-    values will be used by any `Request`_ in the Collection which does not
-    provide that attribute itself.
-
-``lib``
-    ``lib`` is an array of Python module paths. Each module here must contain a
-    function with the signature ``define(request, env, *args, **kwargs)`` which
-    returns a dict. That dict will be added to the execution environment of any
-    script that gets executed after a `Request`_ is completed.
-
-    For an example of a ``lib`` file, check out ``restcli.contrib.scripts``,
-    which provides helpful utilities and shortcuts for you to use in your own
-    Collections.
+As a learning exercise, we're going to model an API for a super secretive,
+vaguely intimidating, private membership club. New members must be invited to
+get in, and admins can upgrade their membership status when they're deemed
+"worthy". Let's get started!
 
 .. _request:
 .. _requests:
@@ -321,29 +322,46 @@ Note that it is impossible to escape characters within a literal block, so if
 that's something you need you may have to try a different
 
 
-Environment
-~~~~~~~~~~~
+Meta
+----
 
-The Environment is another YAML file which must contain an object where each
-key-value pair represents a variable. These variables are available anywhere in
-a Request where Jinja2 templates are supported, as well as in the ``scripts``
-portion of a Request where they can be read from and modified.
-
-Here is an example Environment for the above example Request:
+A Collection can also have a second YAML
+`document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
+referred to as **Meta**. This document must appear *before* the Collection
+document, and contains data which applies to the Collection as a whole.
 
 .. code-block:: yaml
 
-    server: http://quux.org
-    foo_age: 15
+    ---
+    defaults:
+        headers:
+            Content-Type: application/json
+            Authorization: {{ username }}:{{ password }}
+    lib:
+        - restcli.contrib.scripts
 
-After the Request is run (after its script is executed), the Environment could
-then look like this:
+    ---
+    # Your Groups and Requests go down here...
 
-.. code-block:: yaml
+.. _meta_parameters:
 
-    server: http://quux.org
-    foo_age: 15
-    foo_name: bar
+Meta Parameters
+~~~~~~~~~~~~~~~
+
+``defaults``
+    Each item in ``defaults`` must be a valid `Request`_ attribute. These
+    values will be used by any `Request`_ in the Collection which does not
+    provide that attribute itself.
+
+``lib``
+    ``lib`` is an array of Python module paths. Each module here must contain a
+    function with the signature ``define(request, env, *args, **kwargs)`` which
+    returns a dict. That dict will be added to the execution environment of any
+    script that gets executed after a `Request`_ is completed.
+
+    For an example of a ``lib`` file, check out ``restcli.contrib.scripts``,
+    which provides helpful utilities and shortcuts for you to use in your own
+    Collections.
 
 
 Usage
