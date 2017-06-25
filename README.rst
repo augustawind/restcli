@@ -126,6 +126,7 @@ is how you parameterize your Requests in **restcli**. In order for this
 Request to execute successfully, these template variables must be given
 concrete values, which brings us to...
 
+.. _environment:
 
 Environments
 ------------
