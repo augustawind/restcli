@@ -5,9 +5,11 @@ restcli
 An API client library and CLI written in Python.
 It's Postman for terminal lovers!
 
+.. contents::
+
 
 Usage
------
+=====
 
 .. code-block:: console
 
@@ -82,8 +84,11 @@ Then run it with:
     $ docker run -it restcli [OPTIONS] ARGS
 
 
-Overview: The Two Pillars of restcli
-====================================
+Overview
+========
+
+The Two Pillars of restcli
+--------------------------
 
 We'll start with a bird's eye view of some core concepts in **restcli**, and
 then move into the tutorial.
@@ -146,8 +151,8 @@ If you don't fully understand it yet, that's quite alright! We'll get lots
 of practice in the tutorial. Let's begin.
 
 
-Tutorial: Secret Club API
-=========================
+Tutorial: An API in Secrecy
+===========================
 
 Now that we have a basic understanding of **restcli**, let's get our hands
 dirty and put these concepts to use!
@@ -159,6 +164,7 @@ status when they're deemed "worthy". The higher your rank in the club, the
 more secrets you are told. By the end we'll have a flexible and powerful
 toolbox that will make club management so easy, a gopher tortoise could do it.
 Let's get started!
+
 
 .. _request:
 .. _requests:
@@ -444,8 +450,11 @@ parameters defined here don't have much in common.
     to use in your scripts. It can also be used as a learning tool.
 
 
-YAML Block Styles
------------------
+Appendix
+========
+
+A. YAML Block Styles
+--------------------
 
 Writing multiline strings for the ``body`` and ``script`` Request parameters
 without using readability is easy with YAML's `block styles`_. I recommend
@@ -471,28 +480,35 @@ that's something you need you may have to try a different
 
 
 Interactive Prompt
-~~~~~~~~~~~~~~~~~~
-
-NOTE: Some of this will be changing soon, so don't rely on stability here.
+------------------
 
 The interactive prompt is a read-eval-print loop which supports the same API
 as the commandline interface, but with a few additional commands for
-convenience:
+convenience. Here's the full usage text for the REPL:
 
-- ``help``: Display general help or help for a specific command.
-- ``run``: Run an Request.
-- ``view``: Inspect a Group, Request, or Request Attribute.
-- ``env``: View or change the currently loaded Environment.
-- ``reload``: Reload the current Collection and/or Environment from disk.
-- ``save``: Save the current Environment to disk.
-- ``change_collection``: Change the current Collection file to something else.
-- ``change_env``: Change the current Environment file to something else.
+.. code-block:: console
 
-You may run ``help COMMAND`` on any command for more information about
-arguments and usage of the given command.
+    Usage: restcli  [OPTIONS] COMMAND [ARGS]...
 
-Software License
-----------------
+    Options:
+      -v, --version               Show the version and exit.
+      -c, --collection PATH       Collection file.  [required]
+      -e, --env PATH              Environment file.
+      -s, --save / -S, --no-save  Save Environment to disk after changes.
+      --help                      Show this message and exit.
+
+    Commands:
+      change_collection  Change to and load a new Collection file.
+      change_env         Change to and load a new Environment file.
+      env                View or set Environment variables.
+      reload             Reload Collection or Environment from disk.
+      run                Run a Request.
+      save               Save the current Environment to disk.
+      view               View a Group, Request, or Request Parameter.
+
+
+License
+-------
 
 This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_
