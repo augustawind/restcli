@@ -172,6 +172,3 @@ class TestStrFieldMod(ModTypesTestMixin):
             input_val=get_random_alphanumeric(),
             input_key=get_random_alphanumeric(),
         )
-
-
-TestStrFieldMod().test_valid()

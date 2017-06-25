@@ -1,3 +1,6 @@
+import operator
+from functools import reduce
+
 from restcli.reqmod import lexer
 from tests.helpers import contents_equal
 
@@ -10,8 +13,8 @@ class LexerTestMixin(object):
         raise NotImplementedError
 
     def run_test(self, args, result):
-        arg = ' '.join(self.transform_args(args))
-        tokens = lexer.lex(arg)
+        argv = self.transform_args(args)
+        tokens = lexer.lex(argv)
         assert contents_equal(tokens, [
             (self.action, token) for token in result
         ])
@@ -45,12 +48,17 @@ class TestAssignShortForm(LexerTestMixin):
         return args
 
 
+def intersperse_left(item, seq):
+    """Insert `item` before every item in `seq`."""
+    return reduce(operator.add, ((item, x) for x in seq))
+
+
 class TestAssign(LexerTestMixin):
 
     action = lexer.ACTIONS.assign
 
     def transform_args(self, args):
-        return ['-n %s' % (arg,) for arg in args]
+        return intersperse_left('-n', args)
 
 
 class TestAppend(LexerTestMixin):
@@ -58,7 +66,7 @@ class TestAppend(LexerTestMixin):
     action = lexer.ACTIONS.append
 
     def transform_args(self, args):
-        return ['-a %s' % (arg,) for arg in args]
+        return intersperse_left('-a', args)
 
 
 class TestDelete(LexerTestMixin):
@@ -66,4 +74,4 @@ class TestDelete(LexerTestMixin):
     action = lexer.ACTIONS.delete
 
     def transform_args(self, args):
-        return ['-d %s' % (arg,) for arg in args]
+        return intersperse_left('-d', args)

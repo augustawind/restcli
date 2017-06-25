@@ -5,12 +5,19 @@ import six
 
 from restcli.params import VALID_URL_CHARS
 
+ALPHANUMERICS = string.ascii_letters + string.digits
+
 
 def _random_str(population, length=None):
     if length is None:
         length = random.randint(3, 15)
     k = min(length, len(population))
     return ''.join(random.sample(population, k))
+
+
+def get_random_alphanumeric(length=None):
+    """Generate a random ASCII string."""
+    return _random_str(ALPHANUMERICS, length)
 
 
 def get_random_unicode(length=None):
@@ -36,11 +43,6 @@ def get_random_unicode(length=None):
         for code_point in range(current_range[0], current_range[1] + 1)
     ]
     return _random_str(alphabet, length)
-
-
-def get_random_ascii(length=None):
-    """Generate a random ASCII string."""
-    return _random_str(string.printable, length)
 
 
 def get_random_url_chars(length=None):
