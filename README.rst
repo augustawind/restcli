@@ -130,9 +130,10 @@ Now that we have some core concepts under our belts, I think we're ready to
 put our knowledge to use!
 
 As a learning exercise, we're going to model an API for a super secretive,
-vaguely intimidating, private membership club. New members must be invited to
-get in, and admins can upgrade their membership status when they're deemed
-"worthy". Let's get started!
+vaguely intimidating, private membership club called "The Secretmasons". New
+members must be invited to get in, and admins can upgrade their membership
+status when they're deemed "worthy". The higher your rank in the club, the
+more secrets you are told. Let's get started!
 
 .. _request:
 .. _requests:
@@ -140,47 +141,74 @@ get in, and admins can upgrade their membership status when they're deemed
 Requests
 --------
 
-Let's dive deeper into Requests. Here is the one we looked at earlier:
+Requests are the building blocks of **restcli**, so let's dive deep! We'll
+start by modelling The Secretmasons' Invitation API. How else did you think
+people got invited?
 
 .. code-block:: yaml
 
-    method: post
-    url: "{{ server }}/foo"
-    headers:
-        Content-Type: application/json
-        Accept: application/json
-    body: |
-        name: bar
-        age: {{ foo_age }}
-        is_cool: true
-    script: |
-        if response.status_code == 201:
-            env['foo_name'] = response.json()['name']
+    # secretmasons.yaml
+    ---
+    memberships:
+        invite:
+            method: post
+            url: "{{ server }}/send_invite"
+            headers:
+                Content-Type: application/json
+                X-Secret-Key: '{{ secret_key }}'
+            body: |
+                name: {{ member_name }}
+                age: {{ member_age }}
+                can_keep_secrets: true
+
+
+We made a new Collection and saved it as ``secretmasons.yaml``. So far it has
+one Group called ``memberships`` which contains one Request called ``invite``.
+Now we'll figure out what this ``invite`` Request is really about.
 
 
 Request Parameters
 ~~~~~~~~~~~~~~~~~~
 
+Requests are objects with parameters which tell **restcli** how to talk to
+your API.
+
 ``method`` (string, required)
-    HTTP method to use in the request.
+    HTTP method to use in the request. Case insensitive.
+
+    We chose ``POST`` for this time since we are creating a resource and it's
+    not `idempotent`_.
 
 ``url`` (string, required, templates)
     Fully qualified URL to send the request to. Supports `templating`_.
+
+    We'll worry about parameters later, but for now we know that invitations
+    happen at ``/send_invite``.
 
 ``headers`` (object, templates)
     HTTP headers. Keys and values must all be strings. Values support
     `templating`_, but keys don't.
 
+    We're using the standard ``Content-Type`` header as well as a custom,
+    parameterized header called ``X-Secret-Key``.
+
+
 ``body`` (string, templates)
     The request body. Only JSON is supported at this time, and in order to
-    support `templating`_, it must be encoded as a string. See
-    `YAML block styles`_ for a brief explanation.
+    support `templating`_, it must be encoded as a string. You'll probably
+    want to read the section on `YAML block styles`_ at some point.
+
+    Our ``body`` parameter has 3 fields, ``name``, ``age``, and ``can_keep_secrets``.
+    The first two are parameterized, but we just set the third to ``true``
+    since The Secretmasons won't let anyone in who can't keep secrets anyway.
+
 
 ``script`` (string)
     A Python script to be executed after the request finishes and a response
-    is received. You can modify the `Environment`_ here, or run tests. See
-    `Scripting`_ for an overview of this feature. You may also want to read
-    the section on `YAML block styles`_, since Python is whitespace-sensitive!
+    is received. You can modify the `Environment`_ here, or run tests. We'll
+    learn more about this later in `Scripting`_.
+
+
 
 
 Templating
@@ -295,6 +323,13 @@ variables:
     into the current Environment. If ``autosave`` is enabled, the changes
     will be saved to disk as well.
 
+In addition, any functions or variables defined in the ``lib`` section
+of the `Config`_ document will be available in your scripts as well. This
+feature is covered in greater detail when we look at `Config`_.
+
+Since Python is whitespace sensitive, you'll probably want to read the section
+on `YAML block styles`_, too.
+
 
 YAML Block Styles
 ^^^^^^^^^^^^^^^^^
@@ -322,12 +357,12 @@ Note that it is impossible to escape characters within a literal block, so if
 that's something you need you may have to try a different
 
 
-Meta
+Config
 ----
 
 A Collection can also have a second YAML
 `document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
-referred to as **Meta**. This document must appear *before* the Collection
+referred to as **Config**. This document must appear *before* the Collection
 document, and contains data which applies to the Collection as a whole.
 
 .. code-block:: yaml
@@ -343,9 +378,8 @@ document, and contains data which applies to the Collection as a whole.
     ---
     # Your Groups and Requests go down here...
 
-.. _meta_parameters:
 
-Meta Parameters
+Config Parameters
 ~~~~~~~~~~~~~~~
 
 ``defaults``
@@ -445,6 +479,7 @@ This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_
 for more information.
 
+.. _idempotent: <https://en.wikipedia.org/wiki/Idempotence>
 .. _Jinja2: <http://jinja2.pocoo.org/docs/2.9/>
 .. _Jinja2 template language: <http://jinja.pocoo.org/docs/2.9/templates/>
 .. _response object: <http://docs.python-requests.org/en/stable/api/#requests.Response>
