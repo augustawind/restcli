@@ -4,6 +4,6 @@ WORKDIR /usr/src/restcli
 
 ADD . /usr/src/restcli
 
-RUN make install
+RUN invoke build
 
 ENTRYPOINT ["restcli"]

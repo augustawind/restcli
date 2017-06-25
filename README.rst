@@ -1,3 +1,4 @@
+=======
 restcli
 =======
 
@@ -6,15 +7,16 @@ It's Postman for terminal lovers!
 
 .. contents::
 
+
 Overview
---------
+========
 
 **restcli** is a library and commandline utility for API testing. It reads
 requests from a YAML file and supports scripting and variable interpolation.
 
 
 Installation
-------------
+============
 
 With ``pip``:
 
@@ -29,9 +31,23 @@ With ``setup.py``:
 
     $ python setup.py install
 
+If you have ``invoke``, you can use it for running the tests and installation:
+
+.. code-block:: sh
+
+    $ invoke test  # Run the tests
+    $ invoke install  # Install it
+    $ invoke build  # Run the whole build workflow
+
+If not, you can install it with ``pip``:
+
+.. code-block:: sh
+
+    $ pip install invoke
+
 
 Docker
-~~~~~~
+------
 
 **restcli** can be run with Docker without additional dependencies.
 Assuming Docker is installed, the Docker image can be built by running:
@@ -44,11 +60,11 @@ Then run it with:
 
 .. code-block:: sh
 
-    $ docker run -it restcli
+    $ docker run -it restcli [OPTIONS] ARGS
 
 
 Configuring Your API
---------------------
+====================
 
 **restcli** reads requests from YAML files called *Collections*. Collections
 are objects composed of *Groups*, which are again objects composed of
@@ -72,14 +88,16 @@ are objects composed of *Groups*, which are again objects composed of
                 if response.status_code == 201:
                     env['foo_name'] = response.json()['name']
 
-In this example, ``foo`` is a Group, and ``new`` is a Request in that Group.
+See `Requests`_ for a more detailed explanation of the available
+`Parameters <request_parameters>`_.
+
 
 Meta
-~~~~
+----
 
 A Collection can also have a second YAML
 `document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
-referred to as **Meta**. This document must appear *above* the Collection
+referred to as **Meta**. This document must appear *before* the Collection
 document, and contains data which applies to the Collection as a whole.
 
 .. code-block:: yaml
@@ -92,23 +110,36 @@ document, and contains data which applies to the Collection as a whole.
     lib:
         - restcli.contrib.scripts
 
-Each item in ``defaults`` must be a valid `Request`_ attribute. These values
-will be used by any `Request`_ in the Collection which does not provide that
-attribute itself.
+    ---
+    # Your Groups and Requests go down here...
 
-``lib`` is an array of Python module paths. Each module here must contain a
-function with the signature ``define(request, env, *args, **kwargs)`` which
-returns a dict. That dict will be added to the execution environment of
-any script that gets executed (in the ``script`` field of a Request).
+.. _meta_parameters:
 
-For an example of a ``lib`` file, check out ``restcli.contrib.scripts``, which
-provides helpful utilities and shortcuts, and can be included in your own
-Collections by adding ``restcli.contrib.scripts`` to the ``lib``.
+Meta Parameters
+~~~~~~~~~~~~~~~
+
+``defaults``
+    Each item in ``defaults`` must be a valid `Request`_ attribute. These
+    values will be used by any `Request`_ in the Collection which does not
+    provide that attribute itself.
+
+``lib``
+    ``lib`` is an array of Python module paths. Each module here must contain a
+    function with the signature ``define(request, env, *args, **kwargs)`` which
+    returns a dict. That dict will be added to the execution environment of any
+    script that gets executed after a `Request`_ is completed.
+
+    For an example of a ``lib`` file, check out ``restcli.contrib.scripts``,
+    which provides helpful utilities and shortcuts for you to use in your own
+    Collections.
+
+.. _request:
+.. _requests:
 
 Requests
-~~~~~~~~
+--------
 
-Here is the Request from the above example:
+Let's dive deeper into Requests. Here is the one we looked at earlier:
 
 .. code-block:: yaml
 
@@ -125,21 +156,87 @@ Here is the Request from the above example:
         if response.status_code == 201:
             env['foo_name'] = response.json()['name']
 
-``headers``, ``body``, and ``scripts`` are optional. ``url``, ``headers``, and
-``body`` all support Jinja2 templating, using an `Environment`_ as the context.
 
-``body`` is a strings, but must contain valid YAML markup. This is in order to
-support variable interpolation of arbitrary types, such as numbers or booleans.
+Request Parameters
+~~~~~~~~~~~~~~~~~~
 
-``headers`` must be a flat object of key-value pairs. The values of ``headers``
-can contain Jinja2 templates.
+``method`` (string, required)
+    HTTP method to use in the request.
 
-``script`` is a Python3 script that is executed after the request is performed,
-and is provided the ``response`` (which is a `Response
-<http://docs.python-requests.org/en/stable/api/#requests.Response>`_ instance
-from the Python `requests library
-<http://docs.python-requests.org/en/stable/>`_) as well as ``env``, which is
-the current Environment and can be modified by the script.
+``url`` (string, required, templates)
+    Fully qualified URL to send the request to. Supports `templating`_.
+
+``headers`` (object, templates)
+    HTTP headers. Keys and values must all be strings. Values support
+    `templating`_, but keys don't.
+
+``body`` (string, templates)
+    The request body. Only JSON is supported at this time, and in order to
+    support `templating`_, it must be encoded as a string. See
+    `YAML block styles`_ for a brief explanation.
+
+``script`` (string)
+    A Python script to be executed after the request finishes and a response
+    is received. You can modify the `Environment`_ here, or run tests. See
+    `Scripting`_ for an overview of this feature. You may also want to read
+    the section on `YAML block styles`_, since Python is whitespace-sensitive!
+
+
+Templating
+^^^^^^^^^^
+
+
+Scripting
+^^^^^^^^^
+
+The ``script`` Request parameter is evaluated as a Python script which is
+executed after the request is performed and a response is received. The Python
+version is always the same as **restcli**'s. Run the following command to get
+the current Python version along with other information (TODO):
+
+.. code-block:: sh
+
+    $ restcli info
+
+Scripts are provided with an execution environment containing the following
+variables:
+
+``response``
+    A `Response object`_ from the Python `requests library`_, which contains
+    the status code, response headers, response body, and a lot more. Check
+    out the `Response API <response_object>`_ for a detailed list.
+
+``env``
+    A Python ``dict`` which contains the entire hierarchy of the current
+    Collection. It is mutable, and any changes made here will be persisted
+    into the current Environment. If ``autosave`` is enabled, the changes
+    will be saved to disk as well.
+
+
+YAML Block Styles
+^^^^^^^^^^^^^^^^^
+
+Writing multiline strings for the ``body`` and ``script`` Request parameters
+without using readability is easy with YAML's `block styles`_. I recommend
+using `literal style`_ since it preserves whitespace and is the most readable.
+Adding to the example above:
+
+.. code-block:: yaml
+
+    body: |
+        name: bar
+        age: {{ foo_age }}
+        attributes:
+            fire_spinning: 32
+            basket_weaving: 11
+
+The vertical bar (``|``) denotes the start of a literal block, so newlines are
+ preserved, as well as any *additional* indentation. In this example, the
+result is that the value of ``body`` is 5 lines of text, with the last two
+lines indented 4 spaces.
+
+Note that it is impossible to escape characters within a literal block, so if
+that's something you need you may have to try a different
 
 
 Environment
@@ -247,3 +344,8 @@ Software License
 This software is distributed under the `Apache License, Version
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See `LICENSE <LICENSE>`_
 for more information.
+
+.. _block styles: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
+.. _literal style: <http://www.yaml.org/spec/1.2/spec.html#id2793604>
+.. _response object: <http://docs.python-requests.org/en/stable/api/#requests.Response>
+.. _requests library: <http://docs.python-requests.org/en/stable/>
