@@ -8,6 +8,59 @@ It's Postman for terminal lovers!
 .. contents::
 
 
+Usage
+-----
+
+.. code-block:: text
+
+    Usage: restcli [OPTIONS] COMMAND [ARGS]...
+
+    Options:
+        -c, --collection PATH       Collection file.  [required]
+        -e, --env PATH              Environment file.
+        -s, --save / -S, --no-save  Save Environment to disk after changes.
+        --help                      Show this message and exit.
+
+    Commands:
+        repl
+        run
+        view
+
+``restcli run``:
+
+.. code-block:: text
+
+    Usage: restcli run [OPTIONS] GROUP REQUEST [ENV]...
+
+      Run a Request.
+
+    Options:
+      -o, --override TEXT  Add "key:val" pairs that shadow the Environment.
+      --help               Show this message and exit.
+
+``restcli view``:
+
+.. code-block:: text
+
+    Usage: restcli view [OPTIONS] GROUP [REQUEST] [ATTR]
+
+      View a Group, Request, or Request Attribute.
+
+    Options:
+      --help  Show this message and exit.
+
+``restcli repl``:
+
+.. code-block:: text
+
+    Usage: restcli repl [OPTIONS]
+
+      Start an interactive command prompt.
+
+    Options:
+      --help  Show this message and exit.
+
+
 Overview
 ========
 
@@ -317,14 +370,12 @@ which takes a Python script. These scripts are evaluated *after* a Request is
 performed, once the response is received.
 
 .. note::
-    The Python interpreter used for script execution is always the same
-    interpreter that **restcli** is running on. To get the version number,
-    along with other information about your **restcli** installation, use
-    the ``info`` command:
+    Your scripts will run on the same Python interpreter **restcli** is running
+    on. To get version info, use the ``--version`` flag:
 
     .. code-block:: sh
 
-        $ restcli info
+        $ restcli --version
 
 Under the hood, scripts are executed with the Python builtin ``exec()``, which
 is called with a code object containing the script as well as a ``globals``
@@ -345,17 +396,89 @@ dict containing the following variables:
     B. If ``autosave`` is enabled, the changes will be saved to disk.
 
 lib definitions
-    Any functions or variables imported in ``lib`` in the `Config`_ document
-    will be available in your scripts as well. We will learn about the
-    `Config`_ document shortly.
+    Any functions or variables imported in ``lib`` in the `Config document`_
+    will be available in your scripts as well. We'll tackle the
+    `Config document`_ in the next section.
 
 .. note::
     Since Python is whitespace sensitive, you'll probably want to read the
     section on `YAML block styles`_, too.
 
 
+.. _Config document:
+
+The Config Document
+-------------------
+
+So far our Collections have been composed of a single YAML document.
+**restcli** supports an optional second document per Collection as well, called
+the Config Document.
+
+.. note::
+    If you're not sure what "document" means in YAML, here's a quick primer:
+
+    Essentially, documents allow you to have more than one YAML "file"
+    (document) in the same file. Notice that ``---`` that appears at the top
+    of each example we've looked at? That's how you tell YAML where your
+    document begins.
+
+    Technically, the spec has more rules than that for documents but PyYAML,
+    the library **restcli** uses, isn't that strict. Here's the spec
+    anyway if you're interested: http://yaml.org/spec/1.2/spec.html#id2800132
+
+If present, the Config Document must appear *before* the Requests document.
+Breaking it down, a Collection must either:
+
+- contain exactly one document, the Requests document, or
+- contain exactly two documents; the Config Document and the Requests document,
+  in that order.
+
+Let's add a Config Document to our Secretmasons Collection. We'll take a look
+and then jump into explanations after:
+
+.. code-block:: yaml
+
+    # secretmasons.yaml
+    ---
+    defaults:
+        headers:
+            Content-Type: application/json
+            X-Secret-Key: '{{ secret_key }}'
+    lib:
+        - restcli.contrib.scripts
+
+    ---
+    memberships:
+        invite: ...
+
+        upgrade: ...
+
+
+Config Parameters
+~~~~~~~~~~~~~~~~~
+
+The Config Document is used for global configuration in general, so the
+parameters defined here don't have much in common.
+
+``defaults`` (object)
+    Default values to use for each Request parameter when not specified in the
+    Request. ``defaults`` has the same structure as a `Request`_, so each
+    parameters defined here must also be valid as a Request parameter.
+
+
+``lib`` (array)
+    ``lib`` is an array of Python module paths. Each module here must contain a
+    function with the signature ``define(request, env, *args, **kwargs)`` which
+    returns a dict. That dict will be added to the execution environment of any
+    script that gets executed after a `Request`_ is completed.
+
+    **restcli** ships with a pre-baked ``lib`` module at
+    ``restcli.contrib.scripts``. It provides some useful utility functions
+    to use in your scripts. It can also be used as a learning tool.
+
+
 YAML Block Styles
-^^^^^^^^^^^^^^^^^
+-----------------
 
 Writing multiline strings for the ``body`` and ``script`` Request parameters
 without using readability is easy with YAML's `block styles`_. I recommend
@@ -378,100 +501,6 @@ lines indented 4 spaces.
 
 Note that it is impossible to escape characters within a literal block, so if
 that's something you need you may have to try a different
-
-
-Config
-----
-
-A Collection can also have a second YAML
-`document <http://yaml.org/spec/1.2/spec.html#id2800132>`_ in the same file,
-referred to as **Config**. This document must appear *before* the Collection
-document, and contains data which applies to the Collection as a whole.
-
-.. code-block:: yaml
-
-    ---
-    defaults:
-        headers:
-            Content-Type: application/json
-            Authorization: {{ username }}:{{ password }}
-    lib:
-        - restcli.contrib.scripts
-
-    ---
-    # Your Groups and Requests go down here...
-
-
-Config Parameters
-~~~~~~~~~~~~~~~
-
-``defaults``
-    Each item in ``defaults`` must be a valid `Request`_ attribute. These
-    values will be used by any `Request`_ in the Collection which does not
-    provide that attribute itself.
-
-``lib``
-    ``lib`` is an array of Python module paths. Each module here must contain a
-    function with the signature ``define(request, env, *args, **kwargs)`` which
-    returns a dict. That dict will be added to the execution environment of any
-    script that gets executed after a `Request`_ is completed.
-
-    For an example of a ``lib`` file, check out ``restcli.contrib.scripts``,
-    which provides helpful utilities and shortcuts for you to use in your own
-    Collections.
-
-
-Usage
------
-
-.. code-block:: text
-
-    Usage: restcli [OPTIONS] COMMAND [ARGS]...
-
-    Options:
-      -c, --collection PATH       Collection file.  [required]
-      -e, --env PATH              Environment file.
-      -s, --save / -S, --no-save  Save Environment to disk after changes.
-      --help                      Show this message and exit.
-
-    Commands:
-      repl
-      run
-      view
-
-``restcli run``:
-
-.. code-block:: text
-
-    Usage: restcli run [OPTIONS] GROUP REQUEST [ENV]...
-
-      Run a Request.
-
-    Options:
-      -o, --override TEXT  Add "key:val" pairs that shadow the Environment.
-      --help               Show this message and exit.
-
-``restcli view``:
-
-.. code-block:: text
-
-    Usage: restcli view [OPTIONS] GROUP [REQUEST] [ATTR]
-
-      View a Group, Request, or Request Attribute.
-
-    Options:
-      --help  Show this message and exit.
-
-``restcli repl``:
-
-.. code-block:: text
-
-    Usage: restcli repl [OPTIONS]
-
-      Start an interactive command prompt.
-
-    Options:
-      --help  Show this message and exit.
 
 
 Interactive Prompt

@@ -19,8 +19,7 @@ pass_app = click.make_pass_decorator(App)
 
 @click.group(invoke_without_command=True)
 @click.version_option(
-    VERSION,
-    '-v', '--version',
+    VERSION, '-v', '--version',
     prog_name='restcli',
     message=' '.join((
         '%(prog)s %(version)s',
