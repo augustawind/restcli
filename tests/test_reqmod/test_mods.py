@@ -6,7 +6,7 @@ from restcli.exceptions import ReqModValueError
 from restcli.reqmod import mods
 from restcli.reqmod.lexer import ACTIONS
 from tests.helpers import (
-    get_random_ascii,
+    get_random_alphanumeric,
     get_random_unicode,
     get_random_url_chars,
 )
@@ -22,7 +22,7 @@ class ModTypesTestMixin(object):
     def run_mod_test(cls, input_val, input_key=DEFAULT,
                      expected_val=DEFAULT, expected_key=DEFAULT):
         if input_key is DEFAULT:
-            input_key = get_random_ascii(11)
+            input_key = get_random_alphanumeric(11)
         mod_str = cls.mod_cls.delimiter.join((input_key, input_val))
         mod = cls.mod_cls.match(mod_str)
         mod.clean()
@@ -118,7 +118,7 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_invalid_value(self):
         val = get_random_unicode()
         key = get_random_url_chars()
-        with pytest.raises(restcli.exceptions.ReqModValueError):
+        with pytest.raises(ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -127,7 +127,7 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_invalid_key(self):
         val = get_random_url_chars()
         key = get_random_unicode()
-        with pytest.raises(restcli.exceptions.ReqModValueError):
+        with pytest.raises(ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -140,23 +140,23 @@ class TestHeaderMod(ModTypesTestMixin):
 
     def test_valid(self):
         self.run_mod_test(
-            input_val=get_random_ascii(),
-            input_key=get_random_ascii(),
+            input_val=get_random_alphanumeric(),
+            input_key=get_random_alphanumeric(),
         )
 
     def test_invalid_value(self):
         val = get_random_unicode()
-        key = get_random_ascii()
-        with pytest.raises(restcli.exceptions.ReqModValueError):
+        key = get_random_alphanumeric()
+        with pytest.raises(ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
             )
 
     def test_invalid_key(self):
-        val = get_random_ascii()
+        val = get_random_alphanumeric()
         key = get_random_unicode()
-        with pytest.raises(restcli.exceptions.ReqModValueError):
+        with pytest.raises(ReqModValueError):
             self.run_mod_test(
                 input_val=val,
                 input_key=key,
@@ -169,6 +169,9 @@ class TestStrFieldMod(ModTypesTestMixin):
 
     def test_valid(self):
         self.run_mod_test(
-            input_val=get_random_ascii(),
-            input_key=get_random_ascii(),
+            input_val=get_random_alphanumeric(),
+            input_key=get_random_alphanumeric(),
         )
+
+
+TestStrFieldMod().test_valid()
