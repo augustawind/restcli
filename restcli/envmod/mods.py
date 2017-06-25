@@ -7,7 +7,7 @@ import six
 
 from restcli.exceptions import InputError
 from restcli.params import VALID_URL_CHARS
-from restcli.utils import AttrSeq, classproperty, is_ascii
+from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii
 
 ATTR_TYPES = AttrSeq(
     'json_field',
@@ -29,10 +29,10 @@ class ModValueError(ModError):
     """Invalid Mod key or value."""
 
 
-def parse_mod(mod_str,):
+def parse_mod(mod_str):
     """Attempt to parse a str into a Mod."""
     err = None
-    for mod_cls in MODS:
+    for mod_cls in MODS.values():
         try:
             mod = mod_cls.match(mod_str)
         except ModSyntaxError as err:
@@ -50,7 +50,7 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     _types = None
     _pattern = None
 
-    split_re_tpl = string.Template(r'[^\\]${delimiter}')
+    split_re_tpl = string.Template(r'(?<=[^\\])${delimiter}')
 
     def __init__(self, key, value):
         self.raw_key = key
@@ -67,8 +67,7 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     @classmethod
     def match(cls, mod_str):
         parts = cls.pattern.split(mod_str)
-        if len(parts) not in (2, 3):
-            # TODO: custom error class
+        if len(parts) != 2:
             raise ModSyntaxError(
                 value=mod_str, msg='Mod structure is ambiguous')
         key, value = parts
@@ -148,9 +147,11 @@ class UrlParamMod(Mod):
         return key, value
 
 # Tuple of Mod classes, in order of specificity of delimiters
-MODS = (
-    JsonFieldMod,
-    UrlParamMod,
-    HeaderMod,
-    StrFieldMod
-)
+MODS = AttrMap(*(
+    (mod_cls.delimiter, mod_cls) for mod_cls in (
+        JsonFieldMod,
+        UrlParamMod,
+        HeaderMod,
+        StrFieldMod,
+    )
+))

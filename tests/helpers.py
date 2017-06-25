@@ -3,9 +3,18 @@ import string
 
 import six
 
+from restcli.params import VALID_URL_CHARS
 
-def get_random_unicode(length):
-    """Helper to generate a random Unicode string."""
+
+def _random_str(population, length=None):
+    if length is None:
+        length = random.randint(3, 15)
+    k = min(length, len(population))
+    return ''.join(random.sample(population, k))
+
+
+def get_random_unicode(length=None):
+    """Generate a random Unicode string."""
     include_ranges = [
         (0x0021, 0x0021),
         (0x0023, 0x0026),
@@ -26,12 +35,17 @@ def get_random_unicode(length):
         for current_range in include_ranges
         for code_point in range(current_range[0], current_range[1] + 1)
     ]
-    return ''.join(random.sample(alphabet, length))
+    return _random_str(alphabet, length)
 
 
-def get_random_ascii(length):
-    """Helper to generate a random ASCII string."""
-    return ''.join(random.sample(string.printable, length))
+def get_random_ascii(length=None):
+    """Generate a random ASCII string."""
+    return _random_str(string.printable, length)
+
+
+def get_random_url_chars(length=None):
+    """Generate a random URL-safe string."""
+    return _random_str(VALID_URL_CHARS, length)
 
 
 def contents_equal(*seqs):
