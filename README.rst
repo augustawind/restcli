@@ -73,22 +73,19 @@ Docker
 **restcli** can be run with Docker without additional dependencies.
 Assuming Docker is installed, the Docker image can be built by running:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ docker build -t restcli .
 
 Then run it with:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ docker run -it restcli [OPTIONS] ARGS
 
 
 Overview
 ========
-
-The Two Pillars of restcli
---------------------------
 
 We'll start with a bird's eye view of some core concepts in **restcli**, and
 then move into the tutorial.
@@ -488,7 +485,7 @@ convenience. Here's the full usage text for the REPL:
 
 .. code-block:: console
 
-    Usage: restcli  [OPTIONS] COMMAND [ARGS]...
+    Usage: [OPTIONS] COMMAND [ARGS]...
 
     Options:
       -v, --version               Show the version and exit.
