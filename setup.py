@@ -4,24 +4,15 @@
 import os
 import sys
 
-from importlib.machinery import SourceFileLoader
-
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-# avoid loading the package before requirements are installed:
-#version = SourceFileLoader('version', 'version.py').load_module()
-
-#__version__ = str(version.VERSION)
-
 import restcli
-__version__ = restcli.__version__
-
 
 if sys.argv[-1] == 'tag':
-    os.system("git tag -a %s -m 'version %s'" % (__version__, __version__))
+    os.system("git tag -a %s -m 'version %s'" % (restcli.__version__, restcli.__version__))
     os.system("git push --tags")
     sys.exit()
 
@@ -34,14 +25,14 @@ if sys.argv[-1] == 'test':
     os.system('pytest')
     sys.exit()
 
-with open('README.rst', 'r') as f:
+with open('README.rst') as f:
     readme = f.read()
-with open('HISTORY.rst', 'r') as f:
+with open('HISTORY.rst') as f:
     history = f.read()
 
 setup(
     name='restcli',
-    version=__version__,
+    version=restcli.__version__,
     description='An API exploration and testing tool written in Python.',
     long_description=readme + '\n\n' + history,
     author='Dustin Rohde',
@@ -62,6 +53,7 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Internet :: WWW/HTTP',
