@@ -52,26 +52,27 @@ With ``setup.py``:
 
     $ python setup.py install
 
-If you have ``invoke``, you can use it for running the tests and installation:
+With ``setup.py`` but allow edits to the files under ``restcli/`` and reflect
+those changes without having to reinstall ``restcli``:
 
 .. code-block:: sh
 
-    $ invoke test  # Run the tests
+    $ python setup.py develop
+
+If you have ``invoke``, you can use it for running the tests and installation.
+If not, you can install it with ``pip install invoke``.
+
+.. code-block:: sh
+
+    $ invoke test     # Run the tests
     $ invoke install  # Install it
-    $ invoke build  # Run the whole build workflow
-
-If not, you can install it with ``pip``:
-
-.. code-block:: sh
-
-    $ pip install invoke
+    $ invoke build    # Run the whole build workflow
 
 
 Docker
 ------
 
-**restcli** can be run with Docker without additional dependencies.
-Assuming Docker is installed, the Docker image can be built by running:
+Assuming Docker is installed, **restcli** can run inside a container.
 
 .. code-block:: console
 

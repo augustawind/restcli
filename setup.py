@@ -12,9 +12,13 @@ except ImportError:
     from distutils.core import setup
 
 # avoid loading the package before requirements are installed:
-version = SourceFileLoader('version', 'version.py').load_module()
+#version = SourceFileLoader('version', 'version.py').load_module()
 
-__version__ = str(version.VERSION)
+#__version__ = str(version.VERSION)
+
+import restcli
+__version__ = restcli.__version__
+
 
 if sys.argv[-1] == 'tag':
     os.system("git tag -a %s -m 'version %s'" % (__version__, __version__))
