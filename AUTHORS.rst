@@ -11,4 +11,5 @@ Contributors
 ------------
 
 * Dairon Medina C. <me@dairon.org>
+* Lyle Scott, III <lyle@ls3.io>
 * You?

@@ -66,6 +66,7 @@ setup(
     """,
     install_requires=[
         'click>=6,<7',
+        'click-repl>0.1,<1',
         'jinja2>=2,<3',
         'prompt_toolkit>=1,<2',
         'Pygments>=2,<3',
