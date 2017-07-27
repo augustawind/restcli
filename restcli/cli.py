@@ -3,7 +3,7 @@ import sys
 import click
 from click_repl import repl as start_repl
 
-from version import VERSION
+import restcli
 from restcli.app import App
 from restcli.exceptions import (
     CollectionError,
@@ -19,7 +19,7 @@ pass_app = click.make_pass_decorator(App)
 
 @click.group(invoke_without_command=True)
 @click.version_option(
-    VERSION, '-v', '--version',
+    restcli.__version__, '-v', '--version',
     prog_name='restcli',
     message=' '.join((
         '%(prog)s %(version)s',
