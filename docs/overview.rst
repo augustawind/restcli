@@ -1,14 +1,15 @@
 .. _overview:
 
-========
+########
 Overview
-========
+########
 
 **restcli** is a terminal web API client written in Python. It draws inspiration
 from `Postman`_ and `HTTPie`_, and offers some of the best features of both.
 
+********
 Features
-========
+********
 
 * read requests from YAML files
 * scripting
@@ -19,7 +20,10 @@ Features
 * colored output
 
 Roadmap
--------
+=======
+
+Short-term
+----------
 
 Here's what we have in store for the foreseeable future.
 
@@ -28,51 +32,56 @@ Here's what we have in store for the foreseeable future.
 * request plans: run requests back-to-back with one command
 * import from/export to Postman JSON format
 
-Ideas
------
+Long-term
+---------
 
-Here are some feature concepts that may or may not get implemented.
+Here are some longer-term feature concepts that may or may not get implemented.
 
 * full screen terminal UI via `python_prompt_toolkit`_
 * in-app request editor (perhaps using `pyvim`_)
 
+*************
 Core Concepts
-=============
+*************
 
 In this section we'll get a bird's eye view of **restcli**\'s core concepts.
 After reading this section, you should be ready for the `Tutorial <tutorial>`_.
 
-Collections
------------
+.. _overview_collections:
 
-**restcli** understands your API through YAML files called Collections. A
-Collection is a bunch of Requests organized into named Groups. They look like
-this:
+Collections
+===========
+
+**restcli** understands your API through YAML files called *Collections*.
+Collections are objects composed of *Groups*, which are again objects composed
+of `Requests <overview_requests>`_. A Collection is essentially just a bunch of
+Requests; Groups are purely organizational.
 
 .. code-block:: yaml
 
-    group1:
-        request1:
-            # ...
-        request2:
-            # ...
-    group2:
-        # ...
+    ---
+    weapons:
+        equip:
+            # <<request>>
+        info:
+            # <<request>>
+    potions:
+        drink:
+            # <<request>>
 
-On the commandline, Requests are accessed by specifying the Group name followed
-by the Request name, like so:
+This Collection has two Groups. The first Group, ``weapons``, has two Requests,
+``equip`` and ``info``. The second has Group is called "potions" and has one
+Request called "drink". This is a good example of a well-organized Collection —
+Groups were used to provide context, and even though we're using placeholders,
+it's easy to infer the purpose of each Request.
 
-.. code-block:: console
-
-    restcli run GROUP REQUEST
-
-Groups are purely organizational, so let's look at Requests.
+.. _overview_requests:
 
 Requests
---------
+========
 
-Requests contain the information **restcli** needs to interact with your API.
-They look like this:
+A Request is a YAML object that describes a particular action against an API.
+Requests are the bread and butter of **restcli**.
 
 .. code-block:: yaml
 
@@ -80,52 +89,62 @@ They look like this:
     url: "http://httpbin.org/post"
     headers:
         Content-Type: application/json
-        Accept: application/json
+        Authorization: {{ password }}
     body: |
-        name: {{ name }}
-        age: 24
+        name: bar
+        age: {{ cool_number }}
+        is_cool: true
 
-When this Request is executed, a POST request will be made to
-http://httpbin.org/post with the specified Content-Type and Accept headers
-and a JSON payload containing an object with two keys, "name" and "age".
+At a glance, we can get a rough idea of what's going on. This Request
+uses the POST ``method`` to send some data (``body``) to the ``url``
+http://httpbin.org/post\, with the given Content-Type and Authorization
+``headers``.
 
-Notice the double curly brackets inside the "body" field: ``name: {{ name }}``.
-This is a template variable. Template variables are given concrete values by
-*Environments*.
+Take note of the stuff in between the double curly brackets: ``{{ password }}``,
+``{{ cool_number }}``. These are template variables, which must be interpolated
+with concrete values before executing the request, which brings us to our next
+topic...
+
+.. _overview_environments:
 
 Environments
-------------
+============
 
-Environments are YAML files that define values for use in templating. They
-look like this:
+An Environment is a YAML object that defines values which are used to
+interpolate template variables in a Collection. Environments can be be modified
+with `Request scripts <tutorial_scripting>`_, which we cover in the `Tutorial
+<tutorial>`_.
 
-.. code-block:: yaml
-
-    key1: value1
-    key2: value2
-    key3: value3
-
-Keys must be strings, but values can be any type, including objects and arrays.
-Here's an example Environment:
+This Environment could be used with the Request we looked at in the `previous
+section <overview_collections>`_:
 
 .. code-block:: yaml
 
-    name: Linus Torvalds
+    password: sup3rs3cr3t
+    cool_number: 25
 
-Applying this Environment to the example Request "body" from the previous
-section would yield the following result:
+Once the Environment is applied, the Request would look something like this:
 
 .. code-block:: yaml
 
+    method: post
+    url: "http://httpbin.org/post"
+    headers:
+        Content-Type: application/json
+        Authorization: sup3rs3cr3t
     body: |
-        name: Linus Torvalds
-        age: 24
+        name: bar
+        age: 25
+        is_cool: true
 
+**********
 Next Steps
-----------
+**********
 
-Coming soon...
+The recommended way to continue learning is the `Tutorial
+<tutorial>`_.
 
+**Coming soon**: reference documentation.
 
 .. _Postman: https://www.getpostman.com/postman
 .. _HTTPie: https://httpie.org/
