@@ -12,6 +12,8 @@ Welcome to restcli's documentation!
    :caption: Contents:
 
    overview
+   usage
+   tutorial
 
 
 
