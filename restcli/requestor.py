@@ -25,8 +25,9 @@ class Requestor(object):
         script = request.get('script')
         if script:
             script_locals = {'response': response, 'env': self.env}
-            for lib in six.itervalues(self.collection.libs):
-                script_locals.update(lib.define(response, self.env))
+            if self.collection.libs:
+                for lib in six.itervalues(self.collection.libs):
+                    script_locals.update(lib.define(response, self.env))
             self.run_script(script, script_locals)
 
         return response

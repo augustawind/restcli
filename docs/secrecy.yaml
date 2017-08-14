@@ -21,3 +21,5 @@ memberships:
         body: |
             title: '{{ titles[rank + 1] }}'
             rank: '{{ rank + 1 }}'
+        script: |
+            env['rank'] += 1

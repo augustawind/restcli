@@ -294,8 +294,8 @@ Let's add a script to our ``bump_rank`` Request:
         script: |
             env['rank'] += 1
 
-Now each time we run ``bump_rank`` it will increment Environment.``rank`` as
-well. Let's run it again to see the changes in action:
+Now each time we run ``bump_rank`` it will update the Environment with the new
+value. Let's run it again to see the changes in action:
 
 .. code-block:: sh
 
@@ -303,6 +303,8 @@ well. Let's run it again to see the changes in action:
 
 Notice that we added the ``--save`` flag. Without this, changes to the
 Environment would not be saved to disk.
+
+Open up your Environment file and make sure ``rank`` was updated successfully.
 
 .. note::
     All script examples were written for Python3.6, but most will probably work
