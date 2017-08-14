@@ -5,8 +5,8 @@ Tutorial: Modeling an API
 #########################
 
 .. note::
-    If you haven't read through the `Overview <overview>`, go do that now!
-    A basic familiarity with **restcli**'s core concepts is assumed.
+    This tutorial assumes that you've read the `Overview <overview>`_ and
+    `Usage <usage>`_ documentation.
 
 Throughout this tutorial we will be modeling an API with **restcli**, gradually
 adding to it as we learn new concepts, until we have a complete API client suite.
@@ -151,7 +151,7 @@ We'll start by adding another Request to our ``memberships`` Group:
     memberships:
         invite: ...
 
-        edit_rank:
+        bump_rank:
             method: patch
             url: '{{ server }}/memberships/{{ member_id }}'
             headers:
@@ -190,16 +190,23 @@ without making any changes to the Collection.
     The ``env.yaml`` extension in ``wanda.env.yaml`` is just a convention to
     identify the file as an Environment. Any extension may be used.
 
+We're almost ready to run it, but let's change ``server`` to something real
+so we don't get any errors:
+
+.. code-block:: yaml
+
+    server: http://httpbin.org/anything
+
 Now we'll run the request:
 
 .. code-block:: sh
 
-    $ restcli -c secrecy.yaml -e wanda.yaml run memberships edit_rank
+    $ restcli -c secrecy.yaml -e wanda.env.yaml run memberships bump_rank
 
 Here's what **restcli** does when we hit enter:
 
 #. Load the Collection (``secrecy.yaml``) and locate the Request
-   ``memberships.edit_rank``.
+   ``memberships.bump_rank``.
 #. Load the Environment (``wanda.yaml``).
 #. Use the Environment to execute the contents of the ``url``, ``headers``, and
    ``body`` parameters as `Jinja2 Template`_\s,.
@@ -210,10 +217,10 @@ what it would look like:
 
 .. code-block:: yaml
 
-    # secretmasons2.yaml
+    # secrecy.yaml
 
     method: post
-    url: 'https://www.secrecy.org/memberships/12345/upgrade'
+    url: 'https://www.secrecy.org/memberships/12345/bump_rank'
     headers:
         Content-Type: application/json
         X-Secret-Key: sup3rs3cr3t
@@ -224,17 +231,24 @@ what it would look like:
 Here's a piece-by-piece breakdown of what happened:
 
 + In the ``url`` section:
-    + ``{{ server }}`` was replaced with the value of Environment.server,
+    + ``{{ server }}`` was replaced with the value of Environment.``server``,
       ``http://www.secrecy.org``.
-    + `{{ member_id }}`` was replaced with the value of Environment.member_id,
+    + `{{ member_id }}`` was replaced with the value of Environment.``member_id``,
       ``UGK882I59``.
 + In the ``headers`` section, ``{{ secret_key }}`` was replaced with the value
-  of Environment.secret_key, ``sup3rs3cr3t``.
+  of Environment.``secret_key``, ``sup3rs3cr3t``.
 + In the ``body`` section:
-    + ``{{ rank }}`` was replaced with the value of Environment.rank,
+    + ``{{ rank }}`` was replaced with the value of Environment.``rank``,
       incremented by 1.
-    + ``{{ title }}`` was replaced by an item of the Environment.titles
+    + ``{{ title }}`` was replaced by an item of the Environment.``titles``
       list, by indexing it with the new rank value.
+
+.. note::
+    When it gets a request, http://httpbin.org/anything echoes back the
+    URL, headers, and request body in the response. You can use this to check
+    your work. If something is off, be sure to fix it before we continue.
+
+Congrats on your new rank Wanda!
 
 What we just learned should cover most use cases, but if you need more power or
 just want to explore, there's much more to templating than what we just covered!
@@ -244,13 +258,56 @@ just want to explore, there's much more to templating than what we just covered!
 Scripting
 ---------
 
-As previously mentioned, each Request has an optional ``script`` parameter
-which takes a Python script. These scripts are evaluated *after* a Request is
-performed, once the response is received.
+Templating is a powerful feature that allows you to make modular, reusable
+Requests which encapsulate particular functions of your API without being tied
+to specifics. We demonstrated this by modeling a function to increase a
+member's rank, and created an Environment file to use it on Wanda. If we wanted
+to do the same for another member, we'd simply create a new Environment.
+
+However, what happens when it's time for Wanda's second promotion? We know
+her current rank is 1, but the Environment still says 0. If we ran the
+``bump_rank`` Request on the same Environment again, we'd get the same result:
+
+.. code-block:: yaml
+
+    # secrecy.yaml
+
+    body: |
+        rank: 1
+        title: Seeker
+
+We need a way to update the Environment automatically after we run the Request.
+
+This is achieved through scripting. As mentioned earlier in `Request
+Parameters`_, each Request supports an optional ``script`` parameter which
+contains Python code. It is evaluated after the request is ran, and can modify
+the current Environment.
+
+Let's add a script to our ``bump_rank`` Request:
+
+.. code-block:: yaml
+
+    # secrecy.yaml
+
+    bump_rank:
+        ...
+        script: |
+            env['rank'] += 1
+
+Now each time we run ``bump_rank`` it will increment Environment.``rank`` as
+well. Let's run it again to see the changes in action:
+
+.. code-block:: sh
+
+    $ restcli --save -c secrecy.yaml -e wanda.env.yaml run memberships bump_rank
+
+Notice that we added the ``--save`` flag. Without this, changes to the
+Environment would not be saved to disk.
 
 .. note::
-Your scripts will run on the same Python interpreter **restcli** is running
-    on. To get version info, use the ``--version`` flag:
+    All script examples were written for Python3.6, but most will probably work
+    in Python3+. To get version info, including the Python version, use the
+    ``--version`` flag:
 
     .. code-block:: sh
 
@@ -280,8 +337,8 @@ lib definitions
     `Config document`_ in the next section.
 
 .. note::
-Since Python is whitespace sensitive, you'll probably want to read the
-    section on `block styles`_, too.
+    Since Python is whitespace sensitive, you'll probably want to read the
+    section on `block styles`_.
 
 
 .. _Config document:

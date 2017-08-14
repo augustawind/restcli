@@ -12,7 +12,7 @@ memberships:
             age: {{ member_age }}
             can_keep_secrets: true
 
-    edit_rank:
+    bump_rank:
         method: patch
         url: '{{ server }}/memberships/{{ member_id }}'
         headers:
