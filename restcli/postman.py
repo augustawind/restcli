@@ -13,7 +13,7 @@ def parse_collection(postman_collection):
     for folder_info in postman_collection['item']:
         group_name = normalize(folder_info['name'])
         if group_name in collection:
-            warnings.warn('Duplicate group name "%s"; skipping' % group_name)
+            warnings.warn('duplicate Group name "%s"; skipping' % group_name)
         collection[group_name] = parse_group(folder_info['item'])
 
     return collection
@@ -23,6 +23,9 @@ def parse_group(folder_info):
     group = OrderedDict()
     for request_info in folder_info:
         request_name = normalize(request_info['name'])
+        if request_name in group:
+            warnings.warn(
+                'duplicate Request name "%s"; skipping' % request_name)
         if 'item' in request_info:
             warnings.warn('Postman sub-folders are not supported; '
                           'skipping folder "%s"' % request_name)
@@ -71,7 +74,7 @@ def parse_body(body_info):
         elif mode == 'raw':
             python_repr = json.loads(body)
         else:
-            warnings.warn('Unsupported body mode "%s"; skipping' % mode)
+            warnings.warn('unsupported body mode "%s"; skipping' % mode)
             return None
 
         text = yaml.dump(python_repr, indent=4)
@@ -85,7 +88,7 @@ def parse_formdata(formdata):
 
     for item in formdata:
         if item['type'] != 'text':
-            warnings.warn('Unsupported type in formdata "%s"; skipping'
+            warnings.warn('unsupported type in formdata "%s"; skipping'
                           % item['type'])
             continue
 
@@ -106,7 +109,7 @@ def normalize(text):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('collection', type=open)
-    parser.add_argument('--outfile', '-o', type=argparse.FileType('w'),
+    parser.add_argument('-o', '--outfile', type=argparse.FileType('w'),
                         default=sys.stdout)
     args = parser.parse_args()
 
