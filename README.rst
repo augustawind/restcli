@@ -2,8 +2,8 @@
 restcli
 =======
 
-An API client library and CLI written in Python.
-It's Postman for terminal lovers!
+**restcli** is a library and commandline utility for API testing. It reads
+requests from a YAML file and supports scripting and variable interpolation.
 
 .. contents::
 
@@ -27,13 +27,6 @@ Usage
       repl  Start an interactive prompt.
       run   Run a Request.
       view  View a Group, Request, or Request Parameter.
-
-
-Overview
-========
-
-**restcli** is a library and commandline utility for API testing. It reads
-requests from a YAML file and supports scripting and variable interpolation.
 
 
 Installation
