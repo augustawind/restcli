@@ -1,23 +1,39 @@
+import argparse
 import json
+import re
+import sys
 import warnings
 from collections import OrderedDict
 
 from restcli import yaml_utils as yaml
+
+NAME_SUB_RE = re.compile(r'[{}]', re.MULTILINE)
+ENV_SUB_RE = re.compile(r'{{([^{}]+)}}', re.MULTILINE)
 
 
 def parse_collection(postman_collection):
     collection = OrderedDict()
     for folder_info in postman_collection['item']:
         group_name = folder_info['name']
-        collection[group_name] = parse_group(folder_info)
+        collection[group_name] = parse_group(folder_info['item'])
+
     return collection
 
 
 def parse_group(folder_info):
     group = OrderedDict()
-    for request_info in folder_info['item']:
+    for request_info in folder_info:
         request_name = request_info['name']
-        group[request_name] = parse_request(request_info)
+        request_name = NAME_SUB_RE.sub('', request_name)
+        if 'item' in request_info:
+            warnings.warn('Postman sub-folders are not yet supported; '
+                          'skipping folder "%s"' % request_name)
+            continue
+            # for sub_folder in request_info['item']:
+            #     group.update(parse_group(sub_folder))
+        else:
+            group[request_name] = parse_request(request_info)
+
     return group
 
 
@@ -25,8 +41,9 @@ def parse_request(request_info):
     request = OrderedDict()
     r = request_info['request']
 
-    if r['description']:
-        request['description'] = r['description']
+    description = r.get('description')
+    if description:
+        request['description'] = description
 
     request['method'] = r['method'].lower()
     request['url'] = r['url']
@@ -82,3 +99,24 @@ def parse_formdata(formdata):
         data[key] = val
 
     return data
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('collection', type=open)
+    parser.add_argument('--outfile', '-o', type=argparse.FileType('w'),
+                        default=sys.stdout)
+    args = parser.parse_args()
+
+    postman_collection = json.load(args.collection)
+    collection = parse_collection(postman_collection)
+
+    output = yaml.dump(collection, indent=4)
+    for var in ENV_SUB_RE.findall(output):
+        output = output.replace('{{%s}}' % var,
+                                '{{ %s }}' % var.lower())
+    print(output, file=args.outfile)
+
+
+if __name__ == '__main__':
+    main()
