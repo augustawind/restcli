@@ -26,13 +26,10 @@ def parse_group(folder_info):
         request_name = request_info['name']
         request_name = NAME_SUB_RE.sub('', request_name)
         if 'item' in request_info:
-            warnings.warn('Postman sub-folders are not yet supported; '
+            warnings.warn('Postman sub-folders are not supported; '
                           'skipping folder "%s"' % request_name)
             continue
-            # for sub_folder in request_info['item']:
-            #     group.update(parse_group(sub_folder))
-        else:
-            group[request_name] = parse_request(request_info)
+        group[request_name] = parse_request(request_info)
 
     return group
 
@@ -55,7 +52,7 @@ def parse_request(request_info):
 
     body_info = r['body']
     body = parse_body(body_info)
-    if body:
+    if body and body.strip() != '{}':
         request['body'] = body
 
     return request
@@ -76,7 +73,7 @@ def parse_body(body_info):
         elif mode == 'raw':
             python_repr = json.loads(body)
         else:
-            warnings.warn('Found unknown body mode "%s"; skipping' % mode)
+            warnings.warn('Unsupported body mode "%s"; skipping' % mode)
             return None
 
         text = yaml.dump(python_repr, indent=4)
@@ -90,7 +87,7 @@ def parse_formdata(formdata):
 
     for item in formdata:
         if item['type'] != 'text':
-            warnings.warn('Found unknown type in formdata "%s"; skipping'
+            warnings.warn('Unsupported type in formdata "%s"; skipping'
                           % item['type'])
             continue
 
