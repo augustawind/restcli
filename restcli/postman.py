@@ -121,6 +121,7 @@ def main():
     for var in re.findall(r'{{([^{}]+)}}', output):
         output = output.replace('{{%s}}' % var,
                                 '{{ %s }}' % var.lower())
+    output = '---\n%s' % output
     print(output, file=args.outfile)
 
 
