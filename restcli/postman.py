@@ -13,7 +13,7 @@ def parse_collection(postman_collection):
     for folder_info in postman_collection['item']:
         group_name = normalize(folder_info['name'])
         if group_name in collection:
-            warnings.warn('duplicate Group name "%s"; skipping' % group_name)
+            warnings.warn('duplicate group name "%s"; skipping' % group_name)
         collection[group_name] = parse_group(folder_info['item'])
 
     return collection
@@ -25,9 +25,9 @@ def parse_group(folder_info):
         request_name = normalize(request_info['name'])
         if request_name in group:
             warnings.warn(
-                'duplicate Request name "%s"; skipping' % request_name)
+                'duplicate request name "%s"; skipping' % request_name)
         if 'item' in request_info:
-            warnings.warn('Postman sub-folders are not supported; '
+            warnings.warn('sub-folders in collections are not supported; '
                           'skipping folder "%s"' % request_name)
             continue
         group[request_name] = parse_request(request_info)
