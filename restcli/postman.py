@@ -7,14 +7,13 @@ from collections import OrderedDict
 
 from restcli import yaml_utils as yaml
 
-NAME_SUB_RE = re.compile(r'[{}]', re.MULTILINE)
-ENV_SUB_RE = re.compile(r'{{([^{}]+)}}', re.MULTILINE)
-
 
 def parse_collection(postman_collection):
     collection = OrderedDict()
     for folder_info in postman_collection['item']:
-        group_name = folder_info['name']
+        group_name = normalize(folder_info['name'])
+        if group_name in collection:
+            warnings.warn('Duplicate group name "%s"; skipping' % group_name)
         collection[group_name] = parse_group(folder_info['item'])
 
     return collection
@@ -23,8 +22,7 @@ def parse_collection(postman_collection):
 def parse_group(folder_info):
     group = OrderedDict()
     for request_info in folder_info:
-        request_name = request_info['name']
-        request_name = NAME_SUB_RE.sub('', request_name)
+        request_name = normalize(request_info['name'])
         if 'item' in request_info:
             warnings.warn('Postman sub-folders are not supported; '
                           'skipping folder "%s"' % request_name)
@@ -98,6 +96,13 @@ def parse_formdata(formdata):
     return data
 
 
+def normalize(text):
+    text = text.lower()
+    text = re.sub('\s+', '-', text)
+    text = re.sub('[{}]', '', text)
+    return text
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('collection', type=open)
@@ -109,7 +114,8 @@ def main():
     collection = parse_collection(postman_collection)
 
     output = yaml.dump(collection, indent=4)
-    for var in ENV_SUB_RE.findall(output):
+    output = re.sub(r'^([^\s].*)$', '\n\\1', output, flags=re.MULTILINE)
+    for var in re.findall(r'{{([^{}]+)}}', output):
         output = output.replace('{{%s}}' % var,
                                 '{{ %s }}' % var.lower())
     print(output, file=args.outfile)
