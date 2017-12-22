@@ -1,5 +1,6 @@
 import json
 from string import Template
+from typing import TextIO
 
 import six
 from pygments import highlight
@@ -23,17 +24,14 @@ class App(object):
     """High-level execution logic for restcli.
 
     Args:
-        collection_file (str): Path to a Collection file.
-        env_file (str): Path to an Environment file.
-
-    Keyword Args:
-        autosave (bool): Whether to automatically save changes to disk.
-            Default: False
-        style (str): Pygments colorscheme name. Default: 'fruity'
+        collection_file: Path to a Collection file.
+        env_file: Path to an Environment file.
+        autosave: Whether to automatically save Env changes.
+        style: Pygments style to use for rendering.
 
     Attributes:
-        r: The Requestor object. Handles almost all I/O.
-        autosave (bool): Same as above. Can be modified.
+        r (:class:`Requestor`): The Requestor object. Handles almost all I/O.
+        autosave (bool): Whether to automatically save Env changes.
     """
 
     HTTP_TPL = Template('\n'.join((
@@ -42,8 +40,8 @@ class App(object):
         '${body}',
     )))
 
-    def __init__(self, collection_file, env_file, autosave=False,
-                 style='fruity'):
+    def __init__(self, collection_file: str, env_file: str,
+                 autosave: bool=False, style: str='fruity'):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
 
@@ -52,12 +50,18 @@ class App(object):
         self.python_lexer = Python3Lexer()
         self.formatter = Terminal256Formatter(style=style)
 
-    def run(self, group_name, request_name, *env_args, save=False):
+    def run(self, group_name: str, request_name: str, *env_args: str,
+            save: bool=False) -> str:
         """Run a Request.
 
         Args:
-            group_name (str): A Group name in the Collection.
-            request_name (str): A Request name in the Collection.
+            group_name: A :class:`Group` name in the Collection.
+            request_name: A :class:`Request` name in the Collection.
+            *env_args: :class:`Environment` modifiers.
+            save (optional): Whether to save Env changes to disk.
+
+        Returns:
+            The command output.
         """
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
@@ -71,8 +75,19 @@ class App(object):
         output = self.show_response(response)
         return output
 
-    def view(self, group_name, request_name=None, param_name=None):
-        """Inspect a Group, Request, or Request Parameter."""
+
+    def view(self, group_name: str, request_name: str=None,
+             param_name: str=None) -> str:
+        """Inspect a Group, Request, or Request Parameter.
+
+        Args:
+            group_name: The Group to inspect.
+            request_name: The Request to inspect.
+            param_name: The Request Parameter to inspect.
+
+        Returns:
+            The requested object in JSON, colorized.
+        """
         group = self.get_group(group_name, action='view')
         output_obj = group
 
