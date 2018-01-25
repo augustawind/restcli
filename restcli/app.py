@@ -1,6 +1,6 @@
 import json
+import re
 from string import Template
-from typing import TextIO
 
 import six
 from pygments import highlight
@@ -9,15 +9,19 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
+from restcli import yaml_utils as yaml
 from restcli.exceptions import (
-    ParameterNotFoundError,
     GroupNotFoundError,
+    InputError,
+    ParameterNotFoundError,
     RequestNotFoundError,
 )
 from restcli.reqmod import lexer, parser
 from restcli.requestor import Requestor
 
 __all__ = ['App']
+
+ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
 class App(object):
@@ -50,14 +54,15 @@ class App(object):
         self.python_lexer = Python3Lexer()
         self.formatter = Terminal256Formatter(style=style)
 
-    def run(self, group_name: str, request_name: str, *env_args: str,
-            save: bool=False) -> str:
+    def run(self, group_name: str, request_name: str, modifiers: list=None,
+            env_overrides: list=None, save: bool=False) -> str:
         """Run a Request.
 
         Args:
             group_name: A :class:`Group` name in the Collection.
             request_name: A :class:`Request` name in the Collection.
-            *env_args: :class:`Environment` modifiers.
+            modifiers: :class:`Request` modifiers.
+            env_overrides: :class:`Environment` overrides.
             save (optional): Whether to save Env changes to disk.
 
         Returns:
@@ -66,7 +71,7 @@ class App(object):
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
 
-        updater = self.parse_env(env_args)
+        updater = self.parse_modifiers(modifiers)
         response = self.r.request(group_name, request_name, updater)
 
         if save or self.autosave:
@@ -74,7 +79,6 @@ class App(object):
 
         output = self.show_response(response)
         return output
-
 
     def view(self, group_name: str, request_name: str=None,
              param_name: str=None) -> str:
@@ -135,15 +139,43 @@ class App(object):
         return ''
 
     @staticmethod
-    def parse_env(args):
-        """Parse some string args with Environment syntax."""
+    def parse_modifiers(args):
+        """Parse some string args as Request modifiers."""
         lexemes = lexer.lex(args)
         return parser.parse(lexemes)
 
+    @staticmethod
+    def parse_env_overrides(args):
+        """Parse some string args with Environment syntax."""
+        del_env = []
+        set_env = {}
+        for arg in args:
+            # Parse deletion syntax
+            if arg.startswith('!'):
+                var = arg[1:].strip()
+                del_env.append(var)
+                if var in set_env:
+                    del set_env[var]
+                continue
+
+            # Parse assignment syntax
+            match = ENV_RE.match(arg)
+            if not match:
+                raise InputError(
+                    value=arg,
+                    msg='Error: args must take one of the forms `!KEY` or'
+                        ' `KEY:VAL`, where `KEY` is a string and `VAL` is a'
+                        ' valid YAML value.',
+                    action='env',
+                )
+            key, val = match.groups()
+            set_env[key.strip()] = yaml.load(val)
+        return set_env, del_env
+
     def set_env(self, *args, save=False):
         """Set some new variables in the Environment."""
-        set_env, del_env = self.parse_env(args)
-        self.r.env.update_request(**set_env)
+        set_env, del_env = self.parse_env_overrides(args)
+        self.r.env.update(**set_env)
         self.r.env.remove(*del_env)
 
         output = ''

@@ -47,11 +47,11 @@ def cli(ctx, collection, env, save):
 ))
 @click.argument('group')
 @click.argument('request')
-@click.argument('env_modifiers', nargs=-1, type=click.UNPROCESSED)
+@click.argument('modifiers', nargs=-1, type=click.UNPROCESSED)
 @pass_app
-def run(app, group, request, env_modifiers):
+def run(app, group, request, modifiers):
     with expect(InputError, NotFoundError):
-        output = app.run(group, request, *env_modifiers)
+        output = app.run(group, request, modifiers=modifiers)
     click.echo(output)
 
 
@@ -73,7 +73,8 @@ def view(app, group, request, param):
 @pass_app
 def env(app, args):
     if args:
-        output = app.set_env(*args)
+        with expect(InputError):
+            output = app.set_env(*args)
     else:
         output = app.show_env()
     click.echo(output)
