@@ -17,7 +17,7 @@ from restcli.exceptions import (
 pass_app = click.make_pass_decorator(App)
 
 
-@click.group(invoke_without_command=True)
+@click.group()
 @click.version_option(
     restcli.__version__, '-v', '--version',
     prog_name='restcli',
@@ -40,8 +40,6 @@ def cli(ctx, collection, env, save):
     if not ctx.obj:
         with expect(CollectionError, EnvError, LibError):
             ctx.obj = App(collection, env, autosave=save)
-    if ctx.invoked_subcommand is None:
-        ctx.invoke(repl)
 
 
 @cli.command(help='Run a Request.', context_settings=dict(
