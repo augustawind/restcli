@@ -1,6 +1,7 @@
 import abc
 import importlib
 import inspect
+import random
 from collections import Mapping, OrderedDict
 
 import six
@@ -167,6 +168,7 @@ class Environment(YamlDictReader):
                 env = yaml.load(handle)
                 self.clear()
                 self.update(env)
+        self['__rando__'] = random.randint(100000000, 999999999)
 
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""
