@@ -53,7 +53,7 @@ def install(ctx, editable=False):
 
     If the --editable option is given, install it with the -e flag.
     """
-    cmd = 'pip install{} .'.format(' -e' if editable else '')
+    cmd = 'pip install %s .' % (' -e' if editable else '')
     ctx.run(cmd, pty=True)
 
 

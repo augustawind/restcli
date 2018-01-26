@@ -91,7 +91,7 @@ class Collection(YamlDictReader):
         for key in six.iterkeys(config):
             if key not in CONFIG_PARAMS:
                 self.raise_error(
-                    'Unexpected key in config: "{}"'.format(key), [])
+                    'Unexpected key in config: "%s"' % key, [])
 
         # Load libs
         lib = config.get('lib')
@@ -108,7 +108,7 @@ class Collection(YamlDictReader):
             for key in six.iterkeys(defaults):
                 if key not in REQUEST_PARAMS:
                     self.raise_error(
-                        'Unexpected key in defaults "{}"'.format(key), path)
+                        'Unexpected key in defaults "%s"' % key, path)
 
             self.defaults.clear()
             self.defaults.update(defaults)

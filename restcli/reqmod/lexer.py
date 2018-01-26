@@ -27,9 +27,9 @@ class ClickArgumentParser(argparse.ArgumentParser):
 
 
 lexer = ClickArgumentParser(prog='lexer', add_help=False)
-lexer.add_argument('-a', '--{}'.format(ACTIONS.append), action='append')
-lexer.add_argument('-n', '--{}'.format(ACTIONS.assign), action='append')
-lexer.add_argument('-d', '--{}'.format(ACTIONS.delete), action='append')
+lexer.add_argument('-a', '--%s' % ACTIONS.append, action='append')
+lexer.add_argument('-n', '--%s' % ACTIONS.assign, action='append')
+lexer.add_argument('-d', '--%s' % ACTIONS.delete, action='append')
 lexer.add_argument('args', nargs='*')
 
 

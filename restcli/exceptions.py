@@ -97,8 +97,8 @@ class FileContentError(Error):
     def show(self):
         line = self.file
         if self.path:
-            line += ' => {}'.format(self._fmt_path(self.path))
-        return '{}\n{}'.format(line, super(FileContentError, self).show())
+            line += ' => %s' % self._fmt_path(self.path)
+        return '%s\n%s' % (line, super(FileContentError, self).show())
 
     @property
     def name(self):
@@ -108,10 +108,10 @@ class FileContentError(Error):
         text = ''
         for item in path:
             if type(item) is str:
-                text += '.{}'.format(item)
+                text += '.%s' % item
             else:
-                text += '[{}]'.format(item)
-        return '{}{}'.format(self.file_type, text)
+                text += '[%s]' % item
+        return '%s%s' % (self.file_type, text)
 
 
 class NotFoundError(FileContentError):
