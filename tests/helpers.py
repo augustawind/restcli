@@ -14,12 +14,12 @@ def _random_str(population, length=None):
     return ''.join(random.sample(population, k))
 
 
-def get_random_alphanumeric(length=None):
+def random_alphanum(length=None):
     """Generate a random alphanumeric ASCII string."""
     return _random_str(ALPHANUMERIC_CHARS, length)
 
 
-def get_random_unicode(length=None):
+def random_unicode(length=None):
     """Generate a random Unicode string."""
     include_ranges = [
         (0x0021, 0x0021),
@@ -44,7 +44,7 @@ def get_random_unicode(length=None):
     return _random_str(alphabet, length)
 
 
-def get_random_urlsafe(length=None):
+def random_urlsafe(length=None):
     """Generate a random URL-safe string."""
     return _random_str(URLSAFE_CHARS, length)
 

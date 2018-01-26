@@ -2,14 +2,14 @@ import random
 
 import pytest
 
-from restcli.exceptions import ReqModValueError
+from restcli.exceptions import ReqModKeyError, ReqModValueError
 from restcli.reqmod import mods
 from restcli.reqmod.lexer import ACTIONS
 from restcli.utils import quote_plus
 from tests.helpers import (
-    get_random_alphanumeric,
-    get_random_unicode,
-    get_random_urlsafe,
+    random_alphanum,
+    random_unicode,
+    random_urlsafe,
 )
 
 # Default value for function args where None doesn't make sense
@@ -19,16 +19,15 @@ DEFAULT = type('DEFAULT', (object,), {})
 class ModTypesTestMixin(object):
     """Helper mixin for classes that test the Mod functions."""
 
+    TEST_ITERATIONS = 9
+
     @classmethod
     def run_mod_test(cls, input_val, input_key=DEFAULT,
                      expected_val=DEFAULT, expected_key=DEFAULT):
         if input_key is DEFAULT:
-            input_key = get_random_alphanumeric(11)
+            input_key = random_alphanum(11)
         mod_str = cls.mod_cls.delimiter.join((input_key, input_val))
         mod = cls.mod_cls.match(mod_str)
-        mod.clean()
-        assert mod.raw_key == input_key
-        assert mod.raw_value == input_val
 
         if expected_key is DEFAULT:
             expected_key = input_key
@@ -111,28 +110,50 @@ class TestURLParamMod(ModTypesTestMixin):
     mod_cls = mods.UrlParamMod
 
     def test_urlsafe(self):
-        for _ in range(5):
+        for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=get_random_urlsafe(),
-                input_key=get_random_urlsafe(),
+                input_val=random_urlsafe(),
+                input_key=random_urlsafe(),
             )
 
     def test_unicode_value(self):
-        for _ in range(5):
-            val = get_random_unicode()
+        for _ in range(self.TEST_ITERATIONS):
+            val = random_unicode()
             self.run_mod_test(
                 input_val=val,
-                input_key=get_random_urlsafe(),
+                input_key=random_urlsafe(),
                 expected_val=quote_plus(val)
             )
 
     def test_unicode_key(self):
-        for _ in range(5):
-            key = get_random_unicode()
+        for _ in range(self.TEST_ITERATIONS):
+            key = random_unicode()
             self.run_mod_test(
-                input_val=get_random_urlsafe(),
+                input_val=random_urlsafe(),
                 input_key=key,
                 expected_key=quote_plus(key),
+            )
+
+    def test_delimiter(self):
+        inputs = (
+            '\\=\\=%s' % random_urlsafe(),
+            '%s\\=\\=' % random_urlsafe(),
+            '%s\\=\\=%s' % (random_urlsafe(), random_urlsafe()),
+            '%s\\=' % random_urlsafe(),
+            '=%s' % random_urlsafe(),
+            '%s=%s' % (random_urlsafe(), random_urlsafe()),
+        )
+        for item in inputs:
+            self.run_mod_test(
+                input_val=item,
+                input_key=random_urlsafe(),
+                expected_val=quote_plus(item),
+            )
+        for item in inputs:
+            self.run_mod_test(
+                input_val=random_urlsafe(),
+                input_key=item,
+                expected_key=quote_plus(item),
             )
 
 
@@ -140,37 +161,36 @@ class TestHeaderMod(ModTypesTestMixin):
 
     mod_cls = mods.HeaderMod
 
-    def test_valid(self):
-        self.run_mod_test(
-            input_val=get_random_alphanumeric(),
-            input_key=get_random_alphanumeric(),
-        )
-
-    def test_invalid_value(self):
-        val = get_random_unicode()
-        key = get_random_alphanumeric()
-        with pytest.raises(ReqModValueError):
+    def test_alphanum(self):
+        for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=val,
-                input_key=key,
+                input_val=random_alphanum(),
+                input_key=random_alphanum(),
             )
 
-    def test_invalid_key(self):
-        val = get_random_alphanumeric()
-        key = get_random_unicode()
-        with pytest.raises(ReqModValueError):
-            self.run_mod_test(
-                input_val=val,
-                input_key=key,
-            )
+    def test_unicode_value(self):
+        for _ in range(self.TEST_ITERATIONS):
+            with pytest.raises(ReqModValueError):
+                self.run_mod_test(
+                    input_val=random_unicode(),
+                    input_key=random_alphanum(),
+                )
+
+    def test_unicode_key(self):
+        for _ in range(self.TEST_ITERATIONS):
+            with pytest.raises(ReqModValueError):
+                self.run_mod_test(
+                    input_val=random_alphanum(),
+                    input_key=random_unicode(),
+                )
 
 
 class TestStrFieldMod(ModTypesTestMixin):
 
     mod_cls = mods.StrFieldMod
 
-    def test_valid(self):
+    def test_alphanum(self):
         self.run_mod_test(
-            input_val=get_random_alphanumeric(),
-            input_key=get_random_alphanumeric(),
+            input_val=random_alphanum(),
+            input_key=random_alphanum(),
         )

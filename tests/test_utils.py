@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from restcli.reqmod import lexer
 from restcli import utils
-from .helpers import get_random_alphanumeric, get_random_unicode
+from .helpers import random_alphanum, random_unicode
 
 
 def test_tokenize():
@@ -41,10 +41,10 @@ def test_recursive_update():
 
 
 def test_is_ascii():
-    assert utils.is_ascii(get_random_unicode(50)) is False
-    assert utils.is_ascii(get_random_unicode(50)) is False
-    assert utils.is_ascii(get_random_unicode(50)) is False
+    assert utils.is_ascii(random_unicode(50)) is False
+    assert utils.is_ascii(random_unicode(50)) is False
+    assert utils.is_ascii(random_unicode(50)) is False
 
-    assert utils.is_ascii(get_random_alphanumeric(50)) is True
-    assert utils.is_ascii(get_random_alphanumeric(50)) is True
-    assert utils.is_ascii(get_random_alphanumeric(50)) is True
+    assert utils.is_ascii(random_alphanum(50)) is True
+    assert utils.is_ascii(random_alphanum(50)) is True
+    assert utils.is_ascii(random_alphanum(50)) is True

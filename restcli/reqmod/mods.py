@@ -17,15 +17,13 @@ PARAM_TYPES = AttrSeq(
 
 def parse_mod(mod_str):
     """Attempt to parse a str into a Mod."""
-    error = None
     for mod_cls in MODS.values():
         try:
             mod = mod_cls.match(mod_str)
-        except ReqModSyntaxError as err:
-            error = err
+        except ReqModSyntaxError:
             continue
         return mod
-    raise error
+    raise ReqModSyntaxError(value=mod_str)
 
 
 class Mod(six.with_metaclass(abc.ABCMeta, object)):
@@ -40,18 +38,10 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     split_re_tpl = string.Template(r'(?<=[^\\])${delimiter}')
 
     def __init__(self, key, value):
-        self.raw_key = key
-        self.raw_value = value
-        self.key = None
-        self.value = None
-        self.validated = False
+        self.key, self.value = self.clean_params(key, value)
 
     def __str__(self):
-        if self.validated:
-            attrs = ['key', 'value']
-        else:
-            attrs = ['raw_key', 'raw_value']
-        attrs.append('validated')
+        attrs = ('key', 'value')
         attr_kwargs = (
             '%s%s%r' % (attr, self.delimiter, getattr(self, attr))
             for attr in attrs
@@ -68,15 +58,13 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
 
     @classmethod
     def match(cls, mod_str):
-        parts = cls.pattern.split(mod_str)
+        """Create a new Mod by matching syntax."""
+        parts = cls.pattern.split(mod_str, maxsplit=1)
         if len(parts) != 2:
+            # TODO: add info about proper syntax in error msg
             raise ReqModSyntaxError(value=mod_str)
         key, value = parts
         return cls(key=key, value=value)
-
-    def clean(self):
-        self.key, self.value = self.clean_params(self.raw_key, self.raw_value)
-        self.validated = True
 
     @classproperty
     def pattern(cls):
