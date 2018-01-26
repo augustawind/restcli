@@ -171,9 +171,8 @@ class Environment(YamlDictReader):
         """Reload the current Environment, changing it to ``path`` if given."""
         if self.source:
             with open(self.source) as handle:
-                env = yaml.load(handle)
-                self.clear()
-                self.update(env)
+                data = yaml.load(handle)
+                self.replace(data)
         self['__rando__'] = random.randint(100000000, 999999999)
 
     @property
@@ -197,7 +196,7 @@ class Environment(YamlDictReader):
     def save(self):
         """Save ``self.env`` to ``self.env_path``."""
         with open(self.source, 'w') as handle:
-            return yaml.dump(OrderedDict(self), handle)
+            return yaml.dump(self.data, handle)
 
 
 class Libs(YamlDictReader):
@@ -208,30 +207,32 @@ class Libs(YamlDictReader):
     def load(self):
         """Parse and validate a Libs list."""
         self.assert_type(self.source, list, ['lib'], '"lib" must be an array')
+
         for i, module in enumerate(self.source):
             path = ['lib', i]
             try:
-                assert type(module) is str
+                if not isinstance(module, six.string_types):
+                    raise TypeError
                 lib = importlib.import_module(module)
-            except (AssertionError, ImportError):
+            except (TypeError, ImportError):
                 self.raise_error('Failed to import lib "%s"' % module, path,
                                  source=inspect.getsourcefile(module))
-            try:
-                assert hasattr(lib, 'define')
-                assert inspect.isfunction(lib.define)
-                sig = inspect.signature(lib.define)
-                params = tuple(six.itervalues(sig.parameters))
-                assert len(params) == 4
-                assert params[0].name == 'response'
-                assert params[1].name == 'env'
-                assert params[2].kind == inspect.Parameter.VAR_POSITIONAL
-                assert params[3].kind == inspect.Parameter.VAR_KEYWORD
-            except AssertionError:
+
+            sig = inspect.signature(lib.define)
+            params = tuple(six.itervalues(sig.parameters))
+            if not all((
+                hasattr(lib, 'define'),
+                inspect.isfunction(lib.define),
+                len(params) == 4,
+                params[0].name == 'response',
+                params[1].name == 'env',
+                params[2].kind == inspect.Parameter.VAR_POSITIONAL,
+                params[3].kind == inspect.Parameter.VAR_KEYWORD,
+            )):
                 self.raise_error(
                     'lib must contain a function with the signature'
                     ' `define(response, env, *args, **kwargs)`',
                     path,
-                    error_class=LibError,
                     source=inspect.getsourcefile(lib),
                 )
 
