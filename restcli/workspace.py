@@ -14,7 +14,11 @@ from restcli.exceptions import (
     LibError,
     FileContentError,
 )
-from restcli.params import REQUIRED_REQUEST_PARAMS, REQUEST_PARAMS, CONFIG_PARAMS
+from restcli.params import (
+    REQUIRED_REQUEST_PARAMS,
+    REQUEST_PARAMS,
+    CONFIG_PARAMS,
+)
 
 __all__ = ['Collection', 'Environment']
 
@@ -66,7 +70,7 @@ class Collection(YamlDictReader):
         super(Collection, self).__init__(source)
 
     def load(self):
-        """Reload the current Collection, changing it to ``path`` if given."""
+        """Reload the current Collection from disk."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle, many=True)

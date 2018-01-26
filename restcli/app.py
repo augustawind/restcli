@@ -172,19 +172,19 @@ class App(object):
         return ''
 
     def save_env(self):
-        """Save the current Environment."""
+        """Save the current Environment to disk."""
         self.r.env.save()
         return ''
 
     def show_env(self):
-        """Print the current Environment."""
+        """Return a formatted representation of the current Environment."""
         if self.r.env:
             return highlight(json.dumps(self.r.env, indent=2), self.json_lexer,
                              self.formatter)
         return 'No Environment loaded.'
 
     def show_response(self, response):
-        """Print an HTTP Response."""
+        """Format an HTTP Response."""
         if response.headers.get('Content-Type', None) == 'application/json':
             try:
                 body = json.dumps(response.json(), indent=2)
