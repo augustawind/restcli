@@ -50,14 +50,14 @@ class App(object):
         self.formatter = Terminal256Formatter(style=style)
 
     def run(self, group_name: str, request_name: str, modifiers: list=None,
-            env_overrides: list=None, save: bool=False) -> str:
+            env_args: list=None, save: bool=False) -> str:
         """Run a Request.
 
         Args:
             group_name: A :class:`Group` name in the Collection.
             request_name: A :class:`Request` name in the Collection.
             modifiers: :class:`Request` modifiers.
-            env_overrides: :class:`Environment` overrides.
+            env_args: :class:`Environment` overrides.
             save (optional): Whether to save Env changes to disk.
 
         Returns:
@@ -67,7 +67,7 @@ class App(object):
         self.get_request(group, group_name, request_name, action='run')
 
         updater = self.parse_modifiers(modifiers)
-        response = self.r.request(group_name, request_name, updater, *env_overrides)
+        response = self.r.request(group_name, request_name, updater, *env_args)
 
         if save or self.autosave:
             self.r.env.save()
@@ -139,9 +139,9 @@ class App(object):
         lexemes = lexer.lex(args)
         return parser.parse(lexemes)
 
-    def set_env(self, *env_overrides, save=False):
+    def set_env(self, *env_args, save=False):
         """Set some new variables in the Environment."""
-        self.r.mod_env(env_overrides, save=save or self.autosave)
+        self.r.mod_env(env_args, save=save or self.autosave)
         return ''
 
     def get_group(self, group_name, action):

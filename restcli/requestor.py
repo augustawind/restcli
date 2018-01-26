@@ -21,11 +21,11 @@ class Requestor(object):
         self.collection = Collection(collection_file)
         self.env = Environment(env_file)
 
-    def request(self, group, name, updater=None, *env_overrides):
+    def request(self, group, name, updater=None, *env_args):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
 
-        with self.temp_mod_env(env_overrides):
+        with self.override_env(env_args):
             request_kwargs = self.parse_request(request, self.env, updater)
 
         response = requests.request(**request_kwargs)
@@ -65,21 +65,21 @@ class Requestor(object):
         return kwargs
 
     @contextmanager
-    def temp_mod_env(self, env_overrides):
+    def override_env(self, env_args):
         """Temporarily modify an Environment with the given overrides.
 
         On exit, the Env is returned to its previous state.
         """
         original = self.env.data
-        self.mod_env(env_overrides)
+        self.mod_env(env_args)
 
         yield
 
         self.env.replace(original)
 
-    def mod_env(self, env_overrides, save=False):
+    def mod_env(self, env_args, save=False):
         """Modify an Environment with the given overrides."""
-        set_env, del_env = self.parse_env_overrides(*env_overrides)
+        set_env, del_env = self.parse_env_args(*env_args)
         self.env.update(**set_env)
         self.env.remove(*del_env)
 
@@ -87,11 +87,11 @@ class Requestor(object):
             self.env.save()
 
     @staticmethod
-    def parse_env_overrides(*env_overrides):
+    def parse_env_args(*env_args):
         """Parse some string args with Environment syntax."""
         del_env = []
         set_env = {}
-        for arg in env_overrides:
+        for arg in env_args:
             # Parse deletion syntax
             if arg.startswith('!'):
                 var = arg[1:].strip()

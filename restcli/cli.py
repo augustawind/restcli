@@ -54,7 +54,7 @@ def cli(ctx, collection, env, save):
 def run(app, group, request, modifiers, override_env):
     with expect(InputError, NotFoundError):
         output = app.run(group, request, modifiers=modifiers,
-                         env_overrides=override_env)
+                         env_args=override_env)
     click.echo(output)
 
 
