@@ -63,10 +63,14 @@ class App(object):
         Returns:
             The command output.
         """
+        # Make sure Request exists.
         group = self.get_group(group_name, action='run')
         self.get_request(group, group_name, request_name, action='run')
 
-        updater = self.parse_modifiers(modifiers)
+        # Parse modifiers.
+        lexemes = lexer.lex(modifiers)
+        updater = parser.parse(lexemes)
+
         response = self.r.request(group_name, request_name, updater, *env_args)
 
         if save or self.autosave:
@@ -114,36 +118,6 @@ class App(object):
         output = json.dumps(output_obj, indent=2)
         return highlight(output, self.json_lexer, self.formatter)
 
-    def load_collection(self, source=None):
-        """Reload the current Collection, changing it to `source` if given."""
-        if source:
-            self.r.collection.source = source
-        self.r.collection.load()
-        return ''
-
-    def load_env(self, source=None):
-        """Reload the current Environment, changing it to `source` if given."""
-        if source:
-            self.r.env.source = source
-        self.r.env.load()
-        return ''
-
-    def save_env(self):
-        """Save the current Environment."""
-        self.r.env.save()
-        return ''
-
-    @staticmethod
-    def parse_modifiers(args):
-        """Parse some string args as Request modifiers."""
-        lexemes = lexer.lex(args)
-        return parser.parse(lexemes)
-
-    def set_env(self, *env_args, save=False):
-        """Set some new variables in the Environment."""
-        self.r.mod_env(env_args, save=save or self.autosave)
-        return ''
-
     def get_group(self, group_name, action):
         """Retrieve a Group object."""
         try:
@@ -178,6 +152,37 @@ class App(object):
                 path=[group_name, request_name, param_name]
             )
 
+    def load_collection(self, source=None):
+        """Reload the current Collection, changing it to `source` if given."""
+        if source:
+            self.r.collection.source = source
+        self.r.collection.load()
+        return ''
+
+    def load_env(self, source=None):
+        """Reload the current Environment, changing it to `source` if given."""
+        if source:
+            self.r.env.source = source
+        self.r.env.load()
+        return ''
+
+    def set_env(self, *env_args, save=False):
+        """Set some new variables in the Environment."""
+        self.r.mod_env(env_args, save=save or self.autosave)
+        return ''
+
+    def save_env(self):
+        """Save the current Environment."""
+        self.r.env.save()
+        return ''
+
+    def show_env(self):
+        """Print the current Environment."""
+        if self.r.env:
+            return highlight(json.dumps(self.r.env, indent=2), self.json_lexer,
+                             self.formatter)
+        return 'No Environment loaded.'
+
     def show_response(self, response):
         """Print an HTTP Response."""
         if response.headers.get('Content-Type', None) == 'application/json':
@@ -196,14 +201,6 @@ class App(object):
             body=body,
         )
         return highlight(http_txt, self.http_lexer, self.formatter)
-
-    def show_env(self):
-        """Print the current Environment."""
-        if self.r.env:
-            return highlight(json.dumps(self.r.env, indent=2), self.json_lexer,
-                             self.formatter)
-        else:
-            return 'No Environment loaded.'
 
     @staticmethod
     def key_value_pairs(obj):
