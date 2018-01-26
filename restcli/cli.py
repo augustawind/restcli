@@ -48,10 +48,13 @@ def cli(ctx, collection, env, save):
 @click.argument('group')
 @click.argument('request')
 @click.argument('modifiers', nargs=-1, type=click.UNPROCESSED)
+@click.option('-o', '--override-env', multiple=True,
+              help='Override Environment variables.')
 @pass_app
-def run(app, group, request, modifiers):
+def run(app, group, request, modifiers, override_env):
     with expect(InputError, NotFoundError):
-        output = app.run(group, request, modifiers=modifiers)
+        output = app.run(group, request, modifiers=modifiers,
+                         env_overrides=override_env)
     click.echo(output)
 
 

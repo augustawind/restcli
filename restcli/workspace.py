@@ -3,6 +3,7 @@ import importlib
 import inspect
 import random
 from collections import Mapping, OrderedDict
+from copy import deepcopy
 
 import six
 
@@ -169,6 +170,16 @@ class Environment(YamlDictReader):
                 self.clear()
                 self.update(env)
         self['__rando__'] = random.randint(100000000, 999999999)
+
+    @property
+    def data(self):
+        """Return a copy of the raw data in the Environment."""
+        return deepcopy(OrderedDict(self))
+
+    def replace(self, *args, **kwargs):
+        """Replace all data from the Environment with the given data."""
+        self.clear()
+        self.update(*args, **kwargs)
 
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""

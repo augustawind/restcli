@@ -1,5 +1,4 @@
 import json
-import re
 from string import Template
 
 import six
@@ -9,10 +8,8 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
-from restcli import yaml_utils as yaml
 from restcli.exceptions import (
     GroupNotFoundError,
-    InputError,
     ParameterNotFoundError,
     RequestNotFoundError,
 )
@@ -20,8 +17,6 @@ from restcli.reqmod import lexer, parser
 from restcli.requestor import Requestor
 
 __all__ = ['App']
-
-ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
 class App(object):
@@ -72,7 +67,7 @@ class App(object):
         self.get_request(group, group_name, request_name, action='run')
 
         updater = self.parse_modifiers(modifiers)
-        response = self.r.request(group_name, request_name, updater)
+        response = self.r.request(group_name, request_name, updater, *env_overrides)
 
         if save or self.autosave:
             self.r.env.save()
@@ -134,7 +129,7 @@ class App(object):
         return ''
 
     def save_env(self):
-        """Save the current Environment to disk."""
+        """Save the current Environment."""
         self.r.env.save()
         return ''
 
@@ -144,44 +139,10 @@ class App(object):
         lexemes = lexer.lex(args)
         return parser.parse(lexemes)
 
-    @staticmethod
-    def parse_env_overrides(args):
-        """Parse some string args with Environment syntax."""
-        del_env = []
-        set_env = {}
-        for arg in args:
-            # Parse deletion syntax
-            if arg.startswith('!'):
-                var = arg[1:].strip()
-                del_env.append(var)
-                if var in set_env:
-                    del set_env[var]
-                continue
-
-            # Parse assignment syntax
-            match = ENV_RE.match(arg)
-            if not match:
-                raise InputError(
-                    value=arg,
-                    msg='Error: args must take one of the forms `!KEY` or'
-                        ' `KEY:VAL`, where `KEY` is a string and `VAL` is a'
-                        ' valid YAML value.',
-                    action='env',
-                )
-            key, val = match.groups()
-            set_env[key.strip()] = yaml.load(val)
-        return set_env, del_env
-
-    def set_env(self, *args, save=False):
+    def set_env(self, *env_overrides, save=False):
         """Set some new variables in the Environment."""
-        set_env, del_env = self.parse_env_overrides(args)
-        self.r.env.update(**set_env)
-        self.r.env.remove(*del_env)
-
-        output = ''
-        if save or self.autosave:
-            output += self.save_env()
-        return output
+        self.r.mod_env(env_overrides, save=save or self.autosave)
+        return ''
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""
@@ -238,9 +199,8 @@ class App(object):
 
     def show_env(self):
         """Print the current Environment."""
-        env = self.r.env
-        if env:
-            return highlight(json.dumps(env, indent=2), self.json_lexer,
+        if self.r.env:
+            return highlight(json.dumps(self.r.env, indent=2), self.json_lexer,
                              self.formatter)
         else:
             return 'No Environment loaded.'

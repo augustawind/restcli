@@ -1,11 +1,17 @@
+import re
+from contextlib import contextmanager
+
 import jinja2
 import requests
 import six
 
 from restcli import yaml_utils as yaml
+from restcli.exceptions import InputError
 from restcli.workspace import Collection, Environment
 
 __all__ = ['Requestor']
+
+ENV_RE = re.compile(r'([^:]+):(.*)')
 
 
 class Requestor(object):
@@ -15,10 +21,12 @@ class Requestor(object):
         self.collection = Collection(collection_file)
         self.env = Environment(env_file)
 
-    def request(self, group, name, updater=None):
+    def request(self, group, name, updater=None, *env_overrides):
         """Execute the Request found at ``self.collection[group][name]``."""
         request = self.collection[group][name]
-        request_kwargs = self.parse_request(request, self.env, updater)
+
+        with self.temp_mod_env(env_overrides):
+            request_kwargs = self.parse_request(request, self.env, updater)
 
         response = requests.request(**request_kwargs)
 
@@ -55,6 +63,56 @@ class Requestor(object):
         kwargs['json'] = kwargs.pop('body', None)
 
         return kwargs
+
+    @contextmanager
+    def temp_mod_env(self, env_overrides):
+        """Temporarily modify an Environment with the given overrides.
+
+        On exit, the Env is returned to its previous state.
+        """
+        original = self.env.data
+        self.mod_env(env_overrides)
+
+        yield
+
+        self.env.replace(original)
+
+    def mod_env(self, env_overrides, save=False):
+        """Modify an Environment with the given overrides."""
+        set_env, del_env = self.parse_env_overrides(*env_overrides)
+        self.env.update(**set_env)
+        self.env.remove(*del_env)
+
+        if save:
+            self.env.save()
+
+    @staticmethod
+    def parse_env_overrides(*env_overrides):
+        """Parse some string args with Environment syntax."""
+        del_env = []
+        set_env = {}
+        for arg in env_overrides:
+            # Parse deletion syntax
+            if arg.startswith('!'):
+                var = arg[1:].strip()
+                del_env.append(var)
+                if var in set_env:
+                    del set_env[var]
+                continue
+
+            # Parse assignment syntax
+            match = ENV_RE.match(arg)
+            if not match:
+                raise InputError(
+                    value=arg,
+                    msg='Error: args must take one of the forms `!KEY` or'
+                        ' `KEY:VAL`, where `KEY` is a string and `VAL` is a'
+                        ' valid YAML value.',
+                    action='env',
+                )
+            key, val = match.groups()
+            set_env[key.strip()] = yaml.load(val)
+        return set_env, del_env
 
     @staticmethod
     def interpolate(data, env):
