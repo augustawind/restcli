@@ -142,6 +142,7 @@ class Collection(YamlDictReader):
                             path,
                         )
                     else:
+                        new_req[key] = type_()
                         continue
 
                     # Check data type
