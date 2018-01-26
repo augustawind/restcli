@@ -5,10 +5,11 @@ import pytest
 from restcli.exceptions import ReqModValueError
 from restcli.reqmod import mods
 from restcli.reqmod.lexer import ACTIONS
+from restcli.utils import quote_plus
 from tests.helpers import (
     get_random_alphanumeric,
     get_random_unicode,
-    get_random_url_chars,
+    get_random_urlsafe,
 )
 
 # Default value for function args where None doesn't make sense
@@ -109,28 +110,29 @@ class TestURLParamMod(ModTypesTestMixin):
 
     mod_cls = mods.UrlParamMod
 
-    def test_valid(self):
-        self.run_mod_test(
-            input_val=get_random_url_chars(),
-            input_key=get_random_url_chars(),
-        )
-
-    def test_invalid_value(self):
-        val = get_random_unicode()
-        key = get_random_url_chars()
-        with pytest.raises(ReqModValueError):
+    def test_urlsafe(self):
+        for _ in range(5):
             self.run_mod_test(
-                input_val=val,
-                input_key=key,
+                input_val=get_random_urlsafe(),
+                input_key=get_random_urlsafe(),
             )
 
-    def test_invalid_key(self):
-        val = get_random_url_chars()
-        key = get_random_unicode()
-        with pytest.raises(ReqModValueError):
+    def test_unicode_value(self):
+        for _ in range(5):
+            val = get_random_unicode()
             self.run_mod_test(
                 input_val=val,
+                input_key=get_random_urlsafe(),
+                expected_val=quote_plus(val)
+            )
+
+    def test_unicode_key(self):
+        for _ in range(5):
+            key = get_random_unicode()
+            self.run_mod_test(
+                input_val=get_random_urlsafe(),
                 input_key=key,
+                expected_key=quote_plus(key),
             )
 
 

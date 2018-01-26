@@ -3,9 +3,8 @@ import string
 
 import six
 
-from restcli.params import VALID_URL_CHARS
-
-ALPHANUMERICS = string.ascii_letters + string.digits
+ALPHANUMERIC_CHARS = string.ascii_letters + string.digits
+URLSAFE_CHARS = ALPHANUMERIC_CHARS + '_.-'
 
 
 def _random_str(population, length=None):
@@ -16,8 +15,8 @@ def _random_str(population, length=None):
 
 
 def get_random_alphanumeric(length=None):
-    """Generate a random ASCII string."""
-    return _random_str(ALPHANUMERICS, length)
+    """Generate a random alphanumeric ASCII string."""
+    return _random_str(ALPHANUMERIC_CHARS, length)
 
 
 def get_random_unicode(length=None):
@@ -45,9 +44,9 @@ def get_random_unicode(length=None):
     return _random_str(alphabet, length)
 
 
-def get_random_url_chars(length=None):
+def get_random_urlsafe(length=None):
     """Generate a random URL-safe string."""
-    return _random_str(VALID_URL_CHARS, length)
+    return _random_str(URLSAFE_CHARS, length)
 
 
 def contents_equal(*seqs):

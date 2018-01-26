@@ -5,8 +5,7 @@ import string
 
 import six
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
-from restcli.params import VALID_URL_CHARS
-from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii
+from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii, quote_plus
 
 PARAM_TYPES = AttrSeq(
     'json_field',
@@ -140,13 +139,7 @@ class UrlParamMod(Mod):
 
     @classmethod
     def clean_params(cls, key, value):
-        if not all(char in VALID_URL_CHARS for char in key + value):
-            raise ReqModValueError(
-                value=cls.delimiter.join((key, value)),
-                msg='Invalid char(s) found in URL parameter.'
-                    ' Accepted chars are: %s' % (VALID_URL_CHARS,)
-            )
-        return key, value
+        return quote_plus(key), quote_plus(value)
 
 
 # Tuple of Mod classes, in order of specificity of delimiters

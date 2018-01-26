@@ -1,10 +1,5 @@
 from restcli.utils import AttrMap
 
-VALID_URL_CHARS = (
-    r'''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'''
-    r'''0123456789-._~:/?#[]@!$&'()*+,;=`'''
-)
-
 REQUIRED_REQUEST_PARAMS = AttrMap(
     ('method', str),
     ('url', str),

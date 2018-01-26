@@ -2,6 +2,11 @@ from collections import Mapping, OrderedDict, Sequence
 
 import six
 
+if six.PY3:
+    from urllib.parse import quote_plus
+else:
+    from urllib import quote_plus
+
 
 class AttrSeq(Sequence):
     """An immutable sequence that supports dot notation.
