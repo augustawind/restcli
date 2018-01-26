@@ -4,7 +4,8 @@ from contextlib import contextmanager
 import click
 import six
 
-__all__ = ['expect', 'Error', 'InputError', 'FileContentError',
+__all__ = ['expect', 'Error', 'InputError', 'ReqModError', 'ReqModSyntaxError',
+           'ReqModValueError', 'ReqModKeyError', 'FileContentError',
            'NotFoundError', 'GroupNotFoundError', 'RequestNotFoundError',
            'ParameterNotFoundError', 'CollectionError', 'EnvError', 'LibError']
 
