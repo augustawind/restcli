@@ -53,7 +53,7 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
             attrs = ['raw_key', 'raw_value']
         attrs.append('validated')
         attr_kwargs = (
-            '%s=%r' % (attr, getattr(self, attr))
+            '%s%s%r' % (attr, self.delimiter, getattr(self, attr))
             for attr in attrs
         )
         return '%s(%s)' % (
