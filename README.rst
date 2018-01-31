@@ -113,7 +113,7 @@ License
 =======
 
 This software is distributed under the `Apache License, Version 2.0`_. See
-`/LICENSE`_ for more information.
+`LICENSE`_ for more information.
 
 .. _Postman: https://www.getpostman.com/postman
 .. _HTTPie: https://httpie.org/
@@ -121,3 +121,4 @@ This software is distributed under the `Apache License, Version 2.0`_. See
 .. _python_prompt_toolkit: https://github.com/jonathanslenders/python-prompt-toolkit
 .. _pyvim: https://github.com/jonathanslenders/pyvim
 .. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+.. _LICENSE: /LICENSE
