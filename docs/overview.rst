@@ -45,7 +45,8 @@ Core Concepts
 *************
 
 In this section we'll get a bird's eye view of **restcli**\'s core concepts.
-After reading this section, you should be ready for the `Tutorial <tutorial>`_.
+After reading this section, you should be ready for the
+:doc:`Tutorial </tutorial>`.
 
 .. _overview_collections:
 
@@ -112,11 +113,11 @@ Environments
 
 An Environment is a YAML object that defines values which are used to
 interpolate template variables in a Collection. Environments can be be modified
-with `Request scripts <tutorial_scripting>`_, which we cover in the `Tutorial
-<tutorial>`_.
+with :ref:`scripts <tutorial_scripting>`, which we cover in the :doc:`Tutorial
+</tutorial>`.
 
-This Environment could be used with the Request we looked at in the `previous
-section <overview_collections>`_:
+This Environment could be used with the Request we looked at in the
+:ref:`previous section <overview_requests>`:
 
 .. code-block:: yaml
 
@@ -141,10 +142,7 @@ Once the Environment is applied, the Request would look something like this:
 Next Steps
 **********
 
-The recommended way to continue learning is the `Tutorial
-<tutorial>`_.
-
-**Coming soon**: reference documentation.
+The recommended way to continue learning is the :doc:`Tutorial </tutorial>`.
 
 .. _Postman: https://www.getpostman.com/postman
 .. _HTTPie: https://httpie.org/

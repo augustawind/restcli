@@ -1,12 +1,10 @@
-.. _tutorial:
-
 #########################
 Tutorial: Modeling an API
 #########################
 
 .. note::
-    This tutorial assumes that you've read the `Overview <overview>`_ and
-    `Usage <usage>`_ documentation.
+    This tutorial assumes that you've read the :doc:`Overview </overview>` and
+    :doc:`Usage </usage>` documentation.
 
 Throughout this tutorial we will be modeling an API with **restcli**, gradually
 adding to it as we learn new concepts, until we have a complete API client suite.
@@ -110,7 +108,7 @@ Request more closely as well.
 ``body`` (string, templating)
     The request body. It must be encoded as a string, to facilitate the full
     power of `Jinja2`_ `templating`_. You'll probably want to read the section
-    on `block styles <appendix_block_styles>`_ at some point.
+    on :ref:`block style <appendix_block_style>` at some point.
 
     The body string must contain valid YAML, which is converted to JSON before
     sending the request. Only JSON encoding is supported at this time.
@@ -122,9 +120,9 @@ Request more closely as well.
 
 ``script`` (string)
     A Python script to be executed after the request finishes and a response is
-    received. Scripts can be used to dynamically update the `Environment
-    <tutorial_environment>`_ based on the response payload. We'll learn more
-    about this later in `Scripting <tutorial_scripting>`_.
+    received. Scripts can be used to dynamically update the :ref:`Environment
+    <overview_environments>` based on the response payload. We'll learn more
+    about this later in `scripting`_.
 
     Our ``invite`` Request doesn't have a script.
 
@@ -134,9 +132,9 @@ Templating
 
 **restcli** supports `Jinja2`_ templates in the ``url``, ``headers``, and
 ``body`` Request Parameters. This is used to parameterize Requests with the
-help of `Environments <tutorial_environment>`_. Any template variables in these
-parameters, denoted by double curly brackets, will be replaced with concrete
-values from the given Environment before the request is executed.
+help of :ref:`Environments <overview_environments>`. Any template variables in
+these parameters, denoted by double curly brackets, will be replaced with
+concrete values from the given Environment before the request is executed.
 
 During the `Debriefing`_, were told that the Whisperers can move members up the
 ranks if they're deemed worthy. Well it just so happens that Wanda, a fledgling
@@ -255,6 +253,8 @@ just want to explore, there's much more to templating than what we just covered!
 **restcli** supports the entire Jinja2 template language, so check out the official
 `Template Designer Documentation`_ for the whole scoop.
 
+.. _tutorial_scripting:
+
 Scripting
 ---------
 
@@ -340,7 +340,7 @@ lib definitions
 
 .. note::
     Since Python is whitespace sensitive, you'll probably want to read the
-    section on `block styles`_.
+    section on ref:`block style <appendix_block_style>`.
 
 
 .. _Config document:
@@ -400,7 +400,7 @@ parameters defined here don't have much in common.
 
 ``defaults`` (object)
     Default values to use for each Request parameter when not specified in the
-    Request. ``defaults`` has the same structure as a `Request`_, so each
+    Request. ``defaults`` has the same structure as a Request, so each
     parameters defined here must also be valid as a Request parameter.
 
 
@@ -408,14 +408,50 @@ parameters defined here don't have much in common.
     ``lib`` is an array of Python module paths. Each module here must contain a
     function with the signature ``define(request, env, *args, **kwargs)`` which
     returns a dict. That dict will be added to the execution environment of any
-    script that gets executed after a `Request`_ is completed.
+    script that gets executed after a Request is completed.
 
     **restcli** ships with a pre-baked ``lib`` module at
     ``restcli.contrib.scripts``. It provides some useful utility functions
     to use in your scripts. It can also be used as a learning tool.
+
+
+********
+Appendix
+********
+
+.. _appendix_block_style:
+
+A. YAML Block Style
+--------------------
+
+Writing multiline strings for the ``body`` and ``script`` Request parameters
+without using readability is easy with YAML's `block style`_. I recommend
+using `literal style`_ since it preserves whitespace and is the most readable.
+Adding to the example above:
+
+.. code-block:: yaml
+
+    body: |
+        name: bar
+        age: {{ foo_age }}
+        attributes:
+            fire_spinning: 32
+            basket_weaving: 11
+
+The vertical bar (``|``) denotes the start of a literal block, so newlines are
+preserved, as well as any *additional* indentation. In this example, the
+result is that the value of ``body`` is 5 lines of text, with the last two
+lines indented 4 spaces.
+
+Note that it is impossible to escape characters within a literal block, so if
+that's something you need you may have to try a different
 
 .. _RFC 7231: https://tools.ietf.org/html/rfc7231
 .. _idempotent: https://en.wikipedia.org/wiki/Idempotence#Computer_science_meaning
 .. _Jinja2: http://jinja.pocoo.org/
 .. _Jinja2 Template: http://jinja.pocoo.org/docs/2.9/api/#jinja2.Template
 .. _Template Designer Documentation: http://jinja.pocoo.org/docs/2.9/templates/
+.. _response object: http://docs.python-requests.org/en/stable/api/#requests.Response
+.. _requests library: http://docs.python-requests.org/en/stable/
+.. _block style: http://www.yaml.org/spec/1.2/spec.html#id2793604
+.. _literal style: http://www.yaml.org/spec/1.2/spec.html#id2793604
