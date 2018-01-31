@@ -12,7 +12,8 @@ except ImportError:
 import restcli
 
 if sys.argv[-1] == 'tag':
-    os.system("git tag -a %s -m 'version %s'" % (restcli.__version__, restcli.__version__))
+    os.system("git tag -a %s -m 'version %s'" %
+              (restcli.__version__, restcli.__version__))
     os.system("git push --tags")
     sys.exit()
 

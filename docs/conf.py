@@ -156,6 +156,3 @@ texinfo_documents = [
      author, 'restcli', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

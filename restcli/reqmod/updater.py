@@ -59,7 +59,7 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
         """Update a Request Parameter.
 
         Args:
-            request_param: The current value of the Request Parameter to update.
+            request_param: The value of the Request Parameter to update.
 
         Notes:
             Child classes must implement this method.
