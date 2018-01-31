@@ -69,9 +69,9 @@ We made a new Collection and saved it as ``secrecy.yaml``. So far it has one
 Group called ``memberships`` with one Request called ``invite``.
 
 .. todo:: Move the following to the templating section:
-As requested, we've also added an ``X-Secret-Key`` header which holds the secret
-key. The key is implemented as a template variable so that each Whisperer can
-have their own personal key.
+    As requested, we've also added an ``X-Secret-Key`` header which holds the secret
+    key. The key is implemented as a template variable so that each Whisperer can
+    have their own personal key.
 
 .. _tutorial_request_parameters:
 
@@ -353,7 +353,7 @@ So far our Collections have been composed of a single YAML document.
 the Config Document.
 
 .. note::
-If you're not sure what "document" means in YAML, here's a quick primer:
+    If you're not sure what "document" means in YAML, here's a quick primer:
 
     Essentially, documents allow you to have more than one YAML "file"
     (document) in the same file. Notice that ``---`` that appears at the top
