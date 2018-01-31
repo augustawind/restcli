@@ -1,14 +1,14 @@
-this is **restcli**
-===================
+=======
+restcli
+=======
 
 **restcli** is a terminal web API client written in Python. It draws
 inspiration from `Postman`_ and `HTTPie`_, and offers some of the best features
 of both.
 
 
---------
 Features
---------
+========
 
 * save requests as YAML files
 * scripting
@@ -19,16 +19,14 @@ Features
 * colored output
 
 
------
 Usage
------
+=====
 
 Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
 
 
--------------
 Documentation
--------------
+=============
 
 To start using **restcli**, you should become acquainted with its main
 concepts, described in the `Overview <docs/overview.rst>`_, then head over to
@@ -36,9 +34,8 @@ the `Tutorial <docs/tutorial.rst>`_ for more in-depth documentation,
 accompanied by a complete example.
 
 
-------------
 Installation
-------------
+============
 
 With ``pip``:
 
@@ -88,9 +85,8 @@ Then you can run commands from within the container:
     $ docker run -it restcli --save -c api.yaml -e env.yaml env foo:bar
 
 
--------
 Roadmap
--------
+=======
 
 
 Short-term
@@ -113,9 +109,8 @@ Here are some longer-term feature concepts that may or may not get implemented.
 * in-app request editor (perhaps using `pyvim`_)
 
 
--------
 License
--------
+=======
 
 This software is distributed under the `Apache License, Version 2.0`_. See
 `/LICENSE`_ for more information.
