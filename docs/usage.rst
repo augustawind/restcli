@@ -13,9 +13,10 @@ Usage
 
     Options:
       -v, --version               Show the version and exit.
-      -c, --collection PATH       Collection file.  [required]
+      -c, --collection PATH       Collection file.
       -e, --env PATH              Environment file.
       -s, --save / -S, --no-save  Save Environment to disk after changes.
+      -q, --quiet / -Q, --loud    Suppress HTTP output.
       --help                      Show this message and exit.
 
     Commands:
