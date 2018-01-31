@@ -59,7 +59,12 @@ def run(app, group, request, modifiers, override_env):
     click.echo(output)
 
 
-@cli.command(help='Run a series of Requests from a file.')
+@cli.command(help='''Run multiple Requests from a file.
+
+Each line should specify args for a single "run" invocation:
+
+    [OPTIONS] GROUP REQUEST [MODIFIERS]...
+''')
 @click.argument('file', type=click.File())
 @click.pass_context
 def exec(ctx, file):
