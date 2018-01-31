@@ -1,48 +1,6 @@
-.. _overview:
-
 ########
 Overview
 ########
-
-**restcli** is a terminal web API client written in Python. It draws inspiration
-from `Postman`_ and `HTTPie`_, and offers some of the best features of both.
-
-********
-Features
-********
-
-* save requests as YAML files
-* scripting
-* parameterized requests using `Jinja2`_ templating
-* expressive commandline syntax, inspired by `HTTPie`_
-* first-class JSON support
-* interactive prompt with autocomplete
-* colored output
-
-Roadmap
-=======
-
-Short-term
-----------
-
-Here's what we have in store for the foreseeable future.
-
-* autocomplete Group and Request names in the command prompt
-* support for other formats (plaintext, forms, file uploads)
-* request plans: run requests back-to-back with one command
-* convert to/from Postman collections
-
-Long-term
----------
-
-Here are some longer-term feature concepts that may or may not get implemented.
-
-* full screen terminal UI via `python_prompt_toolkit`_
-* in-app request editor (perhaps using `pyvim`_)
-
-*************
-Core Concepts
-*************
 
 In this section we'll get a bird's eye view of **restcli**\'s core concepts.
 After reading this section, you should be ready for the
@@ -144,8 +102,6 @@ Next Steps
 
 The recommended way to continue learning is the :doc:`Tutorial </tutorial>`.
 
-.. _Postman: https://www.getpostman.com/postman
-.. _HTTPie: https://httpie.org/
 .. _Jinja2: http://jinja.pocoo.org/
 .. _python_prompt_toolkit: https://github.com/jonathanslenders/python-prompt-toolkit
 .. _pyvim: https://github.com/jonathanslenders/pyvim

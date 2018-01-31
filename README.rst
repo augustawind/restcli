@@ -2,18 +2,31 @@
 restcli
 =======
 
-**restcli** is a library and commandline utility for API testing. It reads
-requests from a YAML file and supports scripting and variable interpolation.
+**restcli** is a terminal web API client written in Python. It draws
+inspiration from `Postman`_ and `HTTPie`_, and offers some of the best features
+of both.
+
+
+Features
+========
+
+* save requests as YAML files
+* scripting
+* parameterized requests using `Jinja2`_ templating
+* expressive commandline syntax, inspired by `HTTPie`_
+* first-class JSON support
+* interactive prompt with autocomplete
+* colored output
+
+
+Usage
+=====
+
+Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
+
 
 Documentation
 =============
-
-Command-line usage is documented here `Usage <docs/usage.rst>`_, or by running
-**restcli** with no arguments (after `Installation`_):
-
-.. code-block:: sh
-
-    $ restcli
 
 To start using **restcli**, you should become acquainted with its main concepts,
 described in the `Overview <docs/overview.rst>`_, then head over to the
@@ -72,9 +85,36 @@ Then you can run commands from within the container:
     $ docker run -it restcli --save -c api.yaml -e env.yaml env foo:bar
 
 
+Roadmap
+=======
+
+
+Short-term
+----------
+
+Here's what we have in store for the foreseeable future.
+
+* autocomplete Group and Request names in the command prompt
+* support for other formats (plaintext, forms, file uploads)
+* request plans: run requests back-to-back with one command
+* convert to/from Postman collections
+
+
+Long-term
+---------
+
+Here are some longer-term feature concepts that may or may not get implemented.
+
+* full screen terminal UI via `python_prompt_toolkit`_
+* in-app request editor (perhaps using `pyvim`_)
+
+
 License
 =======
 
-This software is distributed under the `Apache License, Version
-2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_. See /LICENSE`_
-for more information.
+This software is distributed under the `Apache License, Version 2.0`_. See
+`/LICENSE`_ for more information.
+
+.. _Postman: https://www.getpostman.com/postman
+.. _HTTPie: https://httpie.org/
+.. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
