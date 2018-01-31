@@ -39,11 +39,15 @@ pass_app = click.make_pass_decorator(App)
 @click.option('-q/-Q', '--quiet/--loud', envvar='RESTCLI_QUIET',
               default=False,
               help='Suppress HTTP output.')
+@click.option('-h/-H', '--no-highlight/--highlight',
+              envvar='RESTCLI_NO_HIGHLIGHT', default=False,
+              help="Color highlight output.")
 @click.pass_context
-def cli(ctx, collection, env, save, quiet):
+def cli(ctx, collection, env, save, quiet, no_highlight):
     if not ctx.obj:
         with expect(CollectionError, EnvError, LibError):
-            ctx.obj = App(collection, env, autosave=save, quiet=quiet)
+            ctx.obj = App(collection, env, autosave=save, quiet=quiet,
+                          no_highlight=no_highlight)
 
 
 @cli.command(help='Run a Request.', context_settings=dict(

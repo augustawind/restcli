@@ -41,10 +41,12 @@ class App(object):
     )))
 
     def __init__(self, collection_file: str, env_file: str,
-                 autosave: bool=False, quiet: bool=False, style: str='fruity'):
+                 autosave: bool=False, quiet: bool=False,
+                 no_highlight: bool=False, style: str= 'fruity'):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
         self.quiet = quiet
+        self.no_highlight = no_highlight
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
@@ -108,18 +110,18 @@ class App(object):
                     action='view')
 
                 if param_name == 'script':
-                    return highlight(param, self.python_lexer, self.formatter)
+                    return self.highlight(param, self.python_lexer)
 
                 if param_name == 'headers':
                     headers = dict(l.split(':')
                                    for l in param.strip().split('\n'))
                     output = self.key_value_pairs(headers)
-                    return highlight(output, self.http_lexer, self.formatter)
+                    return self.highlight(output, self.http_lexer)
 
                 output_obj = param
 
         output = json.dumps(output_obj, indent=2)
-        return highlight(output, self.json_lexer, self.formatter)
+        return self.highlight(output, self.json_lexer)
 
     def get_group(self, group_name, action):
         """Retrieve a Group object."""
@@ -182,8 +184,8 @@ class App(object):
     def show_env(self):
         """Return a formatted representation of the current Environment."""
         if self.r.env:
-            return highlight(json.dumps(self.r.env, indent=2), self.json_lexer,
-                             self.formatter)
+            output = json.dumps(self.r.env, indent=2)
+            return self.highlight(output, self.json_lexer)
         return 'No Environment loaded.'
 
     def show_response(self, response, quiet=None):
@@ -206,7 +208,16 @@ class App(object):
             headers=self.key_value_pairs(response.headers),
             body=body,
         )
-        return highlight(http_txt, self.http_lexer, self.formatter)
+        return self.highlight(http_txt, self.http_lexer)
+
+    def highlight(self, code, pygments_lexer):
+        """Highlight the given code.
+
+        If ``self.no_highlight`` is True, return ``code`` unaltered.
+        """
+        if self.no_highlight:
+            return code
+        return highlight(code, pygments_lexer, self.formatter)
 
     @staticmethod
     def key_value_pairs(obj):
