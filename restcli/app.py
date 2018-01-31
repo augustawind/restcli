@@ -42,11 +42,11 @@ class App(object):
 
     def __init__(self, collection_file: str, env_file: str,
                  autosave: bool=False, quiet: bool=False,
-                 no_highlight: bool=False, style: str= 'fruity'):
+                 raw_output: bool=False, style: str= 'fruity'):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
         self.quiet = quiet
-        self.no_highlight = no_highlight
+        self.raw_output = raw_output
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
@@ -120,7 +120,7 @@ class App(object):
 
                 output_obj = param
 
-        output = json.dumps(output_obj, indent=2)
+        output = self.fmt_json(output_obj)
         return self.highlight(output, self.json_lexer)
 
     def get_group(self, group_name, action):
@@ -184,7 +184,7 @@ class App(object):
     def show_env(self):
         """Return a formatted representation of the current Environment."""
         if self.r.env:
-            output = json.dumps(self.r.env, indent=2)
+            output = self.fmt_json(self.r.env)
             return self.highlight(output, self.json_lexer)
         return 'No Environment loaded.'
 
@@ -195,29 +195,37 @@ class App(object):
 
         if response.headers.get('Content-Type', None) == 'application/json':
             try:
-                body = json.dumps(response.json(), indent=2)
+                body = self.fmt_json(response.json())
             except json.JSONDecodeError:
                 body = response.text
         else:
             body = response.text
 
-        http_txt = self.HTTP_TPL.substitute(
-            http_version=str(float(response.raw.version) / 10),
-            status_code=response.status_code,
-            reason=response.reason,
-            headers=self.key_value_pairs(response.headers),
-            body=body,
-        )
+        if self.raw_output:
+            http_txt = body
+        else:
+            http_txt = self.HTTP_TPL.substitute(
+                http_version=str(float(response.raw.version) / 10),
+                status_code=response.status_code,
+                reason=response.reason,
+                headers=self.key_value_pairs(response.headers),
+                body=body,
+            )
         return self.highlight(http_txt, self.http_lexer)
 
     def highlight(self, code, pygments_lexer):
         """Highlight the given code.
 
-        If ``self.no_highlight`` is True, return ``code`` unaltered.
+        If ``self.raw_output`` is True, return ``code`` unaltered.
         """
-        if self.no_highlight:
+        if self.raw_output:
             return code
         return highlight(code, pygments_lexer, self.formatter)
+
+    def fmt_json(self, data):
+        if self.raw_output:
+            return json.dumps(data)
+        return json.dumps(data, indent=2)
 
     @staticmethod
     def key_value_pairs(obj):
