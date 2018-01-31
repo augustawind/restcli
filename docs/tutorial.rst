@@ -66,10 +66,9 @@ We'll start by modelling the new member invitation service:
 We made a new Collection and saved it as ``secrecy.yaml``. So far it has one
 Group called ``memberships`` with one Request called ``invite``.
 
-.. todo:: Move the following to the templating section:
-    As requested, we've also added an ``X-Secret-Key`` header which holds the secret
-    key. The key is implemented as a template variable so that each Whisperer can
-    have their own personal key.
+As requested, we've also added an ``X-Secret-Key`` header which holds the secret
+key. It's parameterized so that each Whisperer can have their own personal key.
+This will be explained later in the `templating`_ section.
 
 .. _tutorial_request_parameters:
 
@@ -182,7 +181,7 @@ without making any changes to the Collection.
     #    - secret basement room full of kittens
     #    - turtles all the way down
 
-.. TODO: add `new_secrets` below, remove from above.
+.. todo:: add `new_secrets` below, remove from above.
 
 .. note::
     The ``env.yaml`` extension in ``wanda.env.yaml`` is just a convention to
