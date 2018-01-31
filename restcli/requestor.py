@@ -47,6 +47,9 @@ class Requestor(object):
         kwargs = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),
+            'query': {},
+            'headers': {},
+            'body': {},
         }
 
         body = request.get('body')
@@ -60,7 +63,8 @@ class Requestor(object):
         if updater:
             updater.apply(kwargs)
 
-        kwargs['json'] = kwargs.pop('body', None)
+        kwargs['json'] = kwargs.pop('body')
+        kwargs['params'] = kwargs.pop('query')
 
         return kwargs
 

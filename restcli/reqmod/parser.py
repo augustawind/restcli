@@ -16,7 +16,6 @@ def parse(lexemes):
     for lexeme in lexemes:
         # Parse Mod
         mod = parse_mod(lexeme.value)
-        mod.clean()
 
         # Create Updater
         updater_cls = UPDATERS[lexeme.action]
