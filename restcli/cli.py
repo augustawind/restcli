@@ -1,3 +1,5 @@
+import shlex
+import subprocess
 import sys
 
 import click
@@ -56,6 +58,14 @@ def run(app, group, request, modifiers, override_env):
         output = app.run(group, request, modifiers=modifiers,
                          env_args=override_env)
     click.echo(output)
+
+
+@cli.command(help='Run a series of Requests from a file.')
+@click.argument('file', type=click.File())
+def exec(file):
+    for line in file:
+        args = ['restcli', 'run', *shlex.split(line)]
+        subprocess.run(args)
 
 
 @cli.command(help='View a Group, Request, or Request Parameter.')
