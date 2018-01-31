@@ -5,13 +5,20 @@ restcli
 **restcli** is a library and commandline utility for API testing. It reads
 requests from a YAML file and supports scripting and variable interpolation.
 
-.. contents::
+Documentation
+=============
 
-See `Usage <docs/usage.rst>`_ for usage information.
+Command-line usage is documented here `Usage <docs/usage.rst>`_, or by running
+**restcli** with no arguments (after `Installation`_):
 
-See the `Overview <docs/overview.rst>`_ for a bird's eye view of main concepts.
+.. code-block:: sh
 
-See the `Tutorial <docs/tutorial.rst>`_ for an in-depth tutorial.
+    $ restcli
+
+To start using **restcli**, you should become acquainted with its main concepts,
+described in the `Overview <docs/overview.rst>`_, then head over to the
+`Tutorial <docs/tutorial.rst>`_ for more in-depth documentation, accompanied by
+a complete example.
 
 
 Installation
