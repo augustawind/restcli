@@ -52,7 +52,8 @@ def test_parse_request():
             'id': 1,
             'name': 'Bartholomew McNozzleWafer',
             'date_of_birth': '11/14/1991',
-        }
+        },
+        'params': {},
     }
     assert actual == expected
 
