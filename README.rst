@@ -7,11 +7,11 @@ requests from a YAML file and supports scripting and variable interpolation.
 
 .. contents::
 
-See :doc:`/usage` for usage information.
+See `Usage <docs/usage.rst>`_ for usage information.
 
-See :doc:`/overview` for a bird's eye view of main concepts.
+See the `Overview <docs/overview.rst>`_ for a bird's eye view of main concepts.
 
-See :doc:`/tutorial` for an in-depth tutorial.
+See the `Tutorial <docs/tutorial.rst>`_ for an in-depth tutorial.
 
 
 Installation
