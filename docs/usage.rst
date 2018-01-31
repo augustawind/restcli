@@ -30,7 +30,7 @@ The available commands are:
     Run a Request, writing the response to stdout.
 
 `Command: view`_
-    Inspect <inspect the contents of a Group, Request, or Request attribute.
+    Inspect the contents of a Group, Request, or Request attribute.
 
 `Command: env`_
     View or set Environment variables.

@@ -57,17 +57,19 @@ If not, you can install it with ``pip install invoke``.
 Docker
 ------
 
-Assuming Docker is installed, **restcli** can run inside a container.
+Assuming Docker is installed, **restcli** can run inside a container. To build
+the Docker container, run the following from the project root:
 
 .. code-block:: console
 
     $ docker build -t restcli .
 
-Then run it with:
+Then you can run commands from within the container:
 
 .. code-block:: console
 
-    $ docker run -it restcli [OPTIONS] ARGS
+    $ docker run -it restcli -c foobar.yaml run foo bar
+    $ docker run -it restcli --save -c api.yaml -e env.yaml env foo:bar
 
 
 License
