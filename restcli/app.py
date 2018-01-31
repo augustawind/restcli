@@ -8,6 +8,7 @@ from pygments.lexers.data import JsonLexer
 from pygments.lexers.python import Python3Lexer
 from pygments.lexers.textfmts import HttpLexer
 
+from restcli import utils
 from restcli.exceptions import (
     GroupNotFoundError,
     ParameterNotFoundError,
@@ -40,9 +41,10 @@ class App(object):
     )))
 
     def __init__(self, collection_file: str, env_file: str,
-                 autosave: bool=False, style: str='fruity'):
+                 autosave: bool=False, quiet: bool=False, style: str='fruity'):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
+        self.quiet = quiet
 
         self.http_lexer = HttpLexer()
         self.json_lexer = JsonLexer()
@@ -50,15 +52,16 @@ class App(object):
         self.formatter = Terminal256Formatter(style=style)
 
     def run(self, group_name: str, request_name: str, modifiers: list=None,
-            env_args: list=None, save: bool=False) -> str:
+            env_args: list=None, save: bool=None, quiet: bool=None) -> str:
         """Run a Request.
 
         Args:
             group_name: A :class:`Group` name in the Collection.
             request_name: A :class:`Request` name in the Collection.
-            modifiers: :class:`Request` modifiers.
-            env_args: :class:`Environment` overrides.
+            modifiers (optional): List of :class:`Request` modifiers.
+            env_args (optional): List of :class:`Environment` overrides.
             save (optional): Whether to save Env changes to disk.
+            quiet (optional): Whether to suppress output.
 
         Returns:
             The command output.
@@ -73,10 +76,10 @@ class App(object):
 
         response = self.r.request(group_name, request_name, updater, *env_args)
 
-        if save or self.autosave:
+        if utils.select_first(save, self.autosave):
             self.r.env.save()
 
-        output = self.show_response(response)
+        output = self.show_response(response, quiet=quiet)
         return output
 
     def view(self, group_name: str, request_name: str=None,
@@ -183,8 +186,11 @@ class App(object):
                              self.formatter)
         return 'No Environment loaded.'
 
-    def show_response(self, response):
+    def show_response(self, response, quiet=None):
         """Format an HTTP Response."""
+        if utils.select_first(quiet, self.quiet):
+            return ''
+
         if response.headers.get('Content-Type', None) == 'application/json':
             try:
                 body = json.dumps(response.json(), indent=2)

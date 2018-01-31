@@ -109,3 +109,10 @@ def recursive_update(mapping, data):
 def is_ascii(s):
     """Return True if the given string contains only ASCII characters."""
     return len(s) == len(s.encode())
+
+
+def select_first(*args):
+    """Return the first argument that's not None."""
+    for arg in args:
+        if arg is not None:
+            return arg

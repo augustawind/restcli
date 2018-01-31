@@ -36,11 +36,14 @@ pass_app = click.make_pass_decorator(App)
 @click.option('-s/-S', '--save/--no-save', envvar='RESTCLI_AUTOSAVE',
               default=False,
               help='Save Environment to disk after changes.')
+@click.option('-q/-Q', '--quiet/--loud', envvar='RESTCLI_QUIET',
+              default=False,
+              help='Suppress HTTP output.')
 @click.pass_context
-def cli(ctx, collection, env, save):
+def cli(ctx, collection, env, save, quiet):
     if not ctx.obj:
         with expect(CollectionError, EnvError, LibError):
-            ctx.obj = App(collection, env, autosave=save)
+            ctx.obj = App(collection, env, autosave=save, quiet=quiet)
 
 
 @cli.command(help='Run a Request.', context_settings=dict(
