@@ -11,7 +11,7 @@ from `Postman`_ and `HTTPie`_, and offers some of the best features of both.
 Features
 ********
 
-* read requests from YAML files
+* save requests as YAML files
 * scripting
 * parameterized requests using `Jinja2`_ templating
 * expressive commandline syntax, inspired by `HTTPie`_
@@ -30,7 +30,7 @@ Here's what we have in store for the foreseeable future.
 * autocomplete Group and Request names in the command prompt
 * support for other formats (plaintext, forms, file uploads)
 * request plans: run requests back-to-back with one command
-* import from/export to Postman JSON format
+* convert to/from Postman collections
 
 Long-term
 ---------
