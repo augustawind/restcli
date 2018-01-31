@@ -1,10 +1,12 @@
 from invoke import task
 
+TAG = 'restcli'
+
 # ----------------------------------------------------------------------
 # Simple tasks
 
 
-@task(aliases=('cl',))
+@task()
 def clean(ctx):
     """Delete build files."""
     ctx.run('rm -rf `find . -name __pycache__`', pty=True)
@@ -18,18 +20,17 @@ def clean(ctx):
     ctx.run('rm -f .coverage.*', pty=True)
 
 
-@task(aliases=('l',))
+@task()
 def lint(ctx):
     """Run the linter(s)."""
     ctx.run('pycodestyle', pty=True)
 
 
-@task(aliases=('t',))
+@task()
 def test(ctx, verbose=False):
     """Run unit tests."""
-    cmd = 'pytest'
-    if verbose:
-        cmd += ' -v'
+    opts = '-v' if verbose else ''
+    cmd = 'pytest %s' % opts
     ctx.run(cmd, pty=True)
 
 
@@ -53,7 +54,21 @@ def install(ctx, editable=False):
 
     If the --editable option is given, install it with the -e flag.
     """
-    cmd = 'pip install %s .' % (' -e' if editable else '')
+    opts = '-e' if editable else ''
+    cmd = 'pip install %s .' % opts
+    ctx.run(cmd, pty=True)
+
+
+@task()
+def docker(ctx, clean=False, run=True):
+    opts = '--force-rm --no-cache' if clean else ''
+    cmd = 'docker build %s -t %s .' % (opts, TAG)
+    ctx.run(cmd, pty=True)
+
+
+@task()
+def run(ctx, run_cmd):
+    cmd = 'docker run -it %s %s' % (TAG, run_cmd)
     ctx.run(cmd, pty=True)
 
 
@@ -61,13 +76,13 @@ def install(ctx, editable=False):
 # Composite tasks
 
 
-@task(aliases=('ch',), pre=(clean, lint), post=(test,))
+@task(aliases=('x',), pre=(clean, lint), post=(test,))
 def check(ctx):
     """Run unit tests and sanity checks."""
     ctx.run('python setup.py check -rms', pty=True)
 
 
-@task(default=True, aliases=('b',), pre=(dependencies, check, install))
+@task(default=True, pre=(dependencies, check, install))
 def build(ctx, editable=False):
     """Safely build the app, running checks and installing."""
     pass
