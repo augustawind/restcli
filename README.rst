@@ -28,10 +28,10 @@ Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
 Documentation
 =============
 
-To start using **restcli**, you should become acquainted with its main concepts,
-described in the `Overview <docs/overview.rst>`_, then head over to the
-`Tutorial <docs/tutorial.rst>`_ for more in-depth documentation, accompanied by
-a complete example.
+To start using **restcli**, you should become acquainted with its main
+concepts, described in the `Overview <docs/overview.rst>`_, then head over to
+the `Tutorial <docs/tutorial.rst>`_ for more in-depth documentation,
+accompanied by a complete example.
 
 
 Installation
@@ -117,4 +117,7 @@ This software is distributed under the `Apache License, Version 2.0`_. See
 
 .. _Postman: https://www.getpostman.com/postman
 .. _HTTPie: https://httpie.org/
+.. _Jinja2: http://jinja.pocoo.org/
+.. _python_prompt_toolkit: https://github.com/jonathanslenders/python-prompt-toolkit
+.. _pyvim: https://github.com/jonathanslenders/pyvim
 .. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0

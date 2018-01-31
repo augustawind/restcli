@@ -101,7 +101,3 @@ Next Steps
 **********
 
 The recommended way to continue learning is the :doc:`Tutorial </tutorial>`.
-
-.. _Jinja2: http://jinja.pocoo.org/
-.. _python_prompt_toolkit: https://github.com/jonathanslenders/python-prompt-toolkit
-.. _pyvim: https://github.com/jonathanslenders/pyvim
