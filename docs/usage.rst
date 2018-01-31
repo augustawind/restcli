@@ -152,12 +152,84 @@ These two invocations are equivalent:
 
 
 *************
-Command: repl
+Command: view
 *************
 
-The interactive prompt is a read-eval-print loop which supports the same API
-as the commandline interface, but with a few additional commands for
-convenience. Here's the full usage text for the REPL:
+.. code-block:: console
+
+    $ restcli view --help
+
+    Usage: restcli view [OPTIONS] GROUP [REQUEST] [PARAM]
+
+      View a Group, Request, or Request Parameter.
+
+    Options:
+      --help  Show this message and exit.
+
+The ``view`` command selects part of a Collection and outputs it as JSON.
+It has three forms, described here with examples:
+
+**Group view**
+    Select an entire Group, e.g.:
+
+    .. code-block:: console
+
+        $ restcli view chordata
+
+    .. code-block:: json
+
+        {
+          "mammalia": {
+            "headers": {
+              ...
+            },
+            "body": ...,
+            ...
+          },
+          "amphibia": {
+            ...
+          },
+          ...
+        }
+
+**Request view**
+    Select a particular Request within a Group, e.g.:
+
+    .. code-block:: console
+
+        $ restcli view chordata mammalia
+
+    .. code-block:: json
+
+        {
+          "url": "{{ server }}/chordata/mammalia"
+          "method": "get",
+          "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          }
+        }
+
+**Request Attribute view**
+    Select a single Attribute of a Request, e.g.:
+
+    .. code-block:: console
+
+        $ restcli view chordata mammalia url
+
+    .. code-block:: json
+
+        "{{ server }}/chordata/mammalia"
+
+The output of ``view`` is just plain JSON, which makes it convenient for
+scripts that need to programmatically analyze Collections in some way.
+
+.. todo:: Provide a no-color/no-formatting flag for this and ``run``.
+
+
+*************
+Command: repl
+*************
 
 .. code-block:: console
 
@@ -165,16 +237,22 @@ convenience. Here's the full usage text for the REPL:
 
     Options:
       -v, --version               Show the version and exit.
-      -c, --collection PATH       Collection file.  [required]
+      -c, --collection PATH       Collection file.
       -e, --env PATH              Environment file.
       -s, --save / -S, --no-save  Save Environment to disk after changes.
+      -q, --quiet / -Q, --loud    Suppress HTTP output.
       --help                      Show this message and exit.
 
     Commands:
       change_collection  Change to and load a new Collection file.
       change_env         Change to and load a new Environment file.
       env                View or set Environment variables.
-      reload             Reload Collection or Environment from disk.
+      exec               Run multiple Requests from a file.
+      reload             Reload Collection and Environment from disk.
       run                Run a Request.
       save               Save the current Environment to disk.
       view               View a Group, Request, or Request Parameter.
+
+The ``repl`` command starts an interactive prompt which allows you to issue
+commands in a read-eval-print loop. It supports the same set of commands as the
+regular commandline interface and adds a few repl-specific commands as well.
