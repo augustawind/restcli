@@ -61,7 +61,8 @@ def run(app, group, request, modifiers, override_env):
 
 @cli.command(help='''Run multiple Requests from a file.
 
-Each line should specify args for a single "run" invocation:
+If '-' is given, stdin will be used. Lines beginning with '#' are ignored. Each
+line in the file should specify args for a single "run" invocation:
 
     [OPTIONS] GROUP REQUEST [MODIFIERS]...
 ''')
@@ -69,6 +70,9 @@ Each line should specify args for a single "run" invocation:
 @click.pass_context
 def exec(ctx, file):
     for line in file:
+        line = line.strip()
+        if line.startswith('#'):
+            continue
         click.echo('>>> run %s' % line)
         args = shlex.split(line)
         try:

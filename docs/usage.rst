@@ -20,6 +20,7 @@ Usage
 
     Commands:
       env   View or set Environment variables.
+      exec  Run multiple Requests from a file.
       repl  Start an interactive prompt.
       run   Run a Request.
       view  View a Group, Request, or Request Parameter.
@@ -27,7 +28,10 @@ Usage
 The available commands are:
 
 `Command: run`_
-    Run a Request, writing the response to stdout.
+    Run a Request.
+
+`Command: exec`_
+    Run multiple Requests from a file.
 
 `Command: view`_
     Inspect the contents of a Group, Request, or Request attribute.
@@ -52,7 +56,7 @@ Command: run
 
     Usage: restcli run [OPTIONS] GROUP REQUEST [MODIFIERS]...
 
-    Run a Request.
+      Run a Request.
 
     Options:
       -o, --override-env TEXT  Override Environment variables.
@@ -103,6 +107,47 @@ following ``run`` invocation will temporarily set the key ``name`` to the value
     $ restcli -c food.yaml -e env.yaml run recipes add \
               -o name:donut \
               -o !foo
+
+
+*************
+Command: exec
+*************
+
+.. code-block:: console
+
+    $ restcli exec --help
+
+    Usage: restcli exec [OPTIONS] FILE
+
+      Run multiple Requests from a file.
+
+      If '-' is given, stdin will be used. Lines beginning with '#' are ignored.
+      Each line in the file should specify args for a single "run" invocation:
+
+          [OPTIONS] GROUP REQUEST [MODIFIERS]...
+
+    Options:
+      --help  Show this message and exit.
+
+The ``exec`` command loops through the given file, calling ``run`` with the
+arguments provided on each line. For example, for the following file:
+
+.. code-block:: text
+
+    # requests.txt
+    accounts create -o password:abc123
+    accounts update password==abc123 -o name:foobar
+
+These two invocations are equivalent:
+
+.. code-block:: console
+
+    $ restcli exec requests.txt
+
+.. code-block:: console
+
+    $ restcli run accounts create -o password:abc123
+    $ restcli run update password==abc123 -o name:foobar
 
 
 *************
