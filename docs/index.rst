@@ -14,6 +14,7 @@ Welcome to restcli's documentation!
    overview
    usage
    tutorial/tutorial
+   api/modules
 
 
 

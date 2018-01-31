@@ -54,7 +54,7 @@ Collections
 
 **restcli** understands your API through YAML files called *Collections*.
 Collections are objects composed of *Groups*, which are again objects composed
-of `Requests <overview_requests>`_. A Collection is essentially just a bunch of
+of `Requests`_. A Collection is essentially just a bunch of
 Requests; Groups are purely organizational.
 
 .. code-block:: yaml
