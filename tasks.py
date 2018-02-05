@@ -21,9 +21,11 @@ def clean(ctx):
 
 
 @task()
-def lint(ctx):
+def lint(ctx, verbose=False):
     """Run the linter(s)."""
-    ctx.run('pycodestyle', pty=True)
+    opts = '-v' if verbose else ''
+    cmd = 'pycodestyle %s' % opts
+    ctx.run(cmd, pty=True)
 
 
 @task()
@@ -38,7 +40,6 @@ def test(ctx, verbose=False):
 def coverage(ctx, html=False):
     """Run unit tests and generate a coverage report."""
     ctx.run('pytest --cov=restcli', pty=True)
-    ctx.run('coverage combine', pty=True)
     if html:
         ctx.run('coverage html', pty=True)
 
