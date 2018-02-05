@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from restcli.exceptions import ReqModKeyError, ReqModValueError
+from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.reqmod import mods
 from restcli.reqmod.lexer import ACTIONS
 from restcli.utils import quote_plus
@@ -178,7 +178,7 @@ class TestHeaderMod(ModTypesTestMixin):
 
     def test_unicode_key(self):
         for _ in range(self.TEST_ITERATIONS):
-            with pytest.raises(ReqModValueError):
+            with pytest.raises((ReqModValueError, ReqModSyntaxError)):
                 self.run_mod_test(
                     input_val=random_alphanum(),
                     input_key=random_unicode(),
