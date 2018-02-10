@@ -12,6 +12,7 @@
 
    overview
    usage
+   requests
    tutorial
    api/modules
 
