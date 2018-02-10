@@ -2,8 +2,8 @@
 
 ## Short Term
 
-- [ ] Do a solid review of error handling.
-- [ ] Document `reqmod` system.
+- [ ] Write more unit tests.
+- [ ] Do a thorough review of error handling.
 - [ ] Automate grabbing --help output and inserting it into README.
 
 ## Roadmap
