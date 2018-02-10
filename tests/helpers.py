@@ -81,17 +81,6 @@ def random_bool(p=0.5):
     return random.random() > p
 
 
-def random_list(a=5, b=None, length=None, dict_kwargs=None, max_depth=2):
-    """Generate a random list."""
-    list_kwargs = dict(a=a, b=b, length=length)
-    return list(_random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth))
-
-
-def log(msg):
-    with open('LOGFILE', 'a') as fh:
-        fh.write(msg + '\n')
-
-
 def _random_iter(a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, max_depth=2):
     length = length or _random_len(a, b)
 
@@ -121,6 +110,12 @@ def _random_iter(a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, m
             gen_kwargs = {}
 
         yield gen_func(**gen_kwargs)
+
+
+def random_list(a=5, b=None, length=None, dict_kwargs=None, max_depth=2):
+    """Generate a random list."""
+    list_kwargs = dict(a=a, b=b, length=length)
+    return list(_random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth))
 
 
 def random_dict(a=5, b=None, length=None, key_min=1, key_max=5, list_kwargs=None, max_depth=2):
