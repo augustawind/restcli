@@ -28,10 +28,10 @@ Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
 Documentation
 =============
 
-To start using **restcli**, you should become acquainted with its main
-concepts, described in the `Overview <docs/overview.rst>`_, then head over to
-the `Tutorial <docs/tutorial.rst>`_ for more in-depth documentation,
-accompanied by a complete example.
+* `Overview <docs/overview.rst>`_
+* `Usage <docs/usage.rst>`_
+* `Making Requests <docs/requests.rst>`_
+* `Tutorial <docs/tutorial.rst>`_
 
 
 Installation
