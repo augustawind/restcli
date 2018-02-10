@@ -1,6 +1,6 @@
-=======
-restcli
-=======
+============
+✨ restcli ✨
+============
 
 **restcli** is a terminal web API client written in Python. It draws
 inspiration from `Postman`_ and `HTTPie`_, and offers some of the best features
