@@ -4,7 +4,7 @@ Overview
 
 In this section we'll get a bird's eye view of **restcli**\'s core concepts.
 After reading this section, you should be ready for the
-:doc:`Tutorial </tutorial>`.
+:doc:`Tutorial <tutorial>`.
 
 .. _overview_collections:
 
