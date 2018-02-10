@@ -96,7 +96,6 @@ Here's what we have in store for the foreseeable future.
 
 * autocomplete Group and Request names in the command prompt
 * support for other formats (plaintext, forms, file uploads)
-* request plans: run requests back-to-back with one command
 * convert to/from Postman collections
 
 
