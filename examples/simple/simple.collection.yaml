@@ -1,0 +1,22 @@
+---
+actions:
+
+  get:
+    method: get
+    url: "https://httpbin.org/get"
+    query:
+      fooParam: "{{ foo-param }}"
+    headers: 
+      Accept: application/json
+      X-Foo: "{{ foo-header }}"
+
+  post:
+    method: post
+    url: "https://httpbin.org/post"
+    body: |
+      nickname: "foobar"
+      sign: "{{ zodiac-sign }}"
+      age: 26
+      colors:
+        - green
+        - purple

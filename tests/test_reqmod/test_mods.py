@@ -194,3 +194,9 @@ class TestStrFieldMod(ModTypesTestMixin):
             input_val=random_alphanum(),
             input_key=random_alphanum(),
         )
+
+    def test_unicode(self):
+        self.run_mod_test(
+            input_val=random_unicode(),
+            input_key=random_unicode(),
+        )
