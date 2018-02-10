@@ -269,8 +269,42 @@ Operations
 Examples
 ........
 
-The following examples assume we're running Requests from the example
-Collection.
+To follow along with the examples, grab the `simple example project`_ from the
+**restcli** source. Then from the example directory, export some environment
+variables to use the example project's Collection and Environment files:
+
+.. code-block:: console
+
+    $ export RESTCLI_COLLECTION="simple.collection.yaml"
+    $ export RESTCLI_ENV="simple.env.yaml"
+
+To check your work after each **restcli run** invocation, just inspect the
+response. All the Requests in this Collection will respond with a JSON blob
+containing the information about your HTTP request, like this:
+
+.. code-block:: console
+
+    $ restcli run actions get
+
+.. code-block:: javascript
+
+    // HTTP response
+
+    {
+        "args": {
+            "fooParam": "10"
+        },
+        "headers": {
+            "Accept": "application/json",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "close",
+            "Host": "httpbin.org",
+            "User-Agent": "HTTPie/0.9.9",
+            "X-Foo": "foo+bar+baz"
+        },
+        "origin": "75.76.62.109",
+        "url": "https://httpbin.org/get?fooParam=10"
+    }
 
 **Example 1**
 
@@ -444,3 +478,5 @@ Command: repl
 The ``repl`` command starts an interactive prompt which allows you to issue
 commands in a read-eval-print loop. It supports the same set of commands as the
 regular commandline interface and adds a few repl-specific commands as well.
+
+.. _simple example project: https://github.com/dustinrohde/restcli/tree/master/examples/simple
