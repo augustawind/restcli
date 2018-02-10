@@ -58,6 +58,34 @@ def test_parse_request():
     assert actual == expected
 
 
+def test_parse_env_args():
+    """Test Requestor#parse_env_args()."""
+    env_args = [
+        '!foo',
+        'bar:rab',
+        '!xxx',
+        '!x8x',
+        'quux:[2, 3, hello]',
+        'bucks:99',
+        'shoes:{x: 9, y: {z: []}}',
+    ]
+    expected_set = {
+        'bar': 'rab',
+        'quux': [2, 3, 'hello'],
+        'bucks': 99,
+        'shoes': {'x': 9, 'y': {'z': []}},
+    }
+    expected_del = [
+        'foo',
+        'xxx',
+        'x8x'
+    ]
+
+    actual_set, actual_del = Requestor.parse_env_args(*env_args)
+    assert actual_set == expected_set
+    assert set(actual_del) == set(expected_del)
+
+
 def test_interpolate():
     """Test Requestor#interpolate()."""
     actual = Requestor.interpolate(
