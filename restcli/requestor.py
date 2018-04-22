@@ -58,6 +58,9 @@ class Requestor(object):
         if headers:
             kwargs['headers'] = {k: cls.interpolate(v, env)
                                  for k, v in six.iteritems(headers)}
+        query = request.get('query')
+        if query:
+            kwargs['query'] = cls.interpolate(query, env)
 
         if updater:
             updater.apply(kwargs)

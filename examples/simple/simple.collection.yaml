@@ -4,7 +4,7 @@ actions:
   get:
     method: get
     url: "https://httpbin.org/get"
-    query:
+    query: |
       fooParam: "{{ foo_param }}"
       "foo=bar": "{{ foobar }}"
     headers:

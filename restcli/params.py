@@ -5,6 +5,7 @@ REQUIRED_REQUEST_PARAMS = AttrMap(
     ('url', str),
 )
 REQUEST_PARAMS = AttrMap(
+    ('query', str),
     ('headers', dict),
     ('body', str),
     ('script', str),

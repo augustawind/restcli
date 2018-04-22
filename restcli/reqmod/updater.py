@@ -52,7 +52,6 @@ class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
             self.update_request(current_request_param)
         except KeyError:
             raise ReqModKeyError(value=self.key)
-        return current_request_param[self.key]
 
     @abc.abstractmethod
     def update_request(self, request_param):
