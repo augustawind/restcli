@@ -43,7 +43,6 @@ class Requestor(object):
     @classmethod
     def parse_request(cls, request, env, updater=None):
         """Parse a Request object in the context of an Environment."""
-        env = env.copy()
         kwargs = {
             'method': request['method'],
             'url': cls.interpolate(request['url'], env),
