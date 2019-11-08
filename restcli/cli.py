@@ -129,15 +129,15 @@ def exec(ctx, file):
 @click.argument("request", required=False)
 @click.argument("param", required=False)
 @click.option(
-    "-a/-A",
-    "--apply-env/--no-apply-env",
+    "-r/-R",
+    "--render/--no-render",
     default=False,
     help="Render with Environment variables.",
 )
 @pass_app
-def view(app, group, request, param, apply_env):
+def view(app, group, request, param, render):
     with expect(NotFoundError):
-        output = app.view(group, request, param, apply_env)
+        output = app.view(group, request, param, render)
     click.echo(output)
 
 

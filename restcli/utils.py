@@ -1,4 +1,5 @@
-from collections import Mapping, OrderedDict, Sequence
+from collections import OrderedDict
+from collections.abc import Mapping, Sequence
 
 import six
 

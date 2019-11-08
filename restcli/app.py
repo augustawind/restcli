@@ -106,7 +106,7 @@ class App(object):
         group_name: str,
         request_name: str = None,
         param_name: str = None,
-        apply_env: bool = False,
+        render: bool = False,
     ) -> str:
         """Inspect a Group, Request, or Request Parameter.
 
@@ -114,13 +114,13 @@ class App(object):
             group_name: The Group to inspect.
             request_name: The Request to inspect.
             param_name: The Request Parameter to inspect.
-            apply_env: Whether to render with Environment variables inserted.
+            render: Whether to render with Environment variables inserted.
 
         Returns:
             The requested object in JSON, colorized.
         """
         output_obj = group = self.get_group(
-            group_name, action="view", apply_env=apply_env
+            group_name, action="view", render=render
         )
 
         if request_name:
@@ -150,7 +150,7 @@ class App(object):
         output = self.fmt_json(output_obj)
         return self.highlight(output, self.json_lexer)
 
-    def get_group(self, group_name, action, apply_env=False):
+    def get_group(self, group_name, action, render=False):
         """Retrieve a Group object."""
         try:
             group = self.r.collection[group_name]
@@ -161,7 +161,7 @@ class App(object):
                 path=[group_name],
             )
 
-        if apply_env:
+        if render:
             # Apply Environment to all Requests
             group = {
                 request_name: self.r.parse_request(request, self.r.env)

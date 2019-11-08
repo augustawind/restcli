@@ -109,7 +109,8 @@ Command: view
       View a Group, Request, or Request Parameter.
 
     Options:
-      --help  Show this message and exit.
+      -r, --render / -R, --no-render  Render with Environment variables.
+      --help                          Show this message and exit.
 
 The ``view`` command selects part of a Collection and outputs it as JSON.
 It has three forms, described here with examples:
@@ -168,6 +169,16 @@ It has three forms, described here with examples:
 
 The output of ``view`` is just plain JSON, which makes it convenient for
 scripts that need to programmatically analyze Collections in some way.
+
+Use the ``--render`` flag to render template variables, e.g.:
+
+    .. code-block:: console
+
+        $ restcli view --render chordata mammalia url
+
+    .. code-block:: json
+
+        "https://animals.io/chordata/mammalia"
 
 
 ************
