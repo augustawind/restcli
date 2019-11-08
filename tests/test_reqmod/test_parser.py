@@ -12,7 +12,7 @@ from restcli.reqmod.lexer import ACTIONS
 
 
 @pytest.fixture
-def request(pytestconfig):
+def req(pytestconfig):
     """Generate a semi-random request object."""
     req = OrderedDict()
     req['method'] = random.choice(('get', 'post', 'put', 'delete'))
@@ -46,7 +46,7 @@ class TestParse(object):
     attr = 'headers'
     action = ACTIONS.assign
 
-    def test_assign_headers(self, request, mocker):
+    def test_assign_headers(self, req, mocker):
         # TODO: this test is useless
         mock_parser = mocker.patch('restcli.reqmod.parser.parse')
 

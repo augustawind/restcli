@@ -1,8 +1,8 @@
-click==6.7
-click-repl==0.1.2
-jinja2==2.9.5
+Click==7.0
+click-repl==0.1.6
+Jinja2==2.10.3
 prompt_toolkit==1.0.13
-Pygments==2.2.0
-PyYAML==3.12
-requests==2.13.0
-six==1.10.0
+Pygments==2.4.2
+PyYAML==5.1.2
+requests==2.22.0
+six==1.13.0

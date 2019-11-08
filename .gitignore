@@ -94,3 +94,4 @@ ENV/
 .idea
 *.swp
 *.swo
+.vscode
