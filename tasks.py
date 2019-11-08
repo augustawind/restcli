@@ -91,16 +91,18 @@ def install(ctx, editable=False):
 # Docker
 
 
-@task()
-def docker(ctx, clean=False, run=True):
-    opts = clean and " --force-rm --no-cache" or ""
-    cmd = "docker build%s -t %s ." % (opts, TAG)
+@task(iterable=["arg"])
+def docker(ctx, arg, clean=False):
+    opts = clean and "--force-rm --no-cache" or ""
+    build_args = " ".join(f"--build-arg {a}" for a in arg)
+    cmd = "docker build %s %s -t %s ." % (opts, build_args, TAG)
     ctx.run(cmd, pty=True)
 
 
-@task()
-def run(ctx, run_cmd):
-    cmd = "docker run -it %s %s" % (TAG, run_cmd)
+@task(iterable=["env"])
+def run(ctx, run_cmd, env):
+    env_args = " ".join(f"--env {e}" for e in env)
+    cmd = "docker run %s -it %s %s" % (env_args, TAG, run_cmd)
     ctx.run(cmd, pty=True)
 
 
