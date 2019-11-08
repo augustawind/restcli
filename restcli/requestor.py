@@ -26,7 +26,7 @@ class Requestor(object):
         request = self.collection[group][name]
 
         with self.override_env(env_args):
-            request_kwargs = self.parse_request(request, self.env, updater)
+            request_kwargs = self.prepare_request(request, self.env, updater)
 
         response = requests.request(**request_kwargs)
 
@@ -41,9 +41,24 @@ class Requestor(object):
         return response
 
     @classmethod
+    def prepare_request(cls, request, env, updater=None):
+        """Prepare a Request to be executed."""
+        request = {
+            k: request.get(k)
+            for k in ("method", "url", "query", "headers", "body")
+        }
+        kwargs = cls.parse_request(request, env, updater)
+
+        kwargs["json"] = kwargs.pop("body")
+        kwargs["params"] = kwargs.pop("query")
+
+        return kwargs
+
+    @classmethod
     def parse_request(cls, request, env, updater=None):
         """Parse a Request object in the context of an Environment."""
         kwargs = {
+            **request,
             "method": request["method"],
             "url": cls.interpolate(request["url"], env),
             "query": {},
@@ -65,9 +80,6 @@ class Requestor(object):
 
         if updater:
             updater.apply(kwargs)
-
-        kwargs["json"] = kwargs.pop("body")
-        kwargs["params"] = kwargs.pop("query")
 
         return kwargs
 

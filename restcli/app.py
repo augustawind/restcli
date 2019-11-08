@@ -102,7 +102,11 @@ class App(object):
         return output
 
     def view(
-        self, group_name: str, request_name: str = None, param_name: str = None
+        self,
+        group_name: str,
+        request_name: str = None,
+        param_name: str = None,
+        apply_env: bool = False,
     ) -> str:
         """Inspect a Group, Request, or Request Parameter.
 
@@ -110,21 +114,22 @@ class App(object):
             group_name: The Group to inspect.
             request_name: The Request to inspect.
             param_name: The Request Parameter to inspect.
+            apply_env: Whether to render with Environment variables inserted.
 
         Returns:
             The requested object in JSON, colorized.
         """
-        group = self.get_group(group_name, action="view")
-        output_obj = group
+        output_obj = group = self.get_group(
+            group_name, action="view", apply_env=apply_env
+        )
 
         if request_name:
-            request = self.get_request(
+            output_obj = request = self.get_request(
                 group, group_name, request_name, action="view"
             )
-            output_obj = request
 
             if param_name:
-                param = self.get_request_param(
+                output_obj = param = self.get_request_param(
                     request,
                     group_name,
                     request_name,
@@ -142,21 +147,28 @@ class App(object):
                     output = self.key_value_pairs(headers)
                     return self.highlight(output, self.http_lexer)
 
-                output_obj = param
-
         output = self.fmt_json(output_obj)
         return self.highlight(output, self.json_lexer)
 
-    def get_group(self, group_name, action):
+    def get_group(self, group_name, action, apply_env=False):
         """Retrieve a Group object."""
         try:
-            return self.r.collection[group_name]
+            group = self.r.collection[group_name]
         except KeyError:
             raise GroupNotFoundError(
                 file=self.r.collection.source,
                 action=action,
                 path=[group_name],
             )
+
+        if apply_env:
+            # Apply Environment to all Requests
+            group = {
+                request_name: self.r.parse_request(request, self.r.env)
+                for request_name, request in group.items()
+            }
+
+        return group
 
     def get_request(self, group, group_name, request_name, action):
         """Retrieve a Request object."""

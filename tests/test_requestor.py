@@ -22,8 +22,8 @@ def test_request(requestor, mocker):
     assert mock.call_count == 1
 
 
-def test_parse_request():
-    """Test Requestor#parse_request()."""
+def test_prepare_request():
+    """Test Requestor#prepare_request()."""
     request = {
         "method": "post",
         "url": "{{ server }}/authors",
@@ -39,7 +39,7 @@ def test_parse_request():
         "birthday": "11/14/1991",
     }
 
-    actual = Requestor.parse_request(request, env)
+    actual = Requestor.prepare_request(request, env)
     expected = {
         "method": "post",
         "headers": {"Content-Type": "application/json",},
