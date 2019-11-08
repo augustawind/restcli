@@ -73,8 +73,9 @@ class MultiAttrMap(AttrMap):
         expanded_pairs = []
         for multi_key, value in six.iteritems(pairs):
             if not isinstance(multi_key, tuple):
-                raise TypeError("'%s' object is not an instance of tuple"
-                                % type(multi_key))
+                raise TypeError(
+                    "'%s' object is not an instance of tuple" % type(multi_key)
+                )
             expanded_pairs.extend((key, value) for key in multi_key)
 
         super(MultiAttrMap, self).__init__(*expanded_pairs)

@@ -10,11 +10,11 @@ from restcli import yaml_utils as yaml
 
 def parse_collection(postman_collection):
     collection = OrderedDict()
-    for folder_info in postman_collection['item']:
-        group_name = normalize(folder_info['name'])
+    for folder_info in postman_collection["item"]:
+        group_name = normalize(folder_info["name"])
         if group_name in collection:
             warnings.warn('duplicate group name "%s"; skipping' % group_name)
-        collection[group_name] = parse_group(folder_info['item'])
+        collection[group_name] = parse_group(folder_info["item"])
 
     return collection
 
@@ -22,13 +22,16 @@ def parse_collection(postman_collection):
 def parse_group(folder_info):
     group = OrderedDict()
     for request_info in folder_info:
-        request_name = normalize(request_info['name'])
+        request_name = normalize(request_info["name"])
         if request_name in group:
             warnings.warn(
-                'duplicate request name "%s"; skipping' % request_name)
-        if 'item' in request_info:
-            warnings.warn('sub-folders in collections are not supported; '
-                          'skipping folder "%s"' % request_name)
+                'duplicate request name "%s"; skipping' % request_name
+            )
+        if "item" in request_info:
+            warnings.warn(
+                "sub-folders in collections are not supported; "
+                'skipping folder "%s"' % request_name
+            )
             continue
         group[request_name] = parse_request(request_info)
 
@@ -37,41 +40,41 @@ def parse_group(folder_info):
 
 def parse_request(request_info):
     request = OrderedDict()
-    r = request_info['request']
+    r = request_info["request"]
 
-    description = r.get('description')
+    description = r.get("description")
     if description:
-        request['description'] = description
+        request["description"] = description
 
-    request['method'] = r['method'].lower()
-    request['url'] = r['url']
+    request["method"] = r["method"].lower()
+    request["url"] = r["url"]
 
-    header_info = r['header']
+    header_info = r["header"]
     headers = parse_headers(header_info)
     if headers:
-        request['headers'] = headers
+        request["headers"] = headers
 
-    body_info = r['body']
+    body_info = r["body"]
     body = parse_body(body_info)
-    if body and body.strip() != '{}':
-        request['body'] = body
+    if body and body.strip() != "{}":
+        request["body"] = body
 
     return request
 
 
 def parse_headers(header_info):
-    return OrderedDict((h['key'], h['value']) for h in header_info)
+    return OrderedDict((h["key"], h["value"]) for h in header_info)
 
 
 def parse_body(body_info):
     # FIXME: This interprets all literals as strings. Use the PM "type" field.
-    mode = body_info['mode']
+    mode = body_info["mode"]
     body = body_info[mode]
 
     if body:
-        if mode == 'formdata':
+        if mode == "formdata":
             python_repr = parse_formdata(body)
-        elif mode == 'raw':
+        elif mode == "raw":
             python_repr = json.loads(body)
         else:
             warnings.warn('unsupported body mode "%s"; skipping' % mode)
@@ -87,13 +90,14 @@ def parse_formdata(formdata):
     data = OrderedDict()
 
     for item in formdata:
-        if item['type'] != 'text':
-            warnings.warn('unsupported type in formdata "%s"; skipping'
-                          % item['type'])
+        if item["type"] != "text":
+            warnings.warn(
+                'unsupported type in formdata "%s"; skipping' % item["type"]
+            )
             continue
 
-        key = item['key']
-        val = item['value']
+        key = item["key"]
+        val = item["value"]
         data[key] = val
 
     return data
@@ -101,29 +105,29 @@ def parse_formdata(formdata):
 
 def normalize(text):
     text = text.lower()
-    text = re.sub('\s+', '-', text)
-    text = re.sub('[{}]', '', text)
+    text = re.sub("\s+", "-", text)
+    text = re.sub("[{}]", "", text)
     return text
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('collection', type=open)
-    parser.add_argument('-o', '--outfile', type=argparse.FileType('w'),
-                        default=sys.stdout)
+    parser.add_argument("collection", type=open)
+    parser.add_argument(
+        "-o", "--outfile", type=argparse.FileType("w"), default=sys.stdout
+    )
     args = parser.parse_args()
 
     postman_collection = json.load(args.collection)
     collection = parse_collection(postman_collection)
 
     output = yaml.dump(collection, indent=4)
-    output = re.sub(r'^([^\s].*)$', '\n\\1', output, flags=re.MULTILINE)
-    for var in re.findall(r'{{([^{}]+)}}', output):
-        output = output.replace('{{%s}}' % var,
-                                '{{ %s }}' % var.lower())
-    output = '---\n%s' % output
+    output = re.sub(r"^([^\s].*)$", "\n\\1", output, flags=re.MULTILINE)
+    for var in re.findall(r"{{([^{}]+)}}", output):
+        output = output.replace("{{%s}}" % var, "{{ %s }}" % var.lower())
+    output = "---\n%s" % output
     print(output, file=args.outfile)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -7,7 +7,7 @@ from restcli.utils import AttrMap, AttrSeq
 
 ALPHANUMERIC_CHARS = string.ascii_letters + string.digits
 ASCII_CHARS = ALPHANUMERIC_CHARS + string.punctuation
-URLSAFE_CHARS = ALPHANUMERIC_CHARS + '_.-'
+URLSAFE_CHARS = ALPHANUMERIC_CHARS + "_.-"
 
 
 def _range_args(a, b=None):
@@ -24,7 +24,7 @@ def _random_len(a, b, min_len=1):
 def _random_str(population, a=15, b=None, length=None):
     length = length or _random_len(a, b, min_len=3)
     k = min(length, len(population))
-    return ''.join(random.sample(population, k))
+    return "".join(random.sample(population, k))
 
 
 def random_alphanum(a=15, b=None, length=None):
@@ -81,7 +81,9 @@ def random_bool(p=0.5):
     return random.random() > p
 
 
-def _random_iter(a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, max_depth=2):
+def _random_iter(
+    a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, max_depth=2
+):
     length = length or _random_len(a, b)
 
     dict_kwargs = dict_kwargs or {}
@@ -100,11 +102,15 @@ def _random_iter(a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, m
         # If generating a child list, use same params
         if gen_type == GEN_TYPES.list:
             max_depth -= 1
-            gen_kwargs = dict(**list_kwargs, dict_kwargs=dict_kwargs, max_depth=max_depth)
+            gen_kwargs = dict(
+                **list_kwargs, dict_kwargs=dict_kwargs, max_depth=max_depth
+            )
         # If generating other compound type, give params for its child lists
         elif gen_type == GEN_TYPES.dict:
             max_depth -= 1
-            gen_kwargs = dict(**dict_kwargs, list_kwargs=list_kwargs, max_depth=max_depth)
+            gen_kwargs = dict(
+                **dict_kwargs, list_kwargs=list_kwargs, max_depth=max_depth
+            )
         # TODO: implement passing args for other types
         else:
             gen_kwargs = {}
@@ -115,36 +121,39 @@ def _random_iter(a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, m
 def random_list(a=5, b=None, length=None, dict_kwargs=None, max_depth=2):
     """Generate a random list."""
     list_kwargs = dict(a=a, b=b, length=length)
-    return list(_random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth))
+    return list(
+        _random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth)
+    )
 
 
-def random_dict(a=5, b=None, length=None, key_min=1, key_max=5, list_kwargs=None, max_depth=2):
+def random_dict(
+    a=5,
+    b=None,
+    length=None,
+    key_min=1,
+    key_max=5,
+    list_kwargs=None,
+    max_depth=2,
+):
     """Generate a random dict."""
     length = length or _random_len(a, b)
 
     dict_kwargs = dict(
-        a=a, b=b, length=length, key_min=key_min, key_max=key_max)
+        a=a, b=b, length=length, key_min=key_min, key_max=key_max
+    )
 
     gen_str = GEN_FUNCS.str
     return {
         gen_str(key_min, key_max): value
-        for value in _random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth)
+        for value in _random_iter(
+            a, b, length, dict_kwargs, list_kwargs, max_depth
+        )
     }
 
 
-GEN_TYPES_SIMPLE = AttrSeq(
-    'num',
-    'str',
-    'bool',
-)
-GEN_TYPES_COMPOUND = AttrSeq(
-    'list',
-    'dict',
-)
-GEN_TYPES = AttrSeq(
-    *GEN_TYPES_SIMPLE,
-    *GEN_TYPES_COMPOUND,
-)
+GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool",)
+GEN_TYPES_COMPOUND = AttrSeq("list", "dict",)
+GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND,)
 GEN_FUNCS = AttrMap(
     (GEN_TYPES.num, random_number),
     (GEN_TYPES.str, random_ascii),
@@ -167,8 +176,10 @@ def contents_equal(*seqs):
     every other sequence, regardless of ordering.
     """
     if len(seqs) < 2:
-        raise TypeError('contents_equal expected at least 2 arguments,'
-                        ' got %s' % (len(seqs)))
+        raise TypeError(
+            "contents_equal expected at least 2 arguments,"
+            " got %s" % (len(seqs))
+        )
 
     head = seqs[0]
     tail = seqs[1:]
@@ -215,8 +226,7 @@ def dicts_equal(*dicts, include=None, exclude=None):
     items = (
         (k, v)
         for k, v in (six.iteritems(d) for d in dicts)
-        if (not include or k in include)
-        or (not exclude or k not in exclude)
+        if (not include or k in include) or (not exclude or k not in exclude)
     )
     return contents_equal(*items)
 

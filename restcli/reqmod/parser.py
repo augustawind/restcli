@@ -27,17 +27,17 @@ def parse(lexemes):
 
 examples = [
     # Set a header (:)
-    '''Authorization:'JWT abc123\'''',
+    """Authorization:'JWT abc123\'""",
     # Delete a header (-d)
-    '''-d Authorization:''',
+    """-d Authorization:""",
     # Set a JSON param (string only) (=)
     '''description="A test Device."''',
     # Append (-a) to a url parameter (==)
-    '''-a _annotate==,counts''',
+    """-a _annotate==,counts""",
     # Set a nested (.) JSON field (non-string) (:=)
-    '''.location.postal_code:=33705''',
+    """.location.postal_code:=33705""",
     # Set a nested (. / []) JSON field (string) (=)
-    '''.conditions[0].variable=ambient_light''',
+    """.conditions[0].variable=ambient_light""",
     # Delete (-d) a nested (.) JSON field
-    '''-d .location.addr2''',
+    """-d .location.addr2""",
 ]

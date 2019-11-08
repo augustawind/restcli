@@ -9,9 +9,9 @@ from restcli import yaml_utils as yaml
 from restcli.exceptions import InputError
 from restcli.workspace import Collection, Environment
 
-__all__ = ['Requestor']
+__all__ = ["Requestor"]
 
-ENV_RE = re.compile(r'([^:]+):(.*)')
+ENV_RE = re.compile(r"([^:]+):(.*)")
 
 
 class Requestor(object):
@@ -30,9 +30,9 @@ class Requestor(object):
 
         response = requests.request(**request_kwargs)
 
-        script = request.get('script')
+        script = request.get("script")
         if script:
-            script_locals = {'response': response, 'env': self.env}
+            script_locals = {"response": response, "env": self.env}
             if self.collection.libs:
                 for lib in six.itervalues(self.collection.libs):
                     script_locals.update(lib.define(response, self.env))
@@ -44,29 +44,30 @@ class Requestor(object):
     def parse_request(cls, request, env, updater=None):
         """Parse a Request object in the context of an Environment."""
         kwargs = {
-            'method': request['method'],
-            'url': cls.interpolate(request['url'], env),
-            'query': {},
-            'headers': {},
-            'body': {},
+            "method": request["method"],
+            "url": cls.interpolate(request["url"], env),
+            "query": {},
+            "headers": {},
+            "body": {},
         }
 
-        body = request.get('body')
+        body = request.get("body")
         if body:
-            kwargs['body'] = cls.interpolate(body, env)
-        headers = request.get('headers')
+            kwargs["body"] = cls.interpolate(body, env)
+        headers = request.get("headers")
         if headers:
-            kwargs['headers'] = {k: cls.interpolate(v, env)
-                                 for k, v in six.iteritems(headers)}
-        query = request.get('query')
+            kwargs["headers"] = {
+                k: cls.interpolate(v, env) for k, v in six.iteritems(headers)
+            }
+        query = request.get("query")
         if query:
-            kwargs['query'] = cls.interpolate(query, env)
+            kwargs["query"] = cls.interpolate(query, env)
 
         if updater:
             updater.apply(kwargs)
 
-        kwargs['json'] = kwargs.pop('body')
-        kwargs['params'] = kwargs.pop('query')
+        kwargs["json"] = kwargs.pop("body")
+        kwargs["params"] = kwargs.pop("query")
 
         return kwargs
 
@@ -99,7 +100,7 @@ class Requestor(object):
         set_env = {}
         for arg in env_args:
             # Parse deletion syntax
-            if arg.startswith('!'):
+            if arg.startswith("!"):
                 var = arg[1:].strip()
                 del_env.append(var)
                 if var in set_env:
@@ -111,10 +112,10 @@ class Requestor(object):
             if not match:
                 raise InputError(
                     value=arg,
-                    msg='Error: args must take one of the forms `!KEY` or'
-                        ' `KEY:VAL`, where `KEY` is a string and `VAL` is a'
-                        ' valid YAML value.',
-                    action='env',
+                    msg="Error: args must take one of the forms `!KEY` or"
+                    " `KEY:VAL`, where `KEY` is a string and `VAL` is a"
+                    " valid YAML value.",
+                    action="env",
                 )
             key, val = match.groups()
             set_env[key.strip()] = yaml.load(val)
@@ -130,5 +131,5 @@ class Requestor(object):
     @staticmethod
     def run_script(script, script_locals):
         """Run a Request script with a Response and Environment as context."""
-        code = compile(script, '<<script>>', 'exec')
+        code = compile(script, "<<script>>", "exec")
         exec(code, script_locals)

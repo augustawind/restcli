@@ -20,7 +20,7 @@ from restcli.params import (
     CONFIG_PARAMS,
 )
 
-__all__ = ['Collection', 'Environment']
+__all__ = ["Collection", "Environment"]
 
 
 class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
@@ -45,17 +45,20 @@ class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
         """Helper for raising an error for a Reader instance."""
         if not error_class:
             error_class = self.error_class
-        raise error_class(file=source or self.source, msg=msg, path=path,
-                          **kwargs)
+        raise error_class(
+            file=source or self.source, msg=msg, path=path, **kwargs
+        )
 
-    def assert_type(self, obj, type_, path, msg, error_class=None,
-                    **err_kwargs):
+    def assert_type(
+        self, obj, type_, path, msg, error_class=None, **err_kwargs
+    ):
         if not isinstance(obj, type_):
-            self.raise_error(msg, path, error_class or self.error_class,
-                             **err_kwargs)
+            self.raise_error(
+                msg, path, error_class or self.error_class, **err_kwargs
+            )
 
     def assert_mapping(self, obj, name, path, error_class=None, **err_kwargs):
-        msg = '%s must be a mapping object' % name
+        msg = "%s must be a mapping object" % name
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
@@ -81,9 +84,9 @@ class Collection(YamlDictReader):
                 config, collection = data
             else:
                 if len(data) == 0:
-                    msg = 'Collection document not found'
+                    msg = "Collection document not found"
                 else:
-                    msg = 'Too many documents; expected 1 or 2'
+                    msg = "Too many documents; expected 1 or 2"
                 self.raise_error(msg, [])
 
             self.load_config(config)
@@ -94,25 +97,25 @@ class Collection(YamlDictReader):
         # Verify all fields are known
         for key in six.iterkeys(config):
             if key not in CONFIG_PARAMS:
-                self.raise_error(
-                    'Unexpected key in config: "%s"' % key, [])
+                self.raise_error('Unexpected key in config: "%s"' % key, [])
 
         # Load libs
-        lib = config.get('lib')
+        lib = config.get("lib")
         if lib:
             self.libs = Libs(lib)
 
         # Load defaults
-        defaults = config.get('defaults', OrderedDict())
+        defaults = config.get("defaults", OrderedDict())
 
         if defaults:
-            path = ['defaults']
-            self.assert_mapping(defaults, 'Defaults', path)
+            path = ["defaults"]
+            self.assert_mapping(defaults, "Defaults", path)
 
             for key in six.iterkeys(defaults):
                 if key not in REQUEST_PARAMS:
                     self.raise_error(
-                        'Unexpected key in defaults "%s"' % key, path)
+                        'Unexpected key in defaults "%s"' % key, path
+                    )
 
             self.defaults.clear()
             self.defaults.update(defaults)
@@ -122,12 +125,12 @@ class Collection(YamlDictReader):
         new_collection = OrderedDict()
         for group_name, group in six.iteritems(collection):
             path = [group_name]
-            self.assert_mapping(group, 'Group', path)
+            self.assert_mapping(group, "Group", path)
             new_group = OrderedDict()
 
             for req_name, request in six.iteritems(group):
-                path.append('req_name')
-                self.assert_mapping(request, 'Request', path)
+                path.append("req_name")
+                self.assert_mapping(request, "Request", path)
                 new_req = OrderedDict()
 
                 for key, type_ in six.iteritems(REQUEST_PARAMS):
@@ -138,8 +141,7 @@ class Collection(YamlDictReader):
                     # Check required parameters
                     elif key in REQUIRED_REQUEST_PARAMS:
                         self.raise_error(
-                            'Required parameter "%s" not found' % key,
-                            path,
+                            'Required parameter "%s" not found' % key, path,
                         )
                     else:
                         new_req[key] = type_()
@@ -152,7 +154,7 @@ class Collection(YamlDictReader):
                         type_=type_,
                         path=path,
                         msg='Request "%s" must be a %s'
-                            % (key, type_.__name__),
+                        % (key, type_.__name__),
                     )
 
                 new_group[req_name] = new_req
@@ -173,7 +175,7 @@ class Environment(YamlDictReader):
             with open(self.source) as handle:
                 data = yaml.load(handle)
                 self.replace(data)
-        self['__rando__'] = random.randint(100000000, 999999999)
+        self["__rando__"] = random.randint(100000000, 999999999)
 
     @property
     def data(self):
@@ -195,7 +197,7 @@ class Environment(YamlDictReader):
 
     def save(self):
         """Save ``self.env`` to ``self.env_path``."""
-        with open(self.source, 'w') as handle:
+        with open(self.source, "w") as handle:
             return yaml.dump(self.data, handle)
 
 
@@ -206,32 +208,37 @@ class Libs(YamlDictReader):
 
     def load(self):
         """Parse and validate a Libs list."""
-        self.assert_type(self.source, list, ['lib'], '"lib" must be an array')
+        self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
 
         for i, module in enumerate(self.source):
-            path = ['lib', i]
+            path = ["lib", i]
             try:
                 if not isinstance(module, six.string_types):
                     raise TypeError
                 lib = importlib.import_module(module)
             except (TypeError, ImportError):
-                self.raise_error('Failed to import lib "%s"' % module, path,
-                                 source=inspect.getsourcefile(module))
+                self.raise_error(
+                    'Failed to import lib "%s"' % module,
+                    path,
+                    source=inspect.getsourcefile(module),
+                )
 
             sig = inspect.signature(lib.define)
             params = tuple(six.itervalues(sig.parameters))
-            if not all((
-                hasattr(lib, 'define'),
-                inspect.isfunction(lib.define),
-                len(params) == 4,
-                params[0].name == 'response',
-                params[1].name == 'env',
-                params[2].kind == inspect.Parameter.VAR_POSITIONAL,
-                params[3].kind == inspect.Parameter.VAR_KEYWORD,
-            )):
+            if not all(
+                (
+                    hasattr(lib, "define"),
+                    inspect.isfunction(lib.define),
+                    len(params) == 4,
+                    params[0].name == "response",
+                    params[1].name == "env",
+                    params[2].kind == inspect.Parameter.VAR_POSITIONAL,
+                    params[3].kind == inspect.Parameter.VAR_KEYWORD,
+                )
+            ):
                 self.raise_error(
-                    'lib must contain a function with the signature'
-                    ' `define(response, env, *args, **kwargs)`',
+                    "lib must contain a function with the signature"
+                    " `define(response, env, *args, **kwargs)`",
                     path,
                     source=inspect.getsourcefile(lib),
                 )

@@ -7,16 +7,12 @@ import six
 
 from restcli.utils import AttrSeq
 
-QUOTES = '"\''
-ESCAPES = '\\'
+QUOTES = "\"'"
+ESCAPES = "\\"
 
-ACTIONS = AttrSeq(
-    'append',
-    'assign',
-    'delete',
-)
+ACTIONS = AttrSeq("append", "assign", "delete",)
 
-Lexeme = namedtuple('Lexeme', ['action', 'value'])
+Lexeme = namedtuple("Lexeme", ["action", "value"])
 
 
 class ClickArgumentParser(argparse.ArgumentParser):
@@ -26,11 +22,11 @@ class ClickArgumentParser(argparse.ArgumentParser):
         raise click.UsageError(message)
 
 
-lexer = ClickArgumentParser(prog='lexer', add_help=False)
-lexer.add_argument('-a', '--%s' % ACTIONS.append, action='append')
-lexer.add_argument('-n', '--%s' % ACTIONS.assign, action='append')
-lexer.add_argument('-d', '--%s' % ACTIONS.delete, action='append')
-lexer.add_argument('args', nargs='*')
+lexer = ClickArgumentParser(prog="lexer", add_help=False)
+lexer.add_argument("-a", "--%s" % ACTIONS.append, action="append")
+lexer.add_argument("-n", "--%s" % ACTIONS.assign, action="append")
+lexer.add_argument("-d", "--%s" % ACTIONS.delete, action="append")
+lexer.add_argument("args", nargs="*")
 
 
 def lex(argv):
@@ -52,7 +48,7 @@ def lex(argv):
         ]
     """
     opts = vars(lexer.parse_args(argv))
-    args = opts.pop('args')
+    args = opts.pop("args")
     # Lex flagged options
     lexemes = [
         Lexeme(action, val)
@@ -86,11 +82,11 @@ def tokenize(s, sep=string.whitespace):
         ['Hello world!', 'I love', '\'Python', 'programming!\'']
     """
     tokens = []
-    token = ''
+    token = ""
     current_quote = None
 
     chars = iter(s)
-    char = six.next(chars, '')
+    char = six.next(chars, "")
 
     while char:
         # Quotation marks begin or end a quoted section
@@ -103,21 +99,21 @@ def tokenize(s, sep=string.whitespace):
         # Backslash makes the following character literal
         elif char in ESCAPES:
             token += char
-            char = six.next(chars, '')
+            char = six.next(chars, "")
 
         # Unless in quotes, whitespace is skipped and signifies the token end.
         elif not current_quote and char in sep:
             while char in sep:
-                char = six.next(chars, '')
+                char = six.next(chars, "")
             tokens.append(token)
-            token = ''
+            token = ""
 
             # Since we stopped at the first non-whitespace character, it
             # must be processed.
             continue
 
         token += char
-        char = six.next(chars, '')
+        char = six.next(chars, "")
 
     tokens.append(token)
     return tokens

@@ -6,8 +6,8 @@ import pytest_mock  # noqa: F401
 
 from restcli.requestor import Requestor
 
-TEST_GROUPS_PATH = 'tests/resources/test_collection.yaml'
-TEST_ENV_PATH = 'tests/resources/test_env.yaml'
+TEST_GROUPS_PATH = "tests/resources/test_collection.yaml"
+TEST_ENV_PATH = "tests/resources/test_env.yaml"
 
 
 @pytest.fixture
@@ -17,43 +17,39 @@ def requestor():
 
 def test_request(requestor, mocker):
     """Test Requestor()#request()."""
-    mock = mocker.patch('requests.request')
-    requestor.request('books', 'edit')
+    mock = mocker.patch("requests.request")
+    requestor.request("books", "edit")
     assert mock.call_count == 1
 
 
 def test_parse_request():
     """Test Requestor#parse_request()."""
     request = {
-        'method': 'post',
-        'url': '{{ server }}/authors',
-        'headers': {
-            'Content-Type': 'application/json',
-        },
-        'body': '''
+        "method": "post",
+        "url": "{{ server }}/authors",
+        "headers": {"Content-Type": "application/json",},
+        "body": """
             id: 1
             name: Bartholomew McNozzleWafer
             date_of_birth: {{ birthday }}
-        ''',
+        """,
     }
     env = {
-        'server': 'http://foobar.org',
-        'birthday': '11/14/1991',
+        "server": "http://foobar.org",
+        "birthday": "11/14/1991",
     }
 
     actual = Requestor.parse_request(request, env)
     expected = {
-        'method': 'post',
-        'headers': {
-            'Content-Type': 'application/json',
+        "method": "post",
+        "headers": {"Content-Type": "application/json",},
+        "url": "http://foobar.org/authors",
+        "json": {
+            "id": 1,
+            "name": "Bartholomew McNozzleWafer",
+            "date_of_birth": "11/14/1991",
         },
-        'url': "http://foobar.org/authors",
-        'json': {
-            'id': 1,
-            'name': 'Bartholomew McNozzleWafer',
-            'date_of_birth': '11/14/1991',
-        },
-        'params': {},
+        "params": {},
     }
     assert actual == expected
 
@@ -61,25 +57,21 @@ def test_parse_request():
 def test_parse_env_args():
     """Test Requestor#parse_env_args()."""
     env_args = [
-        '!foo',
-        'bar:rab',
-        '!xxx',
-        '!x8x',
-        'quux:[2, 3, hello]',
-        'bucks:99',
-        'shoes:{x: 9, y: {z: []}}',
+        "!foo",
+        "bar:rab",
+        "!xxx",
+        "!x8x",
+        "quux:[2, 3, hello]",
+        "bucks:99",
+        "shoes:{x: 9, y: {z: []}}",
     ]
     expected_set = {
-        'bar': 'rab',
-        'quux': [2, 3, 'hello'],
-        'bucks': 99,
-        'shoes': {'x': 9, 'y': {'z': []}},
+        "bar": "rab",
+        "quux": [2, 3, "hello"],
+        "bucks": 99,
+        "shoes": {"x": 9, "y": {"z": []}},
     }
-    expected_del = [
-        'foo',
-        'xxx',
-        'x8x'
-    ]
+    expected_del = ["foo", "xxx", "x8x"]
 
     actual_set, actual_del = Requestor.parse_env_args(*env_args)
     assert actual_set == expected_set
@@ -97,20 +89,15 @@ def test_interpolate():
             object: {'foo': 5, '{{ key1 }}': ['{{ val1 }}', null]}
             array: ['foo', True, 5, null, {'key': {{ val2 }}}]
         """,
-        env={
-            'val0': 'xyz',
-            'val1': 'abc',
-            'key1': 'def',
-            'val2': 89,
-        },
+        env={"val0": "xyz", "val1": "abc", "key1": "def", "val2": 89,},
     )
     expected = {
-        'number': 3,
-        'string': 'xyz',
-        'boolean': True,
-        'null': None,
-        'object': {'foo': 5, 'def': ['abc', None]},
-        'array': ['foo', True, 5, None, {'key': 89}],
+        "number": 3,
+        "string": "xyz",
+        "boolean": True,
+        "null": None,
+        "object": {"foo": 5, "def": ["abc", None]},
+        "array": ["foo", True, 5, None, {"key": 89}],
     }
     assert actual == expected
 
@@ -118,9 +105,9 @@ def test_interpolate():
 def test_run_script():
     """Test Requestor#run_script()."""
     response = SimpleNamespace(status_code=404)
-    env = {'f': io.StringIO()}
+    env = {"f": io.StringIO()}
     Requestor.run_script(
-        script=r'''print('%s\n' % response.status_code, file=env['f'])''',
-        script_locals={'response': response, 'env': env}
+        script=r"""print('%s\n' % response.status_code, file=env['f'])""",
+        script_locals={"response": response, "env": env},
     )
-    assert env['f'].getvalue().strip() == '404'
+    assert env["f"].getvalue().strip() == "404"

@@ -4,10 +4,23 @@ from contextlib import contextmanager
 import click
 import six
 
-__all__ = ['expect', 'Error', 'InputError', 'ReqModError', 'ReqModSyntaxError',
-           'ReqModValueError', 'ReqModKeyError', 'FileContentError',
-           'NotFoundError', 'GroupNotFoundError', 'RequestNotFoundError',
-           'ParameterNotFoundError', 'CollectionError', 'EnvError', 'LibError']
+__all__ = [
+    "expect",
+    "Error",
+    "InputError",
+    "ReqModError",
+    "ReqModSyntaxError",
+    "ReqModValueError",
+    "ReqModKeyError",
+    "FileContentError",
+    "NotFoundError",
+    "GroupNotFoundError",
+    "RequestNotFoundError",
+    "ParameterNotFoundError",
+    "CollectionError",
+    "EnvError",
+    "LibError",
+]
 
 
 @contextmanager
@@ -21,9 +34,9 @@ def expect(*exceptions):
 class Error(Exception):
     """Base library exception."""
 
-    base_msg = ''
+    base_msg = ""
 
-    def __init__(self, msg='', action=None):
+    def __init__(self, msg="", action=None):
         # TODO: determine if `action` is still needed (I think no)
         self.action = action
         self.msg = msg
@@ -36,18 +49,15 @@ class Error(Exception):
 
     @staticmethod
     def _fmt_label(first, second):
-        return '%s%s' % (
-            first,
-            ': %s' % second if second else '',
-        )
+        return "%s%s" % (first, ": %s" % second if second else "",)
 
     @staticmethod
     def _is_custom_attr(attr):
         """Return whether an attr is a custom member of an Error instance."""
         return (
             not callable(attr)
-            and attr != 'args'
-            and not (type(attr) in six.string_types and attr.startswith('__'))
+            and attr != "args"
+            and not (type(attr) in six.string_types and attr.startswith("__"))
         )
 
 
@@ -56,7 +66,7 @@ class InputError(Error):
 
     base_msg = "Invalid input '%(value)s'"
 
-    def __init__(self, value, msg='', action=None):
+    def __init__(self, value, msg="", action=None):
         super(InputError, self).__init__(msg, action)
         self.value = value
 
@@ -86,10 +96,10 @@ class ReqModKeyError(ReqModError):
 class FileContentError(Error):
     """Exception for invalid file data."""
 
-    base_msg = 'Invalid content'
-    file_type = 'CONTENT'
+    base_msg = "Invalid content"
+    file_type = "CONTENT"
 
-    def __init__(self, file, msg='', path=None, action=None):
+    def __init__(self, file, msg="", path=None, action=None):
         super(FileContentError, self).__init__(msg, action)
         self.file = file
         self.path = path
@@ -97,34 +107,34 @@ class FileContentError(Error):
     def show(self):
         line = self.file
         if self.path:
-            line += ' => %s' % self._fmt_path(self.path)
-        return '%s\n%s' % (line, super(FileContentError, self).show())
+            line += " => %s" % self._fmt_path(self.path)
+        return "%s\n%s" % (line, super(FileContentError, self).show())
 
     @property
     def name(self):
         return self.path[-1]
 
     def _fmt_path(self, path):
-        text = ''
+        text = ""
         for item in path:
             if type(item) is str:
-                text += '.%s' % item
+                text += ".%s" % item
             else:
-                text += '[%s]' % item
-        return '%s%s' % (self.file_type, text)
+                text += "[%s]" % item
+        return "%s%s" % (self.file_type, text)
 
 
 class NotFoundError(FileContentError):
     """Exception for invalid lookups."""
 
-    base_msg = 'Not found'
+    base_msg = "Not found"
 
 
 class CollectionError(FileContentError):
     """Exception for invalid Collection files."""
 
-    base_msg = 'Invalid collection'
-    file_type = 'COLLECTION'
+    base_msg = "Invalid collection"
+    file_type = "COLLECTION"
 
 
 class GroupNotFoundError(CollectionError):
@@ -145,12 +155,12 @@ class ParameterNotFoundError(CollectionError):
 class EnvError(FileContentError):
     """Exception for invalid Env files."""
 
-    base_msg = 'Invalid env'
-    file_type = 'ENV'
+    base_msg = "Invalid env"
+    file_type = "ENV"
 
 
 class LibError(FileContentError):
     """Exception for invalid Libs files."""
 
-    base_msg = 'Invalid lib(s)'
-    file_type = 'LIB'
+    base_msg = "Invalid lib(s)"
+    file_type = "LIB"

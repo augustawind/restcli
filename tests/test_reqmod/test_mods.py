@@ -13,7 +13,7 @@ from tests.helpers import (
 )
 
 # Default value for function args where None doesn't make sense
-DEFAULT = type('DEFAULT', (object,), {})
+DEFAULT = type("DEFAULT", (object,), {})
 
 
 class ModTypesTestMixin(object):
@@ -22,8 +22,13 @@ class ModTypesTestMixin(object):
     TEST_ITERATIONS = 9
 
     @classmethod
-    def run_mod_test(cls, input_val, input_key=DEFAULT,
-                     expected_val=DEFAULT, expected_key=DEFAULT):
+    def run_mod_test(
+        cls,
+        input_val,
+        input_key=DEFAULT,
+        expected_val=DEFAULT,
+        expected_key=DEFAULT,
+    ):
         if input_key is DEFAULT:
             input_key = random_alphanum(11)
         mod_str = cls.mod_cls.delimiter.join((input_key, input_val))
@@ -48,38 +53,33 @@ class TestJsonFieldMod(ModTypesTestMixin):
 
     def test_bool(self):
         self.run_mod_test(
-            input_val='true',
-            expected_val=True,
+            input_val="true", expected_val=True,
         )
 
     def test_number_int(self):
         self.run_mod_test(
-            input_val='11',
-            expected_val=11,
+            input_val="11", expected_val=11,
         )
 
     def test_number_float(self):
         self.run_mod_test(
-            input_val='26.5',
-            expected_val=26.5,
+            input_val="26.5", expected_val=26.5,
         )
 
     def test_null(self):
         self.run_mod_test(
-            input_val='null',
-            expected_val=None,
+            input_val="null", expected_val=None,
         )
 
     def test_array(self):
         self.run_mod_test(
-            input_val='[1, 2, 3]',
-            expected_val=[1, 2, 3],
+            input_val="[1, 2, 3]", expected_val=[1, 2, 3],
         )
 
     def test_object(self):
         self.run_mod_test(
             input_val='{"foo": "bar", "baz": "biff"}',
-            expected_val={'foo': 'bar', 'baz': 'biff'},
+            expected_val={"foo": "bar", "baz": "biff"},
         )
 
     def test_compound_1(self):
@@ -88,7 +88,7 @@ class TestJsonFieldMod(ModTypesTestMixin):
                 '[5, 5.25, "hello", true, null, [1, 2], {"abc": "def"}]'
             ),
             expected_val=(
-                [5, 5.25, 'hello', True, None, [1, 2], {'abc': 'def'}]
+                [5, 5.25, "hello", True, None, [1, 2], {"abc": "def"}]
             ),
         )
 
@@ -99,8 +99,12 @@ class TestJsonFieldMod(ModTypesTestMixin):
                 ' "whomst\'d\'ve": {"x": 11, "y": [2, 2], "z": [0, [], {}]}}'
             ),
             expected_val=(
-                {'who': None, 'whom': True, 'whomst': ['x', 'y', 'z'],
-                 "whomst'd've": {'x': 11, 'y': [2, 2], 'z': [0, [], {}]}}
+                {
+                    "who": None,
+                    "whom": True,
+                    "whomst": ["x", "y", "z"],
+                    "whomst'd've": {"x": 11, "y": [2, 2], "z": [0, [], {}]},
+                }
             ),
         )
 
@@ -112,8 +116,7 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_urlsafe(self):
         for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=random_urlsafe(),
-                input_key=random_urlsafe(),
+                input_val=random_urlsafe(), input_key=random_urlsafe(),
             )
 
     def test_unicode_value(self):
@@ -122,7 +125,7 @@ class TestURLParamMod(ModTypesTestMixin):
             self.run_mod_test(
                 input_val=val,
                 input_key=random_urlsafe(),
-                expected_val=quote_plus(val)
+                expected_val=quote_plus(val),
             )
 
     def test_unicode_key(self):
@@ -136,12 +139,12 @@ class TestURLParamMod(ModTypesTestMixin):
 
     def test_delimiter(self):
         inputs = (
-            '\\=\\=%s' % random_urlsafe(),
-            '%s\\=\\=' % random_urlsafe(),
-            '%s\\=\\=%s' % (random_urlsafe(), random_urlsafe()),
-            '%s\\=' % random_urlsafe(),
-            '=%s' % random_urlsafe(),
-            '%s=%s' % (random_urlsafe(), random_urlsafe()),
+            "\\=\\=%s" % random_urlsafe(),
+            "%s\\=\\=" % random_urlsafe(),
+            "%s\\=\\=%s" % (random_urlsafe(), random_urlsafe()),
+            "%s\\=" % random_urlsafe(),
+            "=%s" % random_urlsafe(),
+            "%s=%s" % (random_urlsafe(), random_urlsafe()),
         )
         for item in inputs:
             self.run_mod_test(
@@ -164,24 +167,21 @@ class TestHeaderMod(ModTypesTestMixin):
     def test_alphanum(self):
         for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=random_alphanum(),
-                input_key=random_alphanum(),
+                input_val=random_alphanum(), input_key=random_alphanum(),
             )
 
     def test_unicode_value(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises(ReqModValueError):
                 self.run_mod_test(
-                    input_val=random_unicode(),
-                    input_key=random_alphanum(),
+                    input_val=random_unicode(), input_key=random_alphanum(),
                 )
 
     def test_unicode_key(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises((ReqModValueError, ReqModSyntaxError)):
                 self.run_mod_test(
-                    input_val=random_alphanum(),
-                    input_key=random_unicode(),
+                    input_val=random_alphanum(), input_key=random_unicode(),
                 )
 
 
@@ -191,12 +191,10 @@ class TestStrFieldMod(ModTypesTestMixin):
 
     def test_alphanum(self):
         self.run_mod_test(
-            input_val=random_alphanum(),
-            input_key=random_alphanum(),
+            input_val=random_alphanum(), input_key=random_alphanum(),
         )
 
     def test_unicode(self):
         self.run_mod_test(
-            input_val=random_unicode(),
-            input_key=random_unicode(),
+            input_val=random_unicode(), input_key=random_unicode(),
         )

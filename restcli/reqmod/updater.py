@@ -87,7 +87,7 @@ class DeleteUpdater(BaseUpdater):
 
 
 UPDATERS = AttrMap(
-    ('append', AppendUpdater),
-    ('assign', AssignUpdater),
-    ('delete', DeleteUpdater),
+    ("append", AppendUpdater),
+    ("assign", AssignUpdater),
+    ("delete", DeleteUpdater),
 )

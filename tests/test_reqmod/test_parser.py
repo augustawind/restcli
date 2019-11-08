@@ -15,40 +15,43 @@ from restcli.reqmod.lexer import ACTIONS
 def req(pytestconfig):
     """Generate a semi-random request object."""
     req = OrderedDict()
-    req['method'] = random.choice(('get', 'post', 'put', 'delete'))
-    req['url'] = '%s.org' % ''.join(random.sample(string.ascii_lowercase, 10))
-    req['headers'] = OrderedDict((
-        ('Content-Type', 'application/json'),
-        ('Accept', 'application/json')
-    ))
+    req["method"] = random.choice(("get", "post", "put", "delete"))
+    req["url"] = "%s.org" % "".join(random.sample(string.ascii_lowercase, 10))
+    req["headers"] = OrderedDict(
+        (("Content-Type", "application/json"), ("Accept", "application/json"))
+    )
 
     # Add body if method supports writes
-    if req['method'] in ('post', 'put'):
-        name = 'Fr%snken Fr%snkenfrank' % (
-            'a' * random.randint(1, 6),
-            'a' * random.randint(1, 6),
+    if req["method"] in ("post", "put"):
+        name = "Fr%snken Fr%snkenfrank" % (
+            "a" * random.randint(1, 6),
+            "a" * random.randint(1, 6),
         )
-        req['body'] = yaml.dump(OrderedDict((
-            ('name', name),
-            ('age', random.randint(10, 20)),
-            ('color', random.choice(('red', 'yellow', 'blue'))),
-            ('warranty', random.choice((True, False))),
-            ('insurance', None),
-        )))
+        req["body"] = yaml.dump(
+            OrderedDict(
+                (
+                    ("name", name),
+                    ("age", random.randint(10, 20)),
+                    ("color", random.choice(("red", "yellow", "blue"))),
+                    ("warranty", random.choice((True, False))),
+                    ("insurance", None),
+                )
+            )
+        )
 
     return req
 
 
 class TestParse(object):
 
-    formatter_name = 'fmt_header'
-    field_type = 'header'
-    attr = 'headers'
+    formatter_name = "fmt_header"
+    field_type = "header"
+    attr = "headers"
     action = ACTIONS.assign
 
     def test_assign_headers(self, req, mocker):
         # TODO: this test is useless
-        mock_parser = mocker.patch('restcli.reqmod.parser.parse')
+        mock_parser = mocker.patch("restcli.reqmod.parser.parse")
 
         lexemes = (
             (ACTIONS.assign, "Content-Type:application/json"),

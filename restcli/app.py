@@ -17,7 +17,7 @@ from restcli.exceptions import (
 from restcli.reqmod import lexer, parser
 from restcli.requestor import Requestor
 
-__all__ = ['App']
+__all__ = ["App"]
 
 
 class App(object):
@@ -34,15 +34,25 @@ class App(object):
         autosave (bool): Whether to automatically save Env changes.
     """
 
-    HTTP_TPL = Template('\n'.join((
-        'HTTP/${http_version} ${status_code} ${reason}',
-        '${headers}',
-        '${body}',
-    )))
+    HTTP_TPL = Template(
+        "\n".join(
+            (
+                "HTTP/${http_version} ${status_code} ${reason}",
+                "${headers}",
+                "${body}",
+            )
+        )
+    )
 
-    def __init__(self, collection_file: str, env_file: str,
-                 autosave: bool=False, quiet: bool=False,
-                 raw_output: bool=False, style: str= 'fruity'):
+    def __init__(
+        self,
+        collection_file: str,
+        env_file: str,
+        autosave: bool = False,
+        quiet: bool = False,
+        raw_output: bool = False,
+        style: str = "fruity",
+    ):
         self.r = Requestor(collection_file, env_file)
         self.autosave = autosave
         self.quiet = quiet
@@ -53,8 +63,15 @@ class App(object):
         self.python_lexer = Python3Lexer()
         self.formatter = Terminal256Formatter(style=style)
 
-    def run(self, group_name: str, request_name: str, modifiers: list=None,
-            env_args: list=None, save: bool=None, quiet: bool=None) -> str:
+    def run(
+        self,
+        group_name: str,
+        request_name: str,
+        modifiers: list = None,
+        env_args: list = None,
+        save: bool = None,
+        quiet: bool = None,
+    ) -> str:
         """Run a Request.
 
         Args:
@@ -69,8 +86,8 @@ class App(object):
             The command output.
         """
         # Make sure Request exists.
-        group = self.get_group(group_name, action='run')
-        self.get_request(group, group_name, request_name, action='run')
+        group = self.get_group(group_name, action="run")
+        self.get_request(group, group_name, request_name, action="run")
 
         # Parse modifiers.
         lexemes = lexer.lex(modifiers)
@@ -84,8 +101,9 @@ class App(object):
         output = self.show_response(response, quiet=quiet)
         return output
 
-    def view(self, group_name: str, request_name: str=None,
-             param_name: str=None) -> str:
+    def view(
+        self, group_name: str, request_name: str = None, param_name: str = None
+    ) -> str:
         """Inspect a Group, Request, or Request Parameter.
 
         Args:
@@ -96,25 +114,31 @@ class App(object):
         Returns:
             The requested object in JSON, colorized.
         """
-        group = self.get_group(group_name, action='view')
+        group = self.get_group(group_name, action="view")
         output_obj = group
 
         if request_name:
-            request = self.get_request(group, group_name, request_name,
-                                       action='view')
+            request = self.get_request(
+                group, group_name, request_name, action="view"
+            )
             output_obj = request
 
             if param_name:
                 param = self.get_request_param(
-                    request, group_name, request_name, param_name,
-                    action='view')
+                    request,
+                    group_name,
+                    request_name,
+                    param_name,
+                    action="view",
+                )
 
-                if param_name == 'script':
+                if param_name == "script":
                     return self.highlight(param, self.python_lexer)
 
-                if param_name == 'headers':
-                    headers = dict(l.split(':')
-                                   for l in param.strip().split('\n'))
+                if param_name == "headers":
+                    headers = dict(
+                        l.split(":") for l in param.strip().split("\n")
+                    )
                     output = self.key_value_pairs(headers)
                     return self.highlight(output, self.http_lexer)
 
@@ -142,11 +166,12 @@ class App(object):
             raise RequestNotFoundError(
                 file=self.r.collection.source,
                 action=action,
-                path=[group_name, request_name]
+                path=[group_name, request_name],
             )
 
-    def get_request_param(self, request, group_name, request_name, param_name,
-                          action):
+    def get_request_param(
+        self, request, group_name, request_name, param_name, action
+    ):
         """Retrieve a Request Parameter."""
         try:
             return request[param_name]
@@ -154,7 +179,7 @@ class App(object):
             raise ParameterNotFoundError(
                 file=self.r.collection.source,
                 action=action,
-                path=[group_name, request_name, param_name]
+                path=[group_name, request_name, param_name],
             )
 
     def load_collection(self, source=None):
@@ -162,38 +187,38 @@ class App(object):
         if source:
             self.r.collection.source = source
         self.r.collection.load()
-        return ''
+        return ""
 
     def load_env(self, source=None):
         """Reload the current Environment, changing it to `source` if given."""
         if source:
             self.r.env.source = source
         self.r.env.load()
-        return ''
+        return ""
 
     def set_env(self, *env_args, save=False):
         """Set some new variables in the Environment."""
         self.r.mod_env(env_args, save=save or self.autosave)
-        return ''
+        return ""
 
     def save_env(self):
         """Save the current Environment to disk."""
         self.r.env.save()
-        return ''
+        return ""
 
     def show_env(self):
         """Return a formatted representation of the current Environment."""
         if self.r.env:
             output = self.fmt_json(self.r.env)
             return self.highlight(output, self.json_lexer)
-        return 'No Environment loaded.'
+        return "No Environment loaded."
 
     def show_response(self, response, quiet=None):
         """Format an HTTP Response."""
         if utils.select_first(quiet, self.quiet):
-            return ''
+            return ""
 
-        if response.headers.get('Content-Type', None) == 'application/json':
+        if response.headers.get("Content-Type", None) == "application/json":
             try:
                 body = self.fmt_json(response.json())
             except json.JSONDecodeError:
@@ -230,4 +255,4 @@ class App(object):
     @staticmethod
     def key_value_pairs(obj):
         """Format a dict-like object into lines of 'KEY: VALUE'."""
-        return '\n'.join(['%s: %s' % (k, v) for k, v in six.iteritems(obj)])
+        return "\n".join(["%s: %s" % (k, v) for k, v in six.iteritems(obj)])

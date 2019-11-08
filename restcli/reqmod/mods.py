@@ -7,12 +7,7 @@ import six
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii, quote_plus
 
-PARAM_TYPES = AttrSeq(
-    'json_field',
-    'str_field',
-    'header',
-    'url_param',
-)
+PARAM_TYPES = AttrSeq("json_field", "str_field", "header", "url_param",)
 
 
 def parse_mod(mod_str):
@@ -35,21 +30,18 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     _types = None
     _pattern = None
 
-    split_re_tpl = string.Template(r'(?<=[^\\])${delimiter}')
+    split_re_tpl = string.Template(r"(?<=[^\\])${delimiter}")
 
     def __init__(self, key, value):
         self.key, self.value = self.clean_params(key, value)
 
     def __str__(self):
-        attrs = ('key', 'value')
+        attrs = ("key", "value")
         attr_kwargs = (
-            '%s%s%r' % (attr, self.delimiter, getattr(self, attr))
+            "%s%s%r" % (attr, self.delimiter, getattr(self, attr))
             for attr in attrs
         )
-        return '%s(%s)' % (
-            type(self).__name__,
-            ', '.join(attr_kwargs),
-        )
+        return "%s(%s)" % (type(self).__name__, ", ".join(attr_kwargs),)
 
     @classmethod
     @abc.abstractmethod
@@ -70,7 +62,8 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     def pattern(cls):
         if not cls._pattern:
             re_str = cls.split_re_tpl.substitute(
-                delimiter=re.escape(cls.delimiter))
+                delimiter=re.escape(cls.delimiter)
+            )
             cls._pattern = re.compile(re_str)
         return cls._pattern
 
@@ -78,8 +71,8 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
 class JsonFieldMod(Mod):
 
     param_type = PARAM_TYPES.json_field
-    param = 'body'
-    delimiter = ':='
+    param = "body"
+    delimiter = ":="
 
     @classmethod
     def clean_params(cls, key, value):
@@ -87,15 +80,15 @@ class JsonFieldMod(Mod):
             json_value = json.loads(value)
         except json.JSONDecodeError as err:
             # TODO: implement error handling
-            raise ReqModValueError(value=value, msg='invalid JSON - %s' % err)
+            raise ReqModValueError(value=value, msg="invalid JSON - %s" % err)
         return key, json_value
 
 
 class StrFieldMod(Mod):
 
     param_type = PARAM_TYPES.str_field
-    param = 'body'
-    delimiter = '='
+    param = "body"
+    delimiter = "="
 
     @classmethod
     def clean_params(cls, key, value):
@@ -105,8 +98,8 @@ class StrFieldMod(Mod):
 class HeaderMod(Mod):
 
     param_type = PARAM_TYPES.header
-    param = 'headers'
-    delimiter = ':'
+    param = "headers"
+    delimiter = ":"
 
     @classmethod
     def clean_params(cls, key, value):
@@ -122,8 +115,8 @@ class HeaderMod(Mod):
 class UrlParamMod(Mod):
 
     param_type = PARAM_TYPES.url_param
-    param = 'query'
-    delimiter = '=='
+    param = "query"
+    delimiter = "=="
 
     @classmethod
     def clean_params(cls, key, value):
@@ -131,11 +124,9 @@ class UrlParamMod(Mod):
 
 
 # Tuple of Mod classes, in order of specificity of delimiters
-MODS = AttrMap(*(
-    (mod_cls.delimiter, mod_cls) for mod_cls in (
-        JsonFieldMod,
-        UrlParamMod,
-        HeaderMod,
-        StrFieldMod,
+MODS = AttrMap(
+    *(
+        (mod_cls.delimiter, mod_cls)
+        for mod_cls in (JsonFieldMod, UrlParamMod, HeaderMod, StrFieldMod,)
     )
-))
+)

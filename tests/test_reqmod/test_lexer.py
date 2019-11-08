@@ -15,9 +15,9 @@ class LexerTestMixin(object):
     def run_test(self, args, result):
         argv = self.transform_args(args)
         tokens = lexer.lex(argv)
-        assert contents_equal(tokens, [
-            (self.action, token) for token in result
-        ])
+        assert contents_equal(
+            tokens, [(self.action, token) for token in result]
+        )
 
     def test_1_header_single_quotes(self):
         args = ["Authorization:'JWT abc123.foo'"]
@@ -30,13 +30,13 @@ class LexerTestMixin(object):
         self.run_test(args, result)
 
     def test_3_nested_json_number_unquoted(self):
-        args = ['.location.postal_code:=12345']
-        result = ['.location.postal_code:=12345']
+        args = [".location.postal_code:=12345"]
+        result = [".location.postal_code:=12345"]
         self.run_test(args, result)
 
     def test_4(self):
-        args = ['foo:bar', 'conditions[0].var="haha ha"']
-        result = ['foo:bar', 'conditions[0].var="haha ha"']
+        args = ["foo:bar", 'conditions[0].var="haha ha"']
+        result = ["foo:bar", 'conditions[0].var="haha ha"']
         self.run_test(args, result)
 
 
@@ -58,7 +58,7 @@ class TestAssign(LexerTestMixin):
     action = lexer.ACTIONS.assign
 
     def transform_args(self, args):
-        return intersperse_left('-n', args)
+        return intersperse_left("-n", args)
 
 
 class TestAppend(LexerTestMixin):
@@ -66,7 +66,7 @@ class TestAppend(LexerTestMixin):
     action = lexer.ACTIONS.append
 
     def transform_args(self, args):
-        return intersperse_left('-a', args)
+        return intersperse_left("-a", args)
 
 
 class TestDelete(LexerTestMixin):
@@ -74,4 +74,4 @@ class TestDelete(LexerTestMixin):
     action = lexer.ACTIONS.delete
 
     def transform_args(self, args):
-        return intersperse_left('-d', args)
+        return intersperse_left("-d", args)
