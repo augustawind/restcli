@@ -1,7 +1,8 @@
 from collections import OrderedDict
 
-from restcli.reqmod import lexer
 from restcli import utils
+from restcli.reqmod import lexer
+
 from .helpers import random_alphanum, random_unicode
 
 

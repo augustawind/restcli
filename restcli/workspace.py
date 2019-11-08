@@ -11,13 +11,13 @@ from restcli import yaml_utils as yaml
 from restcli.exceptions import (
     CollectionError,
     EnvError,
-    LibError,
     FileContentError,
+    LibError,
 )
 from restcli.params import (
-    REQUIRED_REQUEST_PARAMS,
-    REQUEST_PARAMS,
     CONFIG_PARAMS,
+    REQUEST_PARAMS,
+    REQUIRED_REQUEST_PARAMS,
 )
 
 __all__ = ["Collection", "Environment"]

@@ -4,6 +4,7 @@ import re
 import string
 
 import six
+
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii, quote_plus
 
