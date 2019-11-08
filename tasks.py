@@ -23,7 +23,7 @@ def clean(ctx):
 @task()
 def fmt(ctx):
     """Run the formatters."""
-    cmd = "black --line-length=79 --exclude='/docs|setup\.py/' ."
+    cmd = "black --line-length=79 --exclude='docs' ."
     ctx.run(cmd, pty=True)
     cmd = (
         "isort --recursive --trailing-comma --use-parentheses --line-width=79"
