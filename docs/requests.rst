@@ -96,7 +96,7 @@ The general syntax of modifiers is described here:
    mod_assign: "-n" `operation` | `operation`
    mod_append: "-a" `operation`
    mod_delete: "-d" `operation`
-   operation: "'" `op` "'" | '"' `op` '"' 
+   operation: "'" `op` "'" | '"' `op` '"'
    operation: `op_header` | `op_query` | `op_body_str` | `op_body_nostr`
    op_header: <ASCII text> ":" [<ASCII text>]
    op_query: <Unicode text> "==" [<Unicode text>]
@@ -118,10 +118,13 @@ There are three modifier modes:
     to ``quux``:
 
     .. code-block:: console
-        :linenos:
 
         $ restcli run actions get -n X-Foo:quux
-        $ # OR
+
+    Since **assign** is the default mode, you can omit the ``-n``:
+
+    .. code-block:: console
+
         $ restcli run actions get X-Foo:quux
 
 **append**
@@ -162,7 +165,7 @@ There are three modifier modes:
 **delete**
     Delete the specified Request parameter. This ignores the value completely.
 
-    If a url parameter ``pageNumber`` were set to anything, the following would 
+    If a url parameter ``pageNumber`` were set to anything, the following would
     remove it from the url query completely.
 
     .. code-block:: console
@@ -187,7 +190,7 @@ There are three modifier modes:
 Modifier operations
 ...................
 
-Operations 
+Operations
 
 **header**
     Operators on a header key-value pair. The *key* and *value* must be valid
@@ -209,7 +212,7 @@ Operations
     ============  =========  ====================  =======================
     header        ``:``      - ``KEY : VALUE``     - ``Authorization:abc``
                              - ``KEY :``           - ``Authorization:``
-    url param     ``==``     - ``KEY == VALUE``    - ``locale==en_US`` 
+    url param     ``==``     - ``KEY == VALUE``    - ``locale==en_US``
                              - ``KEY ==``          - ``locale==``
     string field  ``=``      - ``KEY = VALUE``     - ``username=foobar``
                              - ``KEY =``           - ``username=``

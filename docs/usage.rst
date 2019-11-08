@@ -2,7 +2,7 @@
 Usage
 #####
 
-**restcli** is invoked from the command-line. To display usage info, supply the 
+**restcli** is invoked from the command-line. To display usage info, supply the
 ``--help`` flag:
 
 .. code-block:: console
@@ -170,6 +170,13 @@ The output of ``view`` is just plain JSON, which makes it convenient for
 scripts that need to programmatically analyze Collections in some way.
 
 .. todo:: Provide a no-color/no-formatting flag for this and ``run``.
+
+
+************
+Command: env
+************
+
+.. todo:: Write this section
 
 
 *************

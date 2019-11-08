@@ -6,11 +6,12 @@ Tutorial: Modeling an API
     This tutorial assumes that you've read the :doc:`Overview </overview>` and
     :doc:`Usage </usage>` documentation.
 
-Throughout this tutorial we will be modeling an API with **restcli**, gradually
-adding to it as we learn new concepts, until we have a complete API client suite.
-While the final result will be pasted at the end, I encourage you to follow
-along and do it yourself as we go. This will give you many opportunities to
-experiment and learn things you may not have learned otherwise!
+Throughout this tutorial we will be modeling an API with **restcli**,
+gradually adding to it as we learn new concepts, until we have a complete
+API client suite. While the final result will be pasted at the end, I
+encourage you to follow along and do it yourself as we go. This will give
+you many opportunities to experiment and learn things you may not have
+learned otherwise!
 
 .. _tutorial_debriefing:
 
@@ -18,14 +19,15 @@ experiment and learn things you may not have learned otherwise!
 Debriefing
 **********
 
-You have been commissioned to build an API for the notorious secret society, the
-Sons of Secrecy. You were told the following information, in hushed whispers:
+You have been commissioned to build an API for the notorious secret society,
+the Sons of Secrecy. You were told the following information, in hushed
+whispers:
 
 #. New members can join by invite only.
 #. Each member has a rank within the Society.
 #. Your rank determines how many secrets you are told.
 #. Only the highest ranking members, called Whisperers, have the ability to
-   promote members through the ranks.
+   recruit and promote members through the ranks.
 
 Your task is to create a membership service for the Whisperers to keep track of
 and manage their underlings. Using the service, Whisperers must be able to:
@@ -44,7 +46,7 @@ Let's get started!
 Requests
 --------
 
-We'll start by modelling the new member invitation service:
+We'll start by modeling the new member invitation service:
 
 .. code-block:: yaml
 
@@ -66,17 +68,17 @@ We'll start by modelling the new member invitation service:
 We made a new Collection and saved it as ``secrecy.yaml``. So far it has one
 Group called ``memberships`` with one Request called ``invite``.
 
-As requested, we've also added an ``X-Secret-Key`` header which holds the secret
-key. It's parameterized so that each Whisperer can have their own personal key.
-This will be explained later in the `templating`_ section.
+As requested, we've also added an ``X-Secret-Key`` header which holds the
+secret key. It's parameterized so that each Whisperer can have their own
+personal key. This will be explained later in the `templating`_ section.
 
 .. _tutorial_request_parameters:
 
 Request Parameters
 ~~~~~~~~~~~~~~~~~~
 
-Let's zoom in a bit on Requests. While we're at it, we'll inspect our ``invite``
-Request more closely as well.
+Let's zoom in a bit on Requests. While we're at it, we'll inspect our
+``invite`` Request more closely as well.
 
 ``method`` (string, required)
     HTTP method to use. Case insensitive.
@@ -89,9 +91,9 @@ Request more closely as well.
     Fully qualified URL that will receive the request. Supports `templating`_.
 
     We chose to parameterize the ``scheme://host`` portion of the URL as
-    ``{{ server }}``. As we'll see later, this makes it easy to change the host
-    without a lot of labor, and makes it clear that the path portion of the URL,
-    ``/memberships/invite``, is the real subject of this Request.
+    ``{{ server }}``. As we'll see later, this makes it easy to change the
+    host without a lot of labor, and makes it clear that the path portion of
+    the URL, ``/memberships/invite``, is the real subject of this Request.
 
     We'll learn more about template variables later, but for now we know that
     invitations happen at ``/send_invite``.
@@ -107,7 +109,7 @@ Request more closely as well.
 ``body`` (string, templating)
     The request body. It must be encoded as a string, to facilitate the full
     power of `Jinja2`_ `templating`_. You'll probably want to read the section
-    on :ref:`block style <appendix_block_style>` at some point.
+    on :ref:`YAML block style <appendix_block_style>` at some point.
 
     The body string must contain valid YAML, which is converted to JSON before
     sending the request. Only JSON encoding is supported at this time.
@@ -228,17 +230,17 @@ what it would look like:
 Here's a piece-by-piece breakdown of what happened:
 
 + In the ``url`` section:
-    + ``{{ server }}`` was replaced with the value of Environment.``server``,
-      ``http://www.secrecy.org``.
-    + `{{ member_id }}`` was replaced with the value of Environment.``member_id``,
-      ``UGK882I59``.
+    + ``{{ server }}`` was replaced with the value of Environment variable
+      ``server``.
+    + ``{{ member_id }}`` was replaced with the value of Environment variable
+      ``member_id``.
 + In the ``headers`` section, ``{{ secret_key }}`` was replaced with the value
-  of Environment.``secret_key``, ``sup3rs3cr3t``.
+  of Environment variable ``secret_key``.
 + In the ``body`` section:
-    + ``{{ rank }}`` was replaced with the value of Environment.``rank``,
-      incremented by 1.
-    + ``{{ title }}`` was replaced by an item of the Environment.``titles``
-      list, by indexing it with the new rank value.
+    + ``{{ rank }}`` was replaced with the value of Environment variable
+      ``rank``, incremented by 1.
+    + ``{{ title }}`` was replaced by an item from the Environment variable
+      ``titles``, an array, by indexing it with the incremented rank value.
 
 .. note::
     When it gets a request, http://httpbin.org/anything echoes back the
@@ -247,10 +249,10 @@ Here's a piece-by-piece breakdown of what happened:
 
 Congrats on your new rank Wanda!
 
-What we just learned should cover most use cases, but if you need more power or
-just want to explore, there's much more to templating than what we just covered!
-**restcli** supports the entire Jinja2 template language, so check out the official
-`Template Designer Documentation`_ for the whole scoop.
+What we just learned should cover most use cases, but if you need more power
+or just want to explore, there's much more to templating than what we just
+covered! **restcli** supports the entire Jinja2 template language, so check
+out the official `Template Designer Documentation`_ for the whole scoop.
 
 .. _tutorial_scripting:
 
@@ -306,7 +308,7 @@ Environment would not be saved to disk.
 Open up your Environment file and make sure ``rank`` was updated successfully.
 
 .. note::
-    All script examples were written for Python3.6, but most will probably work
+    All script examples were written for Python3.7, but most will probably work
     in Python3+. To get version info, including the Python version, use the
     ``--version`` flag:
 
@@ -332,14 +334,13 @@ dict containing the following variables:
        active Environment until the session ends.
     B. If ``autosave`` is enabled, the changes will be saved to disk.
 
-lib definitions
-    Any functions or variables imported in ``lib`` in the `Config document`_
-    will be available in your scripts as well. We'll tackle the
-    `Config document`_ in the next section.
+Any functions or variables imported in the ``lib`` section of the `Config
+document`_ will be available in your scripts as well. We'll tackle the
+`Config document`_ in the next section.
 
 .. note::
     Since Python is whitespace sensitive, you'll probably want to read the
-    section on ref:`block style <appendix_block_style>`.
+    section on :ref:`YAML block style <appendix_block_style>`.
 
 
 .. _Config document:
@@ -424,7 +425,7 @@ A. YAML Block Style
 --------------------
 
 Writing multiline strings for the ``body`` and ``script`` Request parameters
-without using readability is easy with YAML's `block style`_. I recommend
+without losing readability is easy with YAML's `block style`_. I recommend
 using `literal style`_ since it preserves whitespace and is the most readable.
 Adding to the example above:
 
