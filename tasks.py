@@ -1,9 +1,10 @@
 from invoke import task
 
+PKG = "restcli"
 TAG = "restcli"
 
 # ----------------------------------------------------------------------
-# Simple tasks
+# Development
 
 
 @task()
@@ -21,14 +22,18 @@ def clean(ctx):
 
 
 @task()
-def fmt(ctx):
+def fmt(ctx, check=False):
     """Run the formatters."""
-    cmd = "black --line-length=79 --exclude='docs' ."
+    opts = check and " --check" or ""
+    cmd = "black%s --line-length=79 --exclude='docs' ." % opts
     ctx.run(cmd, pty=True)
+
+    opts = check and " --check-only" or ""
     cmd = (
-        "isort --recursive --trailing-comma --use-parentheses --line-width=79"
-        " --force-grid-wrap=0 --multi-line=3 --skip=docs --skip=setup.py ."
-    )
+        "isort%s --recursive --trailing-comma --use-parentheses"
+        " --line-width=79 --force-grid-wrap=0 --multi-line=3 --skip=docs"
+        " --skip=setup.py ."
+    ) % opts
     ctx.run(cmd, pty=True)
 
 
@@ -36,24 +41,34 @@ def fmt(ctx):
 def lint(ctx, verbose=False):
     """Run the linter(s)."""
     opts = " -v" if verbose else ""
-    cmd = "pylint%s restcli" % opts
+    cmd = "pylint%s %s" % (opts, PKG)
     ctx.run(cmd, pty=True)
 
 
 @task()
 def test(ctx, verbose=False):
     """Run unit tests."""
-    opts = "-v" if verbose else ""
-    cmd = "pytest %s" % opts
+    opts = " -v" if verbose else ""
+    cmd = "pytest%s" % opts
     ctx.run(cmd, pty=True)
 
 
 @task(aliases=("cov",))
 def coverage(ctx, html=False):
     """Run unit tests and generate a coverage report."""
-    ctx.run("pytest --cov=restcli", pty=True)
+    ctx.run("pytest --cov=%s" % PKG, pty=True)
     if html:
         ctx.run("coverage html", pty=True)
+
+
+# ----------------------------------------------------------------------
+# Installation
+
+
+@task()
+def docs(ctx, target="html"):
+    cmd = "cd docs && make %s" % target
+    ctx.run(cmd, pty=True)
 
 
 @task(aliases=("deps",))
@@ -72,10 +87,14 @@ def install(ctx, editable=False):
     ctx.run(cmd, pty=True)
 
 
+# ----------------------------------------------------------------------
+# Docker
+
+
 @task()
 def docker(ctx, clean=False, run=True):
-    opts = "--force-rm --no-cache" if clean else ""
-    cmd = "docker build %s -t %s ." % (opts, TAG)
+    opts = clean and " --force-rm --no-cache" or ""
+    cmd = "docker build%s -t %s ." % (opts, TAG)
     ctx.run(cmd, pty=True)
 
 
@@ -85,17 +104,11 @@ def run(ctx, run_cmd):
     ctx.run(cmd, pty=True)
 
 
-@task()
-def docs(ctx, target="html"):
-    cmd = "cd docs && make %s" % target
-    ctx.run(cmd, pty=True)
-
-
 # ----------------------------------------------------------------------
 # Composite tasks
 
 
-@task(aliases=("x",), pre=(clean, lint), post=(test,))
+@task(aliases=("x",), pre=(clean, fmt, lint), post=(test,))
 def check(ctx):
     """Run unit tests and sanity checks."""
     ctx.run("python setup.py check -rms", pty=True)

@@ -2,7 +2,8 @@ import abc
 import importlib
 import inspect
 import random
-from collections import Mapping, OrderedDict
+from collections import OrderedDict
+from collections.abc import Mapping
 from copy import deepcopy
 
 import six

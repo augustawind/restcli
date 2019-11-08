@@ -32,6 +32,8 @@ with open("README.rst") as f:
     readme = f.read()
 with open("HISTORY.rst") as f:
     history = f.read()
+with open("requirements.txt") as f:
+    requirements = f.readlines()
 
 setup(
     name="restcli",
@@ -67,14 +69,6 @@ setup(
     [console_scripts]
     restcli=restcli.cli:cli
     """,
-    install_requires=[
-        "click>=6,<7",
-        "click-repl>0.1,<1",
-        "jinja2>=2,<3",
-        "prompt_toolkit>=1,<2",
-        "Pygments>=2,<3",
-        "PyYAML>=3,<4",
-        "requests>=2,<3",
-    ],
-    extras_require={"testing": ["pytest>=3.0.5"],},
+    install_requires=requirements,
+    extras_require={"testing": ["pytest>=5.0.0"],},
 )
