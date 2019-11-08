@@ -23,8 +23,8 @@ def clean(ctx):
 @task()
 def lint(ctx, verbose=False):
     """Run the linter(s)."""
-    opts = '-v' if verbose else ''
-    cmd = 'pycodestyle %s' % opts
+    opts = ' -v' if verbose else ''
+    cmd = 'pylint%s restcli' % opts
     ctx.run(cmd, pty=True)
 
 
@@ -70,6 +70,12 @@ def docker(ctx, clean=False, run=True):
 @task()
 def run(ctx, run_cmd):
     cmd = 'docker run -it %s %s' % (TAG, run_cmd)
+    ctx.run(cmd, pty=True)
+
+
+@task()
+def docs(ctx, target='html'):
+    cmd = 'cd docs && make %s' % target
     ctx.run(cmd, pty=True)
 
 
