@@ -19,8 +19,8 @@ Features
 * colored output
 
 
-Usage
-=====
+CLI Usage
+=========
 
 Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
 

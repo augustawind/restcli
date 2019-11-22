@@ -3,7 +3,6 @@
 ## Short Term
 
 - [ ] Add more examples (using scripts, etc.).
-- [ ] Bring into the modern world - remove Python2 support via `six`.
 - [ ] Nested groups.
 - [ ] Handle errors gracefully.
 - [ ] Write more unit tests.

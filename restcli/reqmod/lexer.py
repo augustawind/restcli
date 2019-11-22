@@ -3,7 +3,6 @@ import string
 from collections import namedtuple
 
 import click
-import six
 
 from restcli.utils import AttrSeq
 
@@ -23,9 +22,9 @@ class ClickArgumentParser(argparse.ArgumentParser):
 
 
 lexer = ClickArgumentParser(prog="lexer", add_help=False)
-lexer.add_argument("-a", "--%s" % ACTIONS.append, action="append")
-lexer.add_argument("-n", "--%s" % ACTIONS.assign, action="append")
-lexer.add_argument("-d", "--%s" % ACTIONS.delete, action="append")
+lexer.add_argument("-a", f"--{ACTIONS.append}", action="append")
+lexer.add_argument("-n", f"--{ACTIONS.assign}", action="append")
+lexer.add_argument("-d", f"--{ACTIONS.delete}", action="append")
 lexer.add_argument("args", nargs="*")
 
 
@@ -52,7 +51,7 @@ def lex(argv):
     # Lex flagged options
     lexemes = [
         Lexeme(action, val)
-        for action, values in six.iteritems(opts)
+        for action, values in opts.items()
         if values is not None
         for val in values
     ]
@@ -86,7 +85,7 @@ def tokenize(s, sep=string.whitespace):
     current_quote = None
 
     chars = iter(s)
-    char = six.next(chars, "")
+    char = next(chars, "")
 
     while char:
         # Quotation marks begin or end a quoted section
@@ -99,12 +98,12 @@ def tokenize(s, sep=string.whitespace):
         # Backslash makes the following character literal
         elif char in ESCAPES:
             token += char
-            char = six.next(chars, "")
+            char = next(chars, "")
 
         # Unless in quotes, whitespace is skipped and signifies the token end.
         elif not current_quote and char in sep:
             while char in sep:
-                char = six.next(chars, "")
+                char = next(chars, "")
             tokens.append(token)
             token = ""
 
@@ -113,7 +112,7 @@ def tokenize(s, sep=string.whitespace):
             continue
 
         token += char
-        char = six.next(chars, "")
+        char = next(chars, "")
 
     tokens.append(token)
     return tokens

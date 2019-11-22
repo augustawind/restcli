@@ -6,8 +6,6 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
 
-import six
-
 from restcli import yaml_utils as yaml
 from restcli.exceptions import (
     CollectionError,
@@ -24,13 +22,13 @@ from restcli.params import (
 __all__ = ["Collection", "Environment"]
 
 
-class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
+class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
     """Base class for dicts that read from YAML files."""
 
     error_class = FileContentError
 
     def __init__(self, source):
-        super(YamlDictReader, self).__init__()
+        super().__init__()
         self.source = source
         self.load()
 
@@ -59,7 +57,7 @@ class YamlDictReader(six.with_metaclass(abc.ABCMeta, OrderedDict)):
             )
 
     def assert_mapping(self, obj, name, path, error_class=None, **err_kwargs):
-        msg = "%s must be a mapping object" % name
+        msg = f"{name} must be a mapping object"
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
@@ -71,7 +69,7 @@ class Collection(YamlDictReader):
     def __init__(self, source):
         self.defaults = {}
         self.libs = []
-        super(Collection, self).__init__(source)
+        super().__init__(source)
 
     def load(self):
         """Reload the current Collection from disk."""
@@ -96,9 +94,9 @@ class Collection(YamlDictReader):
     def load_config(self, config):
         """Parse and validate Collection Config."""
         # Verify all fields are known
-        for key in six.iterkeys(config):
+        for key in config.keys():
             if key not in CONFIG_PARAMS:
-                self.raise_error('Unexpected key in config: "%s"' % key, [])
+                self.raise_error(f'Unexpected key in config: "{key}"', [])
 
         # Load libs
         lib = config.get("lib")
@@ -112,10 +110,10 @@ class Collection(YamlDictReader):
             path = ["defaults"]
             self.assert_mapping(defaults, "Defaults", path)
 
-            for key in six.iterkeys(defaults):
+            for key in defaults.keys():
                 if key not in REQUEST_PARAMS:
                     self.raise_error(
-                        'Unexpected key in defaults "%s"' % key, path
+                        f'Unexpected key in defaults "{key}"', path
                     )
 
             self.defaults.clear()
@@ -124,17 +122,17 @@ class Collection(YamlDictReader):
     def load_collection(self, collection):
         """Parse and validate a Collection."""
         new_collection = OrderedDict()
-        for group_name, group in six.iteritems(collection):
+        for group_name, group in collection.items():
             path = [group_name]
             self.assert_mapping(group, "Group", path)
             new_group = OrderedDict()
 
-            for req_name, request in six.iteritems(group):
+            for req_name, request in group.items():
                 path.append("req_name")
                 self.assert_mapping(request, "Request", path)
                 new_req = OrderedDict()
 
-                for key, type_ in six.iteritems(REQUEST_PARAMS):
+                for key, type_ in REQUEST_PARAMS.items():
                     if key in request:
                         new_req[key] = request[key]
                     elif key in self.defaults:
@@ -142,7 +140,7 @@ class Collection(YamlDictReader):
                     # Check required parameters
                     elif key in REQUIRED_REQUEST_PARAMS:
                         self.raise_error(
-                            'Required parameter "%s" not found' % key, path,
+                            f'Required parameter "{key}" not found', path,
                         )
                     else:
                         new_req[key] = type_()
@@ -154,8 +152,7 @@ class Collection(YamlDictReader):
                         obj=new_req[key],
                         type_=type_,
                         path=path,
-                        msg='Request "%s" must be a %s'
-                        % (key, type_.__name__),
+                        msg=f'Request "{key}" must be a {type_.__name__}',
                     )
 
                 new_group[req_name] = new_req
@@ -214,18 +211,18 @@ class Libs(YamlDictReader):
         for i, module in enumerate(self.source):
             path = ["lib", i]
             try:
-                if not isinstance(module, six.string_types):
+                if not isinstance(module, str):
                     raise TypeError
                 lib = importlib.import_module(module)
             except (TypeError, ImportError):
                 self.raise_error(
-                    'Failed to import lib "%s"' % module,
+                    f'Failed to import lib "{module}"',
                     path,
                     source=inspect.getsourcefile(module),
                 )
 
             sig = inspect.signature(lib.define)
-            params = tuple(six.itervalues(sig.parameters))
+            params = tuple(sig.parameters.values())
             if not all(
                 (
                     hasattr(lib, "define"),

@@ -2,7 +2,6 @@ import inspect
 from contextlib import contextmanager
 
 import click
-import six
 
 __all__ = [
     "expect",
@@ -42,14 +41,14 @@ class Error(Exception):
         self.msg = msg
 
     def show(self):
-        msg = self._fmt_label(self.base_msg, self.msg) % vars(self)
+        msg = self._fmt_label(self.base_msg, self.msg).format(**vars(self))
         if self.action:
             return self._fmt_label(self.action, msg)
         return msg
 
     @staticmethod
     def _fmt_label(first, second):
-        return "%s%s" % (first, ": %s" % second if second else "",)
+        return "{}{}".format(first, f": {second}" if second else "")
 
     @staticmethod
     def _is_custom_attr(attr):
@@ -57,30 +56,30 @@ class Error(Exception):
         return (
             not callable(attr)
             and attr != "args"
-            and not (type(attr) in six.string_types and attr.startswith("__"))
+            and not (isinstance(attr, str) and attr.startswith("__"))
         )
 
 
 class InputError(Error):
     """Exception for invalid user input."""
 
-    base_msg = "Invalid input '%(value)s'"
+    base_msg = "Invalid input '{value}'"
 
     def __init__(self, value, msg="", action=None):
-        super(InputError, self).__init__(msg, action)
+        super().__init__(msg, action)
         self.value = value
 
 
 class ReqModError(InputError):
     """Invalid Mod input."""
 
-    base_msg = "Invalid Request Modifier: '%(value)s'"
+    base_msg = "Invalid Request Modifier: '{value}'"
 
 
 class ReqModSyntaxError(ReqModError):
     """Badly structured Mod input."""
 
-    base_msg = "Syntax error in Request Modifier: '%(value)s'"
+    base_msg = "Syntax error in Request Modifier: '{value}'"
 
 
 class ReqModValueError(ReqModError):
@@ -90,7 +89,7 @@ class ReqModValueError(ReqModError):
 class ReqModKeyError(ReqModError):
     """Mod key does not exist."""
 
-    base_msg = "Key does not exist: '%(value)s'"
+    base_msg = "Key does not exist: '{value}'"
 
 
 class FileContentError(Error):
@@ -100,15 +99,15 @@ class FileContentError(Error):
     file_type = "CONTENT"
 
     def __init__(self, file, msg="", path=None, action=None):
-        super(FileContentError, self).__init__(msg, action)
+        super().__init__(msg, action)
         self.file = file
         self.path = path
 
     def show(self):
         line = self.file
         if self.path:
-            line += " => %s" % self._fmt_path(self.path)
-        return "%s\n%s" % (line, super(FileContentError, self).show())
+            line = f"{line} => {self._fmt_path(self.path)}"
+        return f"{line}\n{super().show()}"
 
     @property
     def name(self):
@@ -118,10 +117,10 @@ class FileContentError(Error):
         text = ""
         for item in path:
             if type(item) is str:
-                text += ".%s" % item
+                text += f".{item}"
             else:
-                text += "[%s]" % item
-        return "%s%s" % (self.file_type, text)
+                text += f"[{item}]"
+        return f"{self.file_type}{text}"
 
 
 class NotFoundError(FileContentError):
@@ -139,17 +138,17 @@ class CollectionError(FileContentError):
 
 class GroupNotFoundError(CollectionError):
 
-    base_msg = "Group not found: '%(name)s'"
+    base_msg = "Group not found: '{name}'"
 
 
 class RequestNotFoundError(CollectionError):
 
-    base_msg = "Request not found: '%(name)s"
+    base_msg = "Request not found: '{name}"
 
 
 class ParameterNotFoundError(CollectionError):
 
-    base_msg = "Parameter not found: '%(name)s'"
+    base_msg = "Parameter not found: '{name}'"
 
 
 class EnvError(FileContentError):

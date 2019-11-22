@@ -5,7 +5,7 @@ from restcli.reqmod import lexer
 from tests.helpers import contents_equal
 
 
-class LexerTestMixin(object):
+class LexerTestMixin:
 
     action = NotImplemented
 

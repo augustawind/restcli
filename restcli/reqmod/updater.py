@@ -1,7 +1,5 @@
 import abc
 
-import six
-
 from restcli.exceptions import ReqModKeyError
 from restcli.utils import AttrMap
 
@@ -19,7 +17,7 @@ class Updates(list):
             updater(request)
 
 
-class BaseUpdater(six.with_metaclass(abc.ABCMeta, object)):
+class BaseUpdater(metaclass=abc.ABCMeta):
     """Base class for callable objects that update Request Parameters.
 
     Args:

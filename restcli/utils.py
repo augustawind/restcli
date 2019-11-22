@@ -1,12 +1,6 @@
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
-
-import six
-
-if six.PY3:
-    from urllib.parse import quote_plus
-else:
-    from urllib import quote_plus
+from urllib.parse import quote_plus
 
 
 class AttrSeq(Sequence):
@@ -59,7 +53,7 @@ class AttrMap(Mapping):
         return len(self._dict)
 
     def __copy__(self):
-        return self.__class__(*six.iteritems(self._dict))
+        return self.__class__(*self._dict.items())
 
     copy = __copy__
 
@@ -72,14 +66,14 @@ class MultiAttrMap(AttrMap):
 
     def __init__(self, *pairs):
         expanded_pairs = []
-        for multi_key, value in six.iteritems(pairs):
+        for multi_key, value in pairs:
             if not isinstance(multi_key, tuple):
                 raise TypeError(
-                    "'%s' object is not an instance of tuple" % type(multi_key)
+                    f"'{type(multi_key)}' object is not an instance of tuple"
                 )
             expanded_pairs.extend((key, value) for key in multi_key)
 
-        super(MultiAttrMap, self).__init__(*expanded_pairs)
+        super().__init__(*expanded_pairs)
 
 
 class classproperty:
@@ -98,7 +92,7 @@ class classproperty:
 
 def recursive_update(mapping, data):
     """Like dict.update, but recursively updates nested dicts as well."""
-    for key, val in six.iteritems(data):
+    for key, val in data.items():
         if isinstance(val, Mapping):
             if key in mapping:
                 recursive_update(mapping[key], val)

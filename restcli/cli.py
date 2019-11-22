@@ -24,11 +24,9 @@ pass_app = click.make_pass_decorator(App)
     "-v",
     "--version",
     prog_name="restcli",
-    message=" ".join(
-        (
-            "%(prog)s %(version)s",
-            "(Python %s)" % ".".join(map(str, sys.version_info[:3])),
-        )
+    message=(
+        "%(prog)s %(version)s"
+        f" (Python {'.'.join(map(str, sys.version_info[:3]))})"
     ),
 )
 @click.option(

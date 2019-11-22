@@ -3,8 +3,6 @@ import json
 import re
 import string
 
-import six
-
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii, quote_plus
 
@@ -22,7 +20,7 @@ def parse_mod(mod_str):
     raise ReqModSyntaxError(value=mod_str)
 
 
-class Mod(six.with_metaclass(abc.ABCMeta, object)):
+class Mod(metaclass=abc.ABCMeta):
 
     param_type = NotImplemented
     param = NotImplemented
@@ -39,10 +37,9 @@ class Mod(six.with_metaclass(abc.ABCMeta, object)):
     def __str__(self):
         attrs = ("key", "value")
         attr_kwargs = (
-            "%s%s%r" % (attr, self.delimiter, getattr(self, attr))
-            for attr in attrs
+            f"{attr}{self.delimiter}{getattr(self, attr)!r}" for attr in attrs
         )
-        return "%s(%s)" % (type(self).__name__, ", ".join(attr_kwargs),)
+        return "{}({})".format(type(self).__name__, ", ".join(attr_kwargs))
 
     @classmethod
     @abc.abstractmethod
@@ -81,7 +78,7 @@ class JsonFieldMod(Mod):
             json_value = json.loads(value)
         except json.JSONDecodeError as err:
             # TODO: implement error handling
-            raise ReqModValueError(value=value, msg="invalid JSON - %s" % err)
+            raise ReqModValueError(value=value, msg=f"invalid JSON - {err}")
         return key, json_value
 
 

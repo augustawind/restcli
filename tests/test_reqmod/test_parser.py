@@ -42,7 +42,7 @@ def req(pytestconfig):
     return req
 
 
-class TestParse(object):
+class TestParse:
 
     formatter_name = "fmt_header"
     field_type = "header"

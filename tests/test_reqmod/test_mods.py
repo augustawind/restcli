@@ -12,7 +12,7 @@ from tests.helpers import random_alphanum, random_unicode, random_urlsafe
 DEFAULT = type("DEFAULT", (object,), {})
 
 
-class ModTypesTestMixin(object):
+class ModTypesTestMixin:
     """Helper mixin for classes that test the Mod functions."""
 
     TEST_ITERATIONS = 9

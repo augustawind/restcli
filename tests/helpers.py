@@ -1,8 +1,6 @@
 import random
 import string
 
-import six
-
 from restcli.utils import AttrMap, AttrSeq
 
 ALPHANUMERIC_CHARS = string.ascii_letters + string.digits
@@ -225,7 +223,7 @@ def dicts_equal(*dicts, include=None, exclude=None):
     #              for dict_ in dicts]
     items = (
         (k, v)
-        for k, v in (six.iteritems(d) for d in dicts)
+        for k, v in (d.items() for d in dicts)
         if (not include or k in include) or (not exclude or k not in exclude)
     )
     return contents_equal(*items)
@@ -233,7 +231,7 @@ def dicts_equal(*dicts, include=None, exclude=None):
 
 def pick(mapping, keys):
     """Return a new dict using only the given keys."""
-    return {k: v for k, v in six.iteritems(mapping) if k in keys}
+    return {k: v for k, v in mapping.items() if k in keys}
 
 
 def items_list(mapping, items):

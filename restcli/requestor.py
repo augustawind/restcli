@@ -3,7 +3,6 @@ from contextlib import contextmanager
 
 import jinja2
 import requests
-import six
 
 from restcli import yaml_utils as yaml
 from restcli.exceptions import InputError
@@ -14,7 +13,7 @@ __all__ = ["Requestor"]
 ENV_RE = re.compile(r"([^:]+):(.*)")
 
 
-class Requestor(object):
+class Requestor:
     """Parser and executor of requests."""
 
     def __init__(self, collection_file, env_file=None):
@@ -34,7 +33,7 @@ class Requestor(object):
         if script:
             script_locals = {"response": response, "env": self.env}
             if self.collection.libs:
-                for lib in six.itervalues(self.collection.libs):
+                for lib in self.collection.libs.values():
                     script_locals.update(lib.define(response, self.env))
             self.run_script(script, script_locals)
 
@@ -72,7 +71,7 @@ class Requestor(object):
         headers = request.get("headers")
         if headers:
             kwargs["headers"] = {
-                k: cls.interpolate(v, env) for k, v in six.iteritems(headers)
+                k: cls.interpolate(v, env) for k, v in headers.items()
             }
         query = request.get("query")
         if query:
