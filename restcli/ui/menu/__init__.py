@@ -32,30 +32,6 @@ class MenuHandler(metaclass=abc.ABCMeta):
         return type(func.__name__, (cls,), {"__call__": func})()
 
 
-class MenuHandlers:
-    @staticmethod
-    def exit(handler=None):
-        get_app().exit()
-
-    @MenuHandler.register
-    def toggle_focus(self, menu, item):
-        def handler(event=None):
-            layout = get_app().layout
-            selection = menu.get_menu_selection(item.name)
-            if (
-                layout.has_focus(menu.window)
-                and menu.selected_menu == selection
-            ):
-                for _ in range(menu._breadcrumb):
-                    layout.focus_last()
-            else:
-                layout.focus(menu.window)
-                menu.selected_menu[:] = selection
-                menu._breadcrumb += 1
-
-        return handler
-
-
 class BaseMenu(metaclass=abc.ABCMeta):
     def __init__(self, menu_items: Optional[List[MenuItem]] = None):
         if menu_items:

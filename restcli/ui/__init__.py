@@ -13,7 +13,7 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
-from .menu import MenuContainer, MenuHandlers, MenuItem
+from .menu import MenuContainer, MenuItem, handlers
 
 
 def new() -> Application:
@@ -31,7 +31,7 @@ def new() -> Application:
         "file<{key}>",
         key="f1",
         name="file",
-        handler=MenuHandlers.toggle_focus,
+        handler=handlers.toggle_focus,
         children=[
             MenuItem(
                 "({key})ew file",
@@ -75,10 +75,7 @@ def new() -> Application:
             MenuItem("close all<{key}>", key="c-w", name="close_all"),
             MenuItem.SEPARATOR(),
             MenuItem(
-                "quit<{key}>",
-                key="c-q",
-                name="quit",
-                handler=MenuHandlers.exit,
+                "quit<{key}>", key="c-q", name="quit", handler=handlers.exit,
             ),
         ],
     )
@@ -86,7 +83,7 @@ def new() -> Application:
         "edit<{key}>",
         key="f2",
         name="edit",
-        handler=MenuHandlers.toggle_focus,
+        handler=handlers.toggle_focus,
         children=[MenuItem("(f)ind")],
     )
     menu = MenuContainer(
