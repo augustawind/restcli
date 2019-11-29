@@ -41,7 +41,7 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
         self.layout = self._init_layout()
-        self.application = Application(
+        self.app = Application(
             layout=self.layout,
             key_bindings=self.key_bindings,
             style=self.style,
@@ -50,7 +50,7 @@ class UI:
         )
 
     def run(self):
-        self.application.run()
+        self.app.run()
 
     def _init_layout(self) -> Layout:
         element = self.body.get_children()[0]
@@ -65,6 +65,7 @@ class UI:
 
     def _init_menu(self) -> MenuContainer:
         return MenuContainer(
+            self,
             body=self.body,
             menu_items=[
                 MenuItem(

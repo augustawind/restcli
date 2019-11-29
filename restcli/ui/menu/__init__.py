@@ -16,7 +16,7 @@ from restcli.utils import AttrMap
 class MenuHandler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __call__(
-        self, menu: MenuContainer, item: MenuItem
+        self, ui: "UI", items: Sequence[MenuItem]
     ) -> Callable[[Optional[KeyPressEvent]], None]:
         """Should return a function that responds to user interaction.
 
@@ -63,9 +63,11 @@ class BaseMenu(metaclass=abc.ABCMeta):
         return self._item_idx_map[name]
 
 
+# TODO: rename RootContainer
 class MenuContainer(_MenuContainer, BaseMenu):
     def __init__(
         self,
+        ui: "UI",
         body: AnyContainer,
         menu_items: List[MenuItem],
         floats: Optional[List[Float]] = None,
@@ -73,24 +75,31 @@ class MenuContainer(_MenuContainer, BaseMenu):
     ):
         super().__init__(body, menu_items, floats, key_bindings)
         BaseMenu.__init__(self, menu_items)
-        self.init_handlers(menu_items)
+
+        self.ui = ui
         self._breadcrumb = 0
+        self._init_items(menu_items)
 
     @property
     def items(self) -> List[MenuItem]:
         return self.menu_items
 
-    def init_handlers(self, menu_items, chain=()):
+    def _init_items(self, menu_items, chain=()):
         for item in menu_items:
+            # Pass UI instance down for convenience
+            if not item.ui:
+                item.ui = self.ui
+
+            # Instantiate MenuHandlers into normal handler funcs
             item_chain = chain + (item,)
             if item.handler:
                 if isinstance(item.handler, MenuHandler):
-                    item.handler = item.handler(self, item_chain)
+                    item.handler = item.handler(self.ui, item_chain)
                 elif not isinstance(item.handler, Callable):
                     raise TypeError(
                         f"handler={item.handler} for {item} is not callable"
                     )
-            self.init_handlers(item.items, item_chain)
+            self._init_items(item.items, chain=item_chain)
 
     def get_menu_selection(self, chain: Sequence[str]) -> List[int]:
         name, *chain = chain
@@ -116,12 +125,15 @@ class MenuItem(_MenuItem, BaseMenu):
         name: Optional[str] = None,
         handler: Optional[Union[MenuHandler, Callable[[], None]]] = None,
         children: Optional[List[MenuItem]] = None,
-        disabled: bool = None,
+        disabled: bool = False,
+        ui: Optional["UI"] = None,
     ):
         self.name = name
         if key:
             text = text.format(key=key)
         self.key = key
+
+        self.ui = ui
 
         super().__init__(
             text=text, handler=handler, children=children, disabled=disabled,
