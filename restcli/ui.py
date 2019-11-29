@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable, List, Optional
 
 from prompt_toolkit.application import Application
@@ -24,40 +26,54 @@ from prompt_toolkit.widgets import MenuItem as _MenuItem
 from prompt_toolkit.widgets import ProgressBar, RadioList, TextArea
 from pygments.lexers.data import YamlLexer
 
-from restcli.utils import AttrMap, is_non_str_iterable
+from restcli.utils import AttrMap
 
 
 def handle_quit():
     get_app().exit()
 
 
-class MenuContainer(_MenuContainer):
+class BaseMenu:
+    def __init__(self, menu_items: Optional[List[MenuItem]] = None):
+        if menu_items:
+            self._item_map = AttrMap(
+                *((item.name, item) for item in menu_items if item.name)
+            )
+            self._item_idx_map = AttrMap(
+                *((item.name, i) for i, item in enumerate(menu_items))
+            )
+        else:
+            self._item_map = AttrMap()
+            self._item_idx_map = AttrMap()
+
+    def __getitem__(self, name: str) -> MenuItem:
+        return self._item_map[name]
+
+    def index_of(self, name: str) -> MenuItem:
+        return self._item_idx_map[name]
+
+
+class MenuContainer(_MenuContainer, BaseMenu):
     def __init__(
         self,
         body: AnyContainer,
-        menu_items: List["MenuItem"],
+        menu_items: List[MenuItem],
         floats: Optional[List[Float]] = None,
         key_bindings: Optional[KeyBindingsBase] = None,
     ):
-        self._menu_item_map = AttrMap(
-            *(
-                (item.name, (i, item))
-                for i, item in enumerate(menu_items)
-                if item.name
-            )
-        )
         super().__init__(body, menu_items, floats, key_bindings)
+        BaseMenu.__init__(self, menu_items)
 
     def focus_item_by_name(self, *chain: str):
-        chain = iter(chain)
-        i, item = self._menu_item_map[next(chain)]
-        self.selected_menu[:] = [i]
+        name, *chain = chain
+        self.selected_menu[:] = [self.index_of(name)]
+        item = self[name]
         for name in chain:
             self.selected_menu.append(item.index_of(name))
             item = item[name]
 
 
-class MenuItem(_MenuItem):
+class MenuItem(_MenuItem, BaseMenu):
     """Extends ``prompt_toolkit.widgets.MenuItem``.
 
     Adds a ``name`` field which can be used to access child MenuItems with
@@ -70,7 +86,7 @@ class MenuItem(_MenuItem):
         key: Optional[str] = None,
         name: Optional[str] = None,
         handler: Optional[Callable[[], None]] = None,
-        children: Optional[List["MenuItem"]] = None,
+        children: Optional[List[MenuItem]] = None,
         disabled: bool = None,
     ):
         self.name = name
@@ -78,29 +94,13 @@ class MenuItem(_MenuItem):
             text = text.format(key=key)
         self.key = key
 
-        if children:
-            self._child_map = AttrMap(
-                *((item.name, item) for item in children if item.name)
-            )
-            self._child_idx_map = AttrMap(
-                *((item.name, i) for i, item in enumerate(children))
-            )
-        else:
-            self._child_map = AttrMap()
-            self._child_idx_map = AttrMap()
-
         super().__init__(
             text=text, handler=handler, children=children, disabled=disabled,
         )
-
-    def __getitem__(self, name: str) -> "MenuItem":
-        return self._child_map[name]
-
-    def index_of(self, name: str) -> "MenuItem":
-        return self._child_idx_map[name]
+        BaseMenu.__init__(self, children)
 
     @classmethod
-    def SEPARATOR(cls) -> "MenuItem":
+    def SEPARATOR(cls) -> MenuItem:
         """Return an inactive MenuItem that inserts a horizontal line."""
         return cls("-", disabled=True)
 
