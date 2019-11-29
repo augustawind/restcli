@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Sequence, Union
 
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.key_binding import KeyBindings, KeyBindingsBase
@@ -80,18 +80,19 @@ class MenuContainer(_MenuContainer, BaseMenu):
     def items(self) -> List[MenuItem]:
         return self.menu_items
 
-    def init_handlers(self, menu_items):
+    def init_handlers(self, menu_items, chain=()):
         for item in menu_items:
+            item_chain = chain + (item,)
             if item.handler:
                 if isinstance(item.handler, MenuHandler):
-                    item.handler = item.handler(self, item)
+                    item.handler = item.handler(self, item_chain)
                 elif not isinstance(item.handler, Callable):
                     raise TypeError(
                         f"handler={item.handler} for {item} is not callable"
                     )
-            self.init_handlers(item.items)
+            self.init_handlers(item.items, item_chain)
 
-    def get_menu_selection(self, *chain: str) -> List[int]:
+    def get_menu_selection(self, chain: Sequence[str]) -> List[int]:
         name, *chain = chain
         selected = [self.index_of(name)]
         item = self[name]

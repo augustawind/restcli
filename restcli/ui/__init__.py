@@ -131,7 +131,7 @@ class UI:
                             "quit<{key}>",
                             key="c-q",
                             name="quit",
-                            handler=handlers.exit,
+                            handler=handlers.end_program,
                         ),
                     ],
                 ),
