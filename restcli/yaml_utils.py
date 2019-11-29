@@ -60,7 +60,7 @@ class YamlLiteralStr(str):
 
 
 def literal_unicode_representer(dumper, data):
-    return dumper.represent_scalar(u"tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
 
 
 CustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
