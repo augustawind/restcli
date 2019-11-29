@@ -117,6 +117,7 @@ def exec(ctx, file):
         click.echo(">>> run %s" % line)
         args = shlex.split(line)
         try:
+            # pylint: disable=unexpected-keyword-arg,no-value-for-parameter
             run(args, prog_name="restcli", parent=ctx)
         except SystemExit:
             continue
@@ -157,6 +158,7 @@ def env(app, args):
 
 @cli.command(help="Start an interactive prompt.")
 @click.pass_context
+# pylint: disable=unused-variable
 def repl(ctx):
     # Define REPL-only commands here.
     # --------------------------------------------
