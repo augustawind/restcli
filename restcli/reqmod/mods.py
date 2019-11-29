@@ -27,7 +27,7 @@ class Mod(metaclass=abc.ABCMeta):
     delimiter = NotImplemented
 
     _types = None
-    _pattern = None
+    _pattern: re.Pattern = None
 
     split_re_tpl = string.Template(r"(?<=[^\\])${delimiter}")
 
@@ -49,6 +49,7 @@ class Mod(metaclass=abc.ABCMeta):
     @classmethod
     def match(cls, mod_str):
         """Create a new Mod by matching syntax."""
+        # pylint: disable=no-member
         parts = cls.pattern.split(mod_str, maxsplit=1)
         if len(parts) != 2:
             # TODO: add info about proper syntax in error msg
@@ -57,7 +58,8 @@ class Mod(metaclass=abc.ABCMeta):
         return cls(key=key, value=value)
 
     @classproperty
-    def pattern(cls):
+    # pylint: disable=no-self-argument
+    def pattern(cls) -> re.Pattern:
         if not cls._pattern:
             re_str = cls.split_re_tpl.substitute(
                 delimiter=re.escape(cls.delimiter)

@@ -77,7 +77,7 @@ def tokenize(s, sep=string.whitespace):
         A list of tokens.
 
     Examples:
-        >>> tokenize('"Hello world!" I\ love \\\'Python programming!\\\'')
+        >>> tokenize('"Hello world!" I\\ love \\\'Python programming!\\\'')
         ['Hello world!', 'I love', '\'Python', 'programming!\'']
     """
     tokens = []

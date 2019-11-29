@@ -1,7 +1,13 @@
 import abc
+from dataclasses import dataclass
+from typing import Dict, List, Union
 
 from restcli.exceptions import ReqModKeyError
 from restcli.utils import AttrMap
+
+JsonValue = Union[
+    str, bool, int, float, List["JsonValue"], Dict[str, "JsonValue"]
+]
 
 
 class Updates(list):
@@ -17,6 +23,7 @@ class Updates(list):
             updater(request)
 
 
+@dataclass
 class BaseUpdater(metaclass=abc.ABCMeta):
     """Base class for callable objects that update Request Parameters.
 
@@ -29,10 +36,9 @@ class BaseUpdater(metaclass=abc.ABCMeta):
         Child classes must implement the ``update_request`` method.
     """
 
-    def __init__(self, request_param, key, value):
-        self.request_param = request_param
-        self.key = key
-        self.value = value
+    request_param: str
+    key: str
+    value: JsonValue
 
     def __call__(self, request):
         """Update a Request.
