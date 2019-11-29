@@ -48,7 +48,7 @@ class BaseMenu(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def items(self) -> List[MenuItem]:
-        """Should return the list of all child :class:`MenuItem`s."""
+        """Should return the list of all child :class:`MenuItem` objects."""
 
     def register_key_bindings(self, kb: KeyBindings):
         for item in self.items:

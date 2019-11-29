@@ -14,7 +14,7 @@ from restcli.exceptions import (
     NotFoundError,
     expect,
 )
-from restcli.ui import new as new_ui
+from restcli.ui import UI
 
 pass_app = click.make_pass_decorator(App)
 
@@ -201,5 +201,5 @@ def repl(ctx):
 @cli.command(help="Open the %(prog)s terminal UI.")
 @click.pass_context
 def ui(ctx):
-    tui = new_ui()
+    tui = UI()
     tui.run()
