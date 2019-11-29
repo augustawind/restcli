@@ -63,14 +63,37 @@ class MenuContainer(_MenuContainer, BaseMenu):
     ):
         super().__init__(body, menu_items, floats, key_bindings)
         BaseMenu.__init__(self, menu_items)
+        self._breadcrumb = 0
 
-    def focus_item_by_name(self, *chain: str):
+    def make_toggle_focus(self, item: MenuItem):
+        def toggle_focus(event):
+            selection = self.get_menu_selection(item.name)
+            if (
+                event.app.layout.has_focus(self.window)
+                and self.selected_menu == selection
+            ):
+                for _ in range(self._breadcrumb):
+                    event.app.layout.focus_last()
+            else:
+                event.app.layout.focus(self.window)
+                self.selected_menu[:] = selection
+                self._breadcrumb += 1
+
+        return toggle_focus
+
+    def register_key_bindings(self, kb: KeyBindings):
+        for item in self.menu_items:
+            if item.name and item.key:
+                kb.add(item.key)(self.make_toggle_focus(item))
+
+    def get_menu_selection(self, *chain: str) -> List[int]:
         name, *chain = chain
-        self.selected_menu[:] = [self.index_of(name)]
+        selected = [self.index_of(name)]
         item = self[name]
         for name in chain:
-            self.selected_menu.append(item.index_of(name))
+            selected.append(item.index_of(name))
             item = item[name]
+        return selected
 
 
 class MenuItem(_MenuItem, BaseMenu):
@@ -125,13 +148,13 @@ def new() -> Application:
                 "({key})ew file",
                 key="n",
                 name="new",
-                children=[MenuItem("Collection"), MenuItem("Environment"),],
+                children=[MenuItem("Collection"), MenuItem("Environment")],
             ),
             MenuItem(
                 "({key})pen file",
                 key="o",
                 name="open",
-                children=[MenuItem("Collection"), MenuItem("Environment"),],
+                children=[MenuItem("Collection"), MenuItem("Environment")],
             ),
             MenuItem.SEPARATOR(),
             MenuItem(
@@ -167,7 +190,9 @@ def new() -> Application:
             ),
         ],
     )
-    menu__edit = MenuItem("edit <F2>", children=[MenuItem("(f)ind")],)
+    menu__edit = MenuItem(
+        "edit<{key}>", key="f2", name="edit", children=[MenuItem("(f)ind")]
+    )
     menu = MenuContainer(
         body=body,
         menu_items=[menu__file, menu__edit],
@@ -181,18 +206,13 @@ def new() -> Application:
     )
 
     layout = Layout(menu, focused_element=panel__collection__text)
+    menu.make_toggle_focus
 
     key_bindings = kb = KeyBindings()
     kb.add("tab")(focus_next)
     kb.add("s-tab")(focus_previous)
 
-    @kb.add("f1")
-    def _(event):
-        if layout.has_focus(menu.window):
-            event.app.layout.focus_last()
-        else:
-            layout.focus(menu.window)
-            menu.focus_item_by_name("file")
+    menu.register_key_bindings(kb)
 
     @kb.add("c-q")
     def _(event):
