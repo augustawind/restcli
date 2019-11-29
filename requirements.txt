@@ -1,4 +1,4 @@
-Click==7.0
+click==7.0
 click-repl==0.1.6
 Jinja2==2.10.3
 prompt_toolkit==3.0.1
