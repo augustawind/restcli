@@ -10,9 +10,9 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.shortcuts import input_dialog
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
+from restcli import yaml_utils as yaml
 from restcli.ui.menu import MenuHandler, MenuItem
 from restcli.workspace import Collection, Environment
-from restcli import yaml_utils as yaml
 
 if TYPE_CHECKING:
     from restcli.ui import UI
