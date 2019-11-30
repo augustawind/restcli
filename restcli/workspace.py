@@ -5,6 +5,7 @@ import random
 from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
+from typing import Optional
 
 from restcli import yaml_utils as yaml
 from restcli.exceptions import (
@@ -27,7 +28,7 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
 
     error_class = FileContentError
 
-    def __init__(self, source):
+    def __init__(self, source: Optional[str] = None):
         super().__init__()
         self.source = source
         self.load()
@@ -66,7 +67,7 @@ class Collection(YamlDictReader):
 
     error_class = CollectionError
 
-    def __init__(self, source):
+    def __init__(self, source: Optional[str] = None):
         self.defaults = {}
         self.libs = []
         super().__init__(source)

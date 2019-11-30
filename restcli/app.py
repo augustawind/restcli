@@ -1,5 +1,6 @@
 import json
 from string import Template
+from typing import Optional, Union
 
 from pygments import highlight
 from pygments.formatters.terminal256 import Terminal256Formatter
@@ -15,6 +16,7 @@ from restcli.exceptions import (
 )
 from restcli.reqmod import lexer, parser
 from restcli.requestor import Requestor
+from restcli.workspace import Collection, Environment
 
 __all__ = ["App"]
 
@@ -45,14 +47,14 @@ class App:
 
     def __init__(
         self,
-        collection_file: str,
-        env_file: str,
+        collection: Union[Collection, str],
+        env: Optional[Union[Environment, str]] = None,
         autosave: bool = False,
         quiet: bool = False,
         raw_output: bool = False,
         style: str = "fruity",
     ):
-        self.r = Requestor(collection_file, env_file)
+        self.r = Requestor(collection, env)
         self.autosave = autosave
         self.quiet = quiet
         self.raw_output = raw_output

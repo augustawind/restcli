@@ -1,5 +1,6 @@
 import re
 from contextlib import contextmanager
+from typing import Optional, Union
 
 import jinja2
 import requests
@@ -16,9 +17,19 @@ ENV_RE = re.compile(r"([^:]+):(.*)")
 class Requestor:
     """Parser and executor of requests."""
 
-    def __init__(self, collection_file, env_file=None):
-        self.collection = Collection(collection_file)
-        self.env = Environment(env_file)
+    def __init__(
+        self,
+        collection: Union[Collection, str],
+        env: Optional[Union[Environment, str]] = None,
+    ):
+        if isinstance(collection, Collection):
+            self.collection = collection
+        else:
+            self.collection = Collection(collection)
+        if isinstance(env, Environment):
+            self.env = env
+        else:
+            self.env = Environment(env)
 
     def request(self, group, name, updater=None, *env_args):
         """Execute the Request found at ``self.collection[group][name]``."""
