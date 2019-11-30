@@ -1,12 +1,9 @@
 """Interactive TUI application for restcli."""
 from dataclasses import dataclass
+from typing import Tuple
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.key_binding.bindings.focus import (
-    focus_next,
-    focus_previous,
-)
 from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import Layout
@@ -16,15 +13,15 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
+from restcli.workspace import Collection, Environment
+
 from .menu import MenuContainer, MenuItem, handlers
 
 
 @dataclass(init=False)
 class AppState:
-    active_collection_path: str
-    active_env_path: str
-    raw_collection: str
-    raw_env: str
+    active_collection: Collection
+    active_env: Environment
 
 
 class UI:
@@ -32,6 +29,8 @@ class UI:
 
     Attributes
     ----------
+    state : :class:`AppState`
+        Holds application state.
     body : :class:`prompt_toolkit.layout.containers.Container`
         UI component where data will be displayed.
     menu : :class:`MenuContainer`
@@ -47,6 +46,11 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
+        (
+            self.workspace_text_area,
+            self.workspace_panel,
+        ) = self._init_workspace_panel()
+        self.output_text_area, self.output_panel = self._init_output_panel()
         self.body = self._init_body()
         self.menu = self._init_menu()
         self.key_bindings = self._init_key_bindings()
@@ -69,8 +73,6 @@ class UI:
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
-        # kb.add("tab")(focus_next)
-        # kb.add("s-tab")(focus_previous)
         self.menu.register_key_bindings(kb)
         return kb
 
@@ -166,15 +168,17 @@ class UI:
         )
 
     def _init_body(self) -> Container:
-        panel__collection__text = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel__collection = Frame(
-            title="Untitled Collection", body=panel__collection__text,
-        )
-        panel__environment__text = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel__environment = Frame(
-            title="Environment view", body=panel__environment__text,
-        )
-        return VSplit([panel__collection, panel__environment], height=D())
+        return VSplit([self.workspace_panel, self.output_panel], height=D())
+
+    def _init_workspace_panel(self) -> Tuple[TextArea, Frame]:
+        text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
+        panel = Frame(title="Workspace", body=text_area,)
+        return text_area, panel
+
+    def _init_output_panel(self) -> Tuple[TextArea, Frame]:
+        text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
+        panel = Frame(title="Output", body=text_area,)
+        return text_area, panel
 
     def _init_style(self) -> Style:
         return Style.from_dict(

@@ -63,7 +63,7 @@ class OpenFileDialog(Dialog):
         self,
         ui: UI,
         title: str = "Open file",
-        text: str = "idk what to put here",
+        text: str = "File path",
         ok_text: str = "OK",
         cancel_text: str = "Cancel",
     ):
