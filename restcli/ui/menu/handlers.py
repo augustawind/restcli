@@ -11,6 +11,7 @@ from prompt_toolkit.shortcuts import input_dialog
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
 from restcli.ui.menu import MenuHandler, MenuItem
+from restcli.workspace import Collection, Environment
 
 if TYPE_CHECKING:
     from restcli.ui import UI
@@ -46,25 +47,11 @@ def open_file(self, ui: UI, items: Sequence[MenuItem]):
     def handler(event=None):
         async def coroutine():
             open_dialog = OpenFileDialog(ui)
-            file_type, path = await open_dialog.run()
-            if file_type == "collection":
-                ui.state.active_collection_path = path
-                with open(path) as fh:
-                    ui.state.raw_collection = fh.read()
-                with open("log.txt", "a") as fh:
-                    print(
-                        f"{ui.state.active_collection_path=}, {ui.state.raw_collection=}",
-                        file=fh,
-                    )
-            else:
-                ui.state.active_env_path = path
-                with open(path) as fh:
-                    ui.state.raw_env = fh.read()
-                with open("log.txt", "a") as fh:
-                    print(
-                        f"{ui.state.active_env_path=}, {ui.state.raw_env=}",
-                        file=fh,
-                    )
+            workspace = await open_dialog.run()
+            if isinstance(workspace, Collection):
+                ui.state.active_collection = workspace
+            elif isinstance(workspace, Environment):
+                ui.state.active_env = workspace
 
         ensure_future(coroutine())
 
@@ -84,7 +71,7 @@ class OpenFileDialog(Dialog):
         self.ui = ui
 
         self.radio_list = RadioList(
-            [("collection", "Collection"), ("environment", "Environment"),]
+            [(Collection, "Collection"), (Environment, "Environment"),]
         )
 
         self.ok_button = Button(ok_text, self.handle_ok)
@@ -123,9 +110,9 @@ class OpenFileDialog(Dialog):
         )
 
     def handle_ok(self):
-        self.future.set_result(
-            (self.radio_list.current_value, self.text_area.text)
-        )
+        workspace_cls = self.radio_list.current_value
+        source = self.text_area.text
+        self.future.set_result(workspace_cls(source))
 
     def handle_cancel(self):
         self.future.set_result(None)
