@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Sequence, Union
 
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.key_binding import KeyBindings, KeyBindingsBase
@@ -12,11 +12,14 @@ from prompt_toolkit.widgets import MenuItem as _MenuItem
 
 from restcli.utils import AttrMap
 
+if TYPE_CHECKING:
+    from restcli.ui import UI
+
 
 class MenuHandler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __call__(
-        self, ui: "UI", items: Sequence[MenuItem]
+        self, ui: UI, items: Sequence[MenuItem]
     ) -> Callable[[Optional[KeyPressEvent]], None]:
         """Should return a function that responds to user interaction.
 
@@ -63,11 +66,10 @@ class BaseMenu(metaclass=abc.ABCMeta):
         return self._item_idx_map[name]
 
 
-# TODO: rename RootContainer
 class MenuContainer(_MenuContainer, BaseMenu):
     def __init__(
         self,
-        ui: "UI",
+        ui: UI,
         body: AnyContainer,
         menu_items: List[MenuItem],
         floats: Optional[List[Float]] = None,
@@ -126,7 +128,7 @@ class MenuItem(_MenuItem, BaseMenu):
         handler: Optional[Union[MenuHandler, Callable[[], None]]] = None,
         children: Optional[List[MenuItem]] = None,
         disabled: bool = False,
-        ui: Optional["UI"] = None,
+        ui: Optional[UI] = None,
     ):
         self.name = name
         if key:

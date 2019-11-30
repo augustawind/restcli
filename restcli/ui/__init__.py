@@ -1,4 +1,5 @@
 """Interactive TUI application for restcli."""
+from dataclasses import dataclass
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
@@ -16,6 +17,14 @@ from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
 from .menu import MenuContainer, MenuItem, handlers
+
+
+@dataclass(init=False)
+class AppState:
+    active_collection_path: str
+    active_env_path: str
+    raw_collection: str
+    raw_env: str
 
 
 class UI:
@@ -36,6 +45,8 @@ class UI:
     """
 
     def __init__(self):
+        self.state = AppState()
+
         self.body = self._init_body()
         self.menu = self._init_menu()
         self.key_bindings = self._init_key_bindings()
@@ -58,8 +69,8 @@ class UI:
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
-        kb.add("tab")(focus_next)
-        kb.add("s-tab")(focus_previous)
+        # kb.add("tab")(focus_next)
+        # kb.add("s-tab")(focus_previous)
         self.menu.register_key_bindings(kb)
         return kb
 
@@ -87,6 +98,7 @@ class UI:
                             "({key})pen file",
                             key="o",
                             name="open",
+                            handler=handlers.open_file,
                             children=[
                                 MenuItem("Collection"),
                                 MenuItem("Environment"),
