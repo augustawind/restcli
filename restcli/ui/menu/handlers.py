@@ -12,6 +12,7 @@ from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
 from restcli.ui.menu import MenuHandler, MenuItem
 from restcli.workspace import Collection, Environment
+from restcli import yaml_utils as yaml
 
 if TYPE_CHECKING:
     from restcli.ui import UI
@@ -47,11 +48,16 @@ def open_file(self, ui: UI, items: Sequence[MenuItem]):
     def handler(event=None):
         async def coroutine():
             open_dialog = OpenFileDialog(ui)
-            workspace = await open_dialog.run()
-            if isinstance(workspace, Collection):
-                ui.state.active_collection = workspace
-            elif isinstance(workspace, Environment):
-                ui.state.active_env = workspace
+            document = await open_dialog.run()
+            if not document:
+                return
+
+            ui.document.text = yaml.dump(document)
+            ui.state.current_document = document
+            if isinstance(document, Collection):
+                ui.state.active_collection = document
+            elif isinstance(document, Environment):
+                ui.state.active_env = document
 
         ensure_future(coroutine())
 
@@ -102,6 +108,7 @@ class OpenFileDialog(Dialog):
                         padding=D(preferred=1, max=1),
                     ),
                 ],
+                width=D(preferred=80),
                 padding=1,
             ),
             buttons=[self.ok_button, self.cancel_button],

@@ -23,7 +23,7 @@ from restcli.params import (
 __all__ = ["Collection", "Environment"]
 
 
-class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
+class Document(OrderedDict, metaclass=abc.ABCMeta):
     """Base class for dicts that read from YAML files."""
 
     error_class = FileContentError
@@ -62,7 +62,7 @@ class YamlDictReader(OrderedDict, metaclass=abc.ABCMeta):
         self.assert_type(obj, Mapping, path, msg, error_class, **err_kwargs)
 
 
-class Collection(YamlDictReader):
+class Collection(Document):
     """A Collection reader and parser."""
 
     error_class = CollectionError
@@ -163,7 +163,7 @@ class Collection(YamlDictReader):
         self.update(new_collection)
 
 
-class Environment(YamlDictReader):
+class Environment(Document):
     """An Env reader and parser."""
 
     error_class = EnvError
@@ -200,7 +200,7 @@ class Environment(YamlDictReader):
             return yaml.dump(self.data, handle)
 
 
-class Libs(YamlDictReader):
+class Libs(Document):
     """A Libs reader and parser."""
 
     error_class = LibError

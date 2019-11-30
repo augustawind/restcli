@@ -13,13 +13,14 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
-from restcli.workspace import Collection, Environment
+from restcli.workspace import Collection, Document, Environment
 
 from .menu import MenuContainer, MenuItem, handlers
 
 
 @dataclass(init=False)
 class AppState:
+    current_document: Document
     active_collection: Collection
     active_env: Environment
 
@@ -46,16 +47,15 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
-        (
-            self.workspace_text_area,
-            self.workspace_panel,
-        ) = self._init_workspace_panel()
-        self.output_text_area, self.output_panel = self._init_output_panel()
+        self.document, self.document_panel = self._init_document_panel()
+        self.output, self.output_panel = self._init_output_panel()
         self.body = self._init_body()
+
         self.menu = self._init_menu()
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
         self.layout = self._init_layout()
+
         self.app = Application(
             layout=self.layout,
             key_bindings=self.key_bindings,
@@ -168,9 +168,9 @@ class UI:
         )
 
     def _init_body(self) -> Container:
-        return VSplit([self.workspace_panel, self.output_panel], height=D())
+        return VSplit([self.document_panel, self.output_panel], height=D())
 
-    def _init_workspace_panel(self) -> Tuple[TextArea, Frame]:
+    def _init_document_panel(self) -> Tuple[TextArea, Frame]:
         text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
         panel = Frame(title="Workspace", body=text_area,)
         return text_area, panel
