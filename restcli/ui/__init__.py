@@ -13,9 +13,9 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
+from restcli.ui import handlers
+from restcli.ui.menu import MenuContainer, MenuItem
 from restcli.workspace import Collection, Document, Environment
-
-from .menu import MenuContainer, MenuItem, handlers
 
 
 @dataclass(init=False)
