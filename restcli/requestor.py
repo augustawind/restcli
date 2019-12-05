@@ -65,6 +65,12 @@ class Requestor:
         kwargs["json"] = kwargs.pop("body")
         kwargs["params"] = kwargs.pop("query")
 
+        if kwargs["json"]:
+            if "content-length" not in kwargs["headers"]:
+                kwargs["headers"]["content-length"] = str(len(kwargs["json"]))
+            if "content-type" not in kwargs["headers"]:
+                kwargs["headers"]["content-type"] = "application/json"
+
         return kwargs
 
     @classmethod
@@ -87,7 +93,7 @@ class Requestor:
         headers = request.get("headers")
         if headers:
             kwargs["headers"] = {
-                k: env.interpolate(v) for k, v in headers.items()
+                k.lower(): env.interpolate(v) for k, v in headers.items()
             }
         query = request.get("query")
         if query:

@@ -28,7 +28,7 @@ def test_prepare_request():
     request = {
         "method": "post",
         "url": "{{ server }}/authors",
-        "headers": {"Content-Type": "application/json",},
+        "headers": {"Accept": "application/json"},
         "body": """
             id: 1
             name: Bartholomew McNozzleWafer
@@ -42,7 +42,10 @@ def test_prepare_request():
     actual = Requestor.prepare_request(request, env)
     expected = {
         "method": "post",
-        "headers": {"Content-Type": "application/json",},
+        "headers": {
+            "accept": "application/json",
+            "content-type": "application/json",
+        },
         "url": "http://foobar.org/authors",
         "json": {
             "id": 1,
@@ -51,6 +54,7 @@ def test_prepare_request():
         },
         "params": {},
     }
+    del actual["headers"]["content-length"]
     assert actual == expected
 
 
