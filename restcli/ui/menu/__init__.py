@@ -17,22 +17,38 @@ if TYPE_CHECKING:
 
 
 class MenuHandler(metaclass=abc.ABCMeta):
+    """Base class for handlers that respond to user interaction.
+
+    Attributes
+    ----------
+
+    ui
+        The UI object this handler is attached to.
+    items
+        The chain of :class:`restcli.ui.menu.MenuItem`s from the root menu
+        all the way to the current ``MenuItem`.
+
+    Implementor classes can be passed to :class:`MenuItem` via the
+    ``handler`` parameter. When the ``MenuItem`` is triggered, either by a
+    mouse click or a key press, an instance of the MenuHandler class passed
+    to ``handler`` will be created and then called.
+    """
+
+    def __init__(self, ui: UI, items: Sequence[MenuItem]):
+        self.ui = ui
+        self.items = items
+
     @abc.abstractmethod
-    def __call__(
-        self, ui: UI, items: Sequence[MenuItem]
-    ) -> Callable[[Optional[KeyPressEvent]], None]:
-        """Should return a function that responds to user interaction.
+    def __call__(self, event: Optional[KeyPressEvent] = None):
+        """Execute the handler.
 
-        This function be used to respond to clicks (if mouse is enabled) and to
-        key presses (if a keyboard shortcut is provided). The returned function
-        must _optionally_ accept a single :class:`KeyPressEvent` - in the event
-        of a mouse click, the function will be called with no parameters. This
-        requirement allows us to reuse the same function for both event types.
+        This function be used to respond to clicks (if mouse is enabled) and
+        to key presses (if a keyboard shortcut is provided). Implementors
+        must _optionally_ accept a single :class:`KeyPressEvent` parameter.
+        It must be optional so that it can respond to both mouse clicks
+        _and_ key presses, since only key presses generate a
+        ``KeyPressEvent``.
         """
-
-    @classmethod
-    def register(cls, func):
-        return type(func.__name__, (cls,), {"__call__": func})()
 
 
 class MenuItemsMixin(metaclass=abc.ABCMeta):
@@ -95,12 +111,14 @@ class MenuContainer(_MenuContainer, MenuItemsMixin):
             # Instantiate MenuHandlers into normal handler funcs
             item_chain = chain + (item,)
             if item.handler:
-                if isinstance(item.handler, MenuHandler):
-                    item.handler = item.handler(self.ui, item_chain)
-                elif not isinstance(item.handler, Callable):
+                if not issubclass(item.handler, MenuHandler):
                     raise TypeError(
-                        f"handler={item.handler} for {item} is not callable"
+                        f"{item}: MenuItem.handler must be a subclass of"
+                        " MenuHandler"
                     )
+                item.handler = item.handler(self.ui, item_chain)
+
+            # Initialize grandchildren
             self._init_items(item.items, chain=item_chain)
 
     def get_menu_selection(self, chain: Sequence[str]) -> List[int]:

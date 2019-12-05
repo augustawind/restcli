@@ -3,7 +3,6 @@ from __future__ import annotations
 from asyncio import Future, ensure_future
 from typing import TYPE_CHECKING, Sequence
 
-from prompt_toolkit.application import get_app
 from prompt_toolkit.completion.filesystem import PathCompleter
 from prompt_toolkit.layout.containers import Float, HSplit
 from prompt_toolkit.layout.dimension import D
@@ -16,45 +15,42 @@ from restcli.workspace import Collection, Environment
 if TYPE_CHECKING:
     from restcli.ui import UI
 
-__all__ = ["end_program", "toggle_focus", "open_file"]
+__all__ = ["EndProgram", "ToggleFocus", "OpenFile"]
 
 
-def end_program(handler=None):
-    get_app().exit()
+class EndProgram(MenuHandler):
+    def __call__(self, event=None):
+        self.ui.app.exit()
 
 
-@MenuHandler.register
-def toggle_focus(self, ui: UI, items: Sequence[MenuItem]):
-    def handler(event=None):
-        layout = get_app().layout
-        selection = ui.menu.get_menu_selection(item.name for item in items)
+class ToggleFocus(MenuHandler):
+    def __call__(self, event=None):
+        layout = self.ui.layout
+        selection = self.ui.menu.get_menu_selection(
+            item.name for item in self.items
+        )
         if (
-            layout.has_focus(ui.menu.window)
-            and ui.menu.selected_menu == selection
+            layout.has_focus(self.ui.menu.window)
+            and self.ui.menu.selected_menu == selection
         ):
-            for _ in range(ui.menu.breadcrumb):
+            for _ in range(self.ui.menu.breadcrumb):
                 layout.focus_last()
         else:
-            layout.focus(ui.menu.window)
-            ui.menu.selected_menu[:] = selection
-            ui.menu.breadcrumb += 1
-
-    return handler
+            layout.focus(self.ui.menu.window)
+            self.ui.menu.selected_menu[:] = selection
+            self.ui.menu.breadcrumb += 1
 
 
-@MenuHandler.register
-def open_file(self, ui: UI, items: Sequence[MenuItem]):
-    def handler(event=None):
-        async def coroutine():
-            open_dialog = OpenFileDialog(ui)
-            document = await open_dialog.run()
-            if not document:
-                return
-            ui.load_document(document)
+class OpenFile(MenuHandler):
+    def __call__(self, event=None):
+        ensure_future(self.run_dialog())
 
-        ensure_future(coroutine())
-
-    return handler
+    async def run_dialog(self):
+        open_dialog = OpenFileDialog(self.ui)
+        document = await open_dialog.run()
+        if not document:
+            return
+        self.ui.load_document(document)
 
 
 class OpenFileDialog(Dialog):
