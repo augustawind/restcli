@@ -5,7 +5,10 @@ from typing import Tuple
 from prompt_toolkit.application import Application
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
+from prompt_toolkit.key_binding.bindings.focus import (
+    focus_next,
+    focus_previous,
+)
 from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import Layout
@@ -52,7 +55,9 @@ class UI:
 
         self.editor = Editor(width=D(weight=5))
 
-        self.output, self.output_panel = self._init_output_panel(width=D(weight=4))
+        self.output, self.output_panel = self._init_output_panel(
+            width=D(weight=4)
+        )
 
         self.body = VSplit([self.editor, self.output_panel], height=D())
 

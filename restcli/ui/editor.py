@@ -39,7 +39,12 @@ class Editor:
 
         collection = Collection(source="examples/full/collection.yaml")
 
-        self.text_area = TextArea(lexer=PygmentsLexer(YamlLexer), width=D(weight=2))
+        self.text_area = TextArea(
+            lexer=PygmentsLexer(YamlLexer),
+            width=D(weight=2),
+            focus_on_click=True,
+            line_numbers=True,
+        )
         self.menu_items = [Window(BufferControl())]
         self.refresh()
 
@@ -70,7 +75,9 @@ class Editor:
         self.refresh()
 
     def refresh(self):
-        self.side_menu = HSplit(self.menu_items, width=D(weight=1), align=VerticalAlign.TOP)
+        self.side_menu = HSplit(
+            self.menu_items, width=D(weight=1), align=VerticalAlign.TOP
+        )
         self.container = Frame(
             VSplit([self.side_menu, VerticalLine(), self.text_area]),
             title="Collection",
