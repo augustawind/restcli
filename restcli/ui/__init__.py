@@ -81,7 +81,7 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
-        self.layout = Layout(self.menu, focused_element=self.editor.side_menu,)
+        self.layout = Layout(self.menu, focused_element=self.editor.side_menu)
 
         self.app = Application(
             layout=self.layout,

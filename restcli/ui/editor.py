@@ -30,12 +30,10 @@ class Editor:
             focus_on_click=True,
             line_numbers=True,
         )
-        self.menu_items: List[Window] = []
+        self.menu_items: List[Window] = [Window(BufferControl())]
         self.submenu_items: List[List[Window]] = []
         self.expanded_menu_indices: Set[int] = set()
 
-        # TODO: remove this
-        self.load_collection(Collection("collection.yaml"))
         self.refresh()
 
     def __pt_container__(self) -> AnyContainer:
