@@ -14,6 +14,7 @@ from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
 from restcli.ui import handlers
+from restcli.ui.editor import Editor
 from restcli.ui.menu import MenuContainer, MenuItem
 from restcli.workspace import Collection, Document, Environment
 
@@ -49,12 +50,28 @@ class UI:
 
         self.document, self.document_panel = self._init_document_panel()
         self.output, self.output_panel = self._init_output_panel()
-        self.body = self._init_body()
 
-        self.menu = self._init_menu()
+        self.body = VSplit([self.document_panel, self.output_panel], height=D())
+
+        self.editor = Editor(self)
+
+        self.menu = MenuContainer(
+            self,
+            body=self.body,
+            menu_items=self._init_menu_items(),
+            floats=[
+                Float(
+                    xcursor=True,
+                    ycursor=True,
+                    content=CompletionsMenu(max_height=16, scroll_offset=1),
+                ),
+            ],
+        )
+
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
-        self.layout = self._init_layout()
+
+        self.layout = Layout(self.menu, focused_element=self.body.get_children()[0])
 
         self.app = Application(
             layout=self.layout,
@@ -77,10 +94,6 @@ class UI:
 
         self.document.text = document.dump()
 
-    def _init_layout(self) -> Layout:
-        element = self.body.get_children()[0]
-        return Layout(self.menu, focused_element=element)
-
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
         self.menu.register_key_bindings(kb)
@@ -90,70 +103,56 @@ class UI:
 
         return kb
 
-    def _init_menu(self) -> MenuContainer:
-        return MenuContainer(
-            self,
-            body=self.body,
-            menu_items=[
-                MenuItem(
-                    "file<{key}>",
-                    key="f1",
-                    name="file",
-                    handler=handlers.ToggleFocus,
-                    children=[
-                        MenuItem("new file <{key}>", key="c-n", name="new"),
-                        MenuItem(
-                            "open file <{key}>",
-                            key="c-o",
-                            name="open",
-                            handler=handlers.OpenFile,
-                        ),
-                        MenuItem.SEPARATOR(),
-                        MenuItem("save <{key}>", key="c-s", name="save"),
-                        MenuItem("save as...", name="save_as"),
-                        MenuItem("save all", name="save_all"),
-                        MenuItem.SEPARATOR(),
-                        MenuItem(
-                            "close file <{key}>", key="c-w", name="close"
-                        ),
-                        MenuItem("close all", name="close_all"),
-                        MenuItem.SEPARATOR(),
-                        MenuItem(
-                            "quit <{key}>",
-                            key="c-q",
-                            name="quit",
-                            handler=handlers.EndProgram,
-                        ),
-                    ],
-                ),
-                MenuItem(
-                    "edit<{key}>",
-                    key="f2",
-                    name="edit",
-                    handler=handlers.ToggleFocus,
-                    children=[MenuItem("(f)ind")],
-                ),
-            ],
-            floats=[
-                Float(
-                    xcursor=True,
-                    ycursor=True,
-                    content=CompletionsMenu(max_height=16, scroll_offset=1),
-                ),
-            ],
-        )
-
-    def _init_body(self) -> Container:
-        return VSplit([self.document_panel, self.output_panel], height=D())
+    def _init_menu_items(self) -> MenuContainer:
+        return [
+            MenuItem(
+                "file<{key}>",
+                key="f1",
+                name="file",
+                handler=handlers.ToggleFocus,
+                children=[
+                    MenuItem("new file <{key}>", key="c-n", name="new"),
+                    MenuItem(
+                        "open file <{key}>",
+                        key="c-o",
+                        name="open",
+                        handler=handlers.OpenFile,
+                    ),
+                    MenuItem.SEPARATOR(),
+                    MenuItem("save <{key}>", key="c-s", name="save"),
+                    MenuItem("save as...", name="save_as"),
+                    MenuItem("save all", name="save_all"),
+                    MenuItem.SEPARATOR(),
+                    MenuItem(
+                        "close file <{key}>", key="c-w", name="close"
+                    ),
+                    MenuItem("close all", name="close_all"),
+                    MenuItem.SEPARATOR(),
+                    MenuItem(
+                        "quit <{key}>",
+                        key="c-q",
+                        name="quit",
+                        handler=handlers.EndProgram,
+                    ),
+                ],
+            ),
+            MenuItem(
+                "edit<{key}>",
+                key="f2",
+                name="edit",
+                handler=handlers.ToggleFocus,
+                children=[MenuItem("(f)ind")],
+            ),
+        ]
 
     def _init_document_panel(self) -> Tuple[TextArea, Frame]:
         text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel = Frame(title="Workspace", body=text_area,)
+        panel = Frame(title="Workspace", body=text_area)
         return text_area, panel
 
     def _init_output_panel(self) -> Tuple[TextArea, Frame]:
         text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel = Frame(title="Output", body=text_area,)
+        panel = Frame(title="Output", body=text_area)
         return text_area, panel
 
     def _init_style(self) -> Style:
