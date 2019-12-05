@@ -50,13 +50,7 @@ def open_file(self, ui: UI, items: Sequence[MenuItem]):
             document = await open_dialog.run()
             if not document:
                 return
-
-            ui.document.text = document.dump()
-            ui.state.current_document = document
-            if isinstance(document, Collection):
-                ui.state.active_collection = document
-            elif isinstance(document, Environment):
-                ui.state.active_env = document
+            ui.load_document(document)
 
         ensure_future(coroutine())
 

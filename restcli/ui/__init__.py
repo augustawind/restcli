@@ -67,6 +67,16 @@ class UI:
     def run(self):
         self.app.run()
 
+    def load_document(self, document: Document):
+        """Load a new Document into the UI."""
+        self.state.current_document = document
+        if isinstance(document, Collection):
+            self.state.active_collection = document
+        elif isinstance(document, Environment):
+            self.state.active_env = document
+
+        self.document.text = document.dump()
+
     def _init_layout(self) -> Layout:
         element = self.body.get_children()[0]
         return Layout(self.menu, focused_element=element)
