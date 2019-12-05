@@ -10,7 +10,6 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.shortcuts import input_dialog
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
-from restcli import yaml_utils as yaml
 from restcli.ui.menu import MenuHandler, MenuItem
 from restcli.workspace import Collection, Environment
 
@@ -52,7 +51,7 @@ def open_file(self, ui: UI, items: Sequence[MenuItem]):
             if not document:
                 return
 
-            ui.document.text = yaml.dump(document)
+            ui.document.text = document.dump()
             ui.state.current_document = document
             if isinstance(document, Collection):
                 ui.state.active_collection = document

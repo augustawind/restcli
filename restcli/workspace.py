@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import importlib
 import inspect
@@ -37,7 +39,10 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
     def load(self):
         pass
 
-    def copy(self):
+    def dump(self) -> str:
+        return yaml.dump(OrderedDict(self))
+
+    def copy(self) -> Document:
         """Override copy() so that ``source`` can be copied over."""
         return self.__class__(self.source)
 
