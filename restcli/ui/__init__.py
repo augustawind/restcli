@@ -97,63 +97,25 @@ class UI:
                     name="file",
                     handler=handlers.toggle_focus,
                     children=[
+                        MenuItem("new file <{key}>", key="c-n", name="new"),
                         MenuItem(
-                            "({key})ew file",
-                            key="n",
-                            name="new",
-                            children=[
-                                MenuItem("Collection"),
-                                MenuItem("Environment"),
-                            ],
-                        ),
-                        MenuItem(
-                            "({key})pen file",
-                            key="o",
+                            "open file <{key}>",
+                            key="c-o",
                             name="open",
                             handler=handlers.open_file,
-                            children=[
-                                MenuItem("Collection"),
-                                MenuItem("Environment"),
-                            ],
                         ),
                         MenuItem.SEPARATOR(),
-                        MenuItem(
-                            "({key})ave",
-                            key="s",
-                            name="save",
-                            children=[
-                                MenuItem("Save Collection"),
-                                MenuItem("Save Environment"),
-                            ],
-                        ),
-                        MenuItem(
-                            "({key})ave as...",
-                            key="S",
-                            name="save_as",
-                            children=[
-                                MenuItem("Save Collection as..."),
-                                MenuItem("Save Environment as..."),
-                            ],
-                        ),
-                        MenuItem(
-                            "save all<{key}>", key="c-s", name="save_all"
-                        ),
+                        MenuItem("save <{key}>", key="c-s", name="save"),
+                        MenuItem("save as...", name="save_as"),
+                        MenuItem("save all", name="save_all"),
                         MenuItem.SEPARATOR(),
                         MenuItem(
-                            "({key})lose file",
-                            key="c",
-                            name="close",
-                            children=[
-                                MenuItem("Collection"),
-                                MenuItem("Environment"),
-                            ],
+                            "close file <{key}>", key="c-w", name="close"
                         ),
-                        MenuItem(
-                            "close all<{key}>", key="c-w", name="close_all"
-                        ),
+                        MenuItem("close all", name="close_all"),
                         MenuItem.SEPARATOR(),
                         MenuItem(
-                            "quit<{key}>",
+                            "quit <{key}>",
                             key="c-q",
                             name="quit",
                             handler=handlers.end_program,
