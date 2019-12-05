@@ -49,14 +49,14 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def read(self) -> Optional[OrderedDict]:
-        """Read document data from :attribute:`source`.
+        """Read document data from :attr:`source`.
 
         This should simply read the raw data and return it; use
         :method:`import_data` for data validation and processing.
         """
 
     def load(self):
-        """Load and import latest data from :attribute:`source`."""
+        """Load and import latest data from :attr:`source`."""
         data = self.read()
         if data:
             self.import_data(data)
@@ -149,7 +149,7 @@ class Collection(Document):
         self.update(new_collection)
 
     def read(self) -> Optional[OrderedDict]:
-        """Read Collection data from :attribute:`source`."""
+        """Read Collection data from :attr:`source`."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle, many=True)
@@ -206,12 +206,11 @@ class Environment(Document):
         self.update(data)
 
     def read(self) -> Optional[OrderedDict]:
-        """Read Environment data from :attribute:`source`."""
+        """Read Environment data from :attr:`source`."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle)
 
-            data["__rando__"] = random.randint(100000000, 999999999)
             return data
 
     @property
@@ -251,7 +250,7 @@ class Libs(Document):
         to modules. Otherwise, ``data`` can be any mapping of strings to
         objects that implement the Lib interface.
         """
-        for module, lib in data.values():
+        for module, lib in data.items():
             path = ["lib", module]
             sig = inspect.signature(lib.define)
             params = tuple(sig.parameters.values())
@@ -276,7 +275,7 @@ class Libs(Document):
             self[module] = lib
 
     def read(self) -> OrderedDict:
-        """Read Libs data from :attribute:`source`."""
+        """Read Libs data from :attr:`source`."""
         self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
 
         data = OrderedDict()
