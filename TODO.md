@@ -1,6 +1,6 @@
 # TODO
 
-## Short Term
+## Features
 
 - [ ] Write a terminal UI using `prompt_toolkit`.
 - [ ] Create a test server that can be used to try out examples without
@@ -9,12 +9,16 @@
       the request body as its fields and URL params to set a special field
       called "params".
     - GET/PUT/PATCH/DELETE should operate on that resource.
-- [ ] Add more examples (using scripts, etc.).
+- [ ] Support pre-request and post-request scripts.
 - [ ] Nested groups.
+
+## Improvements
+
+- [ ] Add more examples (using scripts, etc.).
 - [ ] Handle errors gracefully.
 - [ ] Write more unit tests.
 
-## Roadmap
+## Future
 
 - [ ] Implement localization using ugettext.
 - [ ] Automate grabbing --help output and inserting it into README.
