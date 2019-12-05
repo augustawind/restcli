@@ -199,14 +199,14 @@ class App:
         """Reload the current Collection, changing it to `source` if given."""
         if source:
             self.r.collection.source = source
-        self.r.collection.load()
+        self.r.collection.reload()
         return ""
 
     def load_env(self, source=None):
         """Reload the current Environment, changing it to `source` if given."""
         if source:
             self.r.env.source = source
-        self.r.env.load()
+        self.r.env.reload()
         return ""
 
     def set_env(self, *env_args, save=False):

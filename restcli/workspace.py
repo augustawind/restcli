@@ -41,19 +41,33 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
             self.import_data(data)
 
         self.source = source
-        file_data = self.load()
-        if file_data:
-            self.import_data(file_data)
+        self.load()
 
     @abc.abstractmethod
     def import_data(self, data: Dict[str, Any]):
-        pass
+        """Validate and process raw data to add to the Document."""
 
     @abc.abstractmethod
-    def load(self) -> Optional[OrderedDict]:
-        pass
+    def read(self) -> Optional[OrderedDict]:
+        """Read document data from :attribute:`source`.
+
+        This should simply read the raw data and return it; use
+        :method:`import_data` for data validation and processing.
+        """
+
+    def load(self):
+        """Load and import latest data from :attribute:`source`."""
+        data = self.read()
+        if data:
+            self.import_data(data)
+
+    def reload(self):
+        """Like :method:`load`, but clears existing data first."""
+        self.clear()
+        self.load()
 
     def dump(self) -> str:
+        """Return a YAML-encoded str representation of the Document."""
         return yaml.dump(OrderedDict(self))
 
     def copy(self) -> Document:
@@ -134,8 +148,8 @@ class Collection(Document):
 
         self.update(new_collection)
 
-    def load(self) -> Optional[OrderedDict]:
-        """Reload the current Collection from disk."""
+    def read(self) -> Optional[OrderedDict]:
+        """Read Collection data from :attribute:`source`."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle, many=True)
@@ -191,8 +205,8 @@ class Environment(Document):
     def import_data(self, data: Dict[str, Any]):
         self.update(data)
 
-    def load(self) -> Optional[OrderedDict]:
-        """Reload the current Environment, changing it to ``path`` if given."""
+    def read(self) -> Optional[OrderedDict]:
+        """Read Environment data from :attribute:`source`."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle)
@@ -261,8 +275,8 @@ class Libs(Document):
 
             self[module] = lib
 
-    def load(self) -> OrderedDict:
-        """Parse and validate a Libs list."""
+    def read(self) -> OrderedDict:
+        """Read Libs data from :attribute:`source`."""
         self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
 
         data = OrderedDict()
