@@ -7,6 +7,7 @@ import requests
 
 from restcli import yaml_utils as yaml
 from restcli.exceptions import InputError
+from restcli.reqmod.updater import Updater
 from restcli.workspace import Collection, Environment
 
 __all__ = ["Requestor"]
@@ -51,7 +52,9 @@ class Requestor:
         return response
 
     @classmethod
-    def prepare_request(cls, request, env, updater=None):
+    def prepare_request(
+        cls, request: dict, env: Environment, updater: Optional[Updater] = None
+    ):
         """Prepare a Request to be executed."""
         request = {
             k: request.get(k)
@@ -65,7 +68,9 @@ class Requestor:
         return kwargs
 
     @classmethod
-    def parse_request(cls, request, env, updater=None):
+    def parse_request(
+        cls, request: dict, env: Environment, updater: Optional[Updater] = None
+    ):
         """Parse a Request object in the context of an Environment."""
         kwargs = {
             **request,

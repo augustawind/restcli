@@ -24,7 +24,7 @@ class Updates(list):
 
 
 @dataclass
-class BaseUpdater(metaclass=abc.ABCMeta):
+class Updater(metaclass=abc.ABCMeta):
     """Base class for callable objects that update Request Parameters.
 
     Args:
@@ -69,21 +69,21 @@ class BaseUpdater(metaclass=abc.ABCMeta):
         """
 
 
-class AppendUpdater(BaseUpdater):
+class AppendUpdater(Updater):
     """Appends a value to a Request Parameter field."""
 
     def update_request(self, request_param):
         request_param[self.key] += self.value
 
 
-class AssignUpdater(BaseUpdater):
+class AssignUpdater(Updater):
     """Sets a new value in a Request Parameter field."""
 
     def update_request(self, request_param):
         request_param[self.key] = self.value
 
 
-class DeleteUpdater(BaseUpdater):
+class DeleteUpdater(Updater):
     """Deletes a field in a Request Parameter."""
 
     def update_request(self, request_param):

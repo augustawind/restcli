@@ -5,6 +5,7 @@ import pytest
 import pytest_mock  # noqa: F401
 
 from restcli.requestor import Requestor
+from restcli.workspace import Environment
 
 TEST_GROUPS_PATH = "tests/resources/test_collection.yaml"
 TEST_ENV_PATH = "tests/resources/test_env.yaml"
