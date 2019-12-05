@@ -50,7 +50,7 @@ class OpenFile(MenuHandler):
         document = await open_dialog.run()
         if not document:
             return
-        self.ui.load_document(document)
+        self.ui.editor.load_collection(document)
 
 
 class OpenFileDialog(Dialog):
@@ -73,6 +73,7 @@ class OpenFileDialog(Dialog):
         self.cancel_button = Button(cancel_text, self.handle_cancel)
 
         self.text_area = TextArea(
+            text="examples/full/collection.yaml",
             multiline=False,
             completer=PathCompleter(),
             accept_handler=self.handle_accept_text,
@@ -106,9 +107,9 @@ class OpenFileDialog(Dialog):
         )
 
     def handle_ok(self):
-        workspace_cls = self.radio_list.current_value
+        document_cls = self.radio_list.current_value
         source = self.text_area.text
-        self.future.set_result(workspace_cls(source))
+        self.future.set_result(document_cls(source))
 
     def handle_cancel(self):
         self.future.set_result(None)

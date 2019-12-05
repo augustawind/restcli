@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from prompt_toolkit.application import Application
+from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
@@ -80,6 +81,7 @@ class UI:
             style=self.style,
             mouse_support=True,
             full_screen=True,
+            editing_mode=EditingMode.VI,
         )
 
     def run(self):
