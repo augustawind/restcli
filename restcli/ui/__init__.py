@@ -5,6 +5,7 @@ from typing import Tuple
 from prompt_toolkit.application import Application
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
 from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import Layout
@@ -49,9 +50,9 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
-        self.editor = Editor()
+        self.editor = Editor(width=D(weight=5))
 
-        self.output, self.output_panel = self._init_output_panel()
+        self.output, self.output_panel = self._init_output_panel(width=D(weight=4))
 
         self.body = VSplit([self.editor, self.output_panel], height=D())
 
@@ -101,8 +102,9 @@ class UI:
         kb = KeyBindings()
         self.menu.register_key_bindings(kb)
 
-        # TODO: this is here in case menu keybindings don't work during dev
         kb.add("c-x")(lambda _: self.app.exit())
+        kb.add("tab")(focus_next)
+        kb.add("s-tab")(focus_previous)
 
         return kb
 
@@ -151,9 +153,9 @@ class UI:
         panel = Frame(title="Workspace", body=text_area)
         return text_area, panel
 
-    def _init_output_panel(self) -> Tuple[TextArea, Frame]:
+    def _init_output_panel(self, width=None) -> Tuple[TextArea, Frame]:
         text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel = Frame(title="Output", body=text_area)
+        panel = Frame(text_area, title="Output", width=width)
         return text_area, panel
 
     def _init_style(self) -> Style:

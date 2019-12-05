@@ -51,7 +51,7 @@ class Editor:
                 else:
                     return NotImplemented
 
-            return [("bg:#aaaaaa #888888", text, handler)]
+            return [("#00ff00", text, handler)]
 
         self.menu_items = [
             Window(FormattedTextControl(mktext("lions"), focusable=True)),
