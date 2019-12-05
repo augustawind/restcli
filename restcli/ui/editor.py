@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import random
+
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
     AnyContainer,
@@ -21,32 +23,7 @@ from restcli.workspace import Collection, GroupType, RequestType
 
 
 class Editor:
-    def __init__(self, width=None, height=None):
-        self.width = width
-        self.height = height
-
-        collection = Collection(source="examples/full/collection.yaml")
-
-        self.text_area = TextArea(
-            lexer=PygmentsLexer(YamlLexer),
-            width=D(weight=2),
-            focus_on_click=True,
-            line_numbers=True,
-        )
-        self.menu_items = []
-        self.child_menu_items = []
-        self.expanded_menu_indices = set()
-
-        def mktext(text: str):
-            def handler(event: MouseEvent):
-                if event.event_type == MouseEventType.MOUSE_UP:
-                    self.text_area.text = text
-                    self.refresh()
-                else:
-                    return NotImplemented
-
-            return [("#00ff00", text, handler)]
-
+    def _gen_dummy_data(self):
         # Create some dummy data
         for i, group_name in enumerate(("lions", "tigers", "bears",)):
             self.menu_items.append(
@@ -58,10 +35,33 @@ class Editor:
             )
             self.child_menu_items.append([])
             for n in range(0, len(group_name) * 3, len(group_name)):
-                label = f"{group_name}{n}"
+
+                label = f"{group_name}{n}-{random.randint(11, 99)}"
                 self.child_menu_items[-1].append(
-                    Window(FormattedTextControl(mktext(label), focusable=True))
+                    Window(
+                        FormattedTextControl(
+                            self.make_request_nav(
+                                request_name=label,
+                                request={"reversed": "".join(reversed(label))},
+                            ),
+                            focusable=True,
+                        )
+                    )
                 )
+
+    def __init__(self):
+        collection = Collection(source="examples/full/collection.yaml")
+
+        self.text_area = TextArea(
+            lexer=PygmentsLexer(YamlLexer),
+            width=D(weight=2),
+            focus_on_click=True,
+            line_numbers=True,
+        )
+        self.menu_items = []
+        self.child_menu_items = []
+        self.expanded_menu_indices = set()
+        self._gen_dummy_data()
         self.refresh()
 
     def __pt_container__(self) -> AnyContainer:
@@ -76,13 +76,10 @@ class Editor:
                 menu_items.extend(child_menu_items)
 
         self.side_menu = HSplit(
-            menu_items, width=D(weight=1), align=VerticalAlign.TOP,
+            menu_items, width=D(weight=1), align=VerticalAlign.TOP
         )
-        self.container = Frame(
-            VSplit([self.side_menu, VerticalLine(), self.text_area]),
-            title="Collection",
-            width=self.width,
-            height=self.height,
+        self.container = VSplit(
+            [self.side_menu, VerticalLine(), self.text_area]
         )
 
     def make_group_nav(
@@ -107,5 +104,5 @@ class Editor:
             else:
                 return NotImplemented
 
-        label_text = f"\t{request_name}"
-        return [("#00ff00", label_text, handler)]
+        text = (" " * 8) + request_name
+        return [("#00ff00", text, handler)]

@@ -9,7 +9,7 @@ from prompt_toolkit.key_binding.bindings.focus import (
     focus_next,
     focus_previous,
 )
-from prompt_toolkit.layout.containers import Container, Float, VSplit
+from prompt_toolkit.layout.containers import Container, Float, VSplit, Window
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.menus import CompletionsMenu
@@ -53,13 +53,17 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
-        self.editor = Editor(width=D(weight=5))
+        self.editor = Editor()
 
-        self.output, self.output_panel = self._init_output_panel(
-            width=D(weight=4)
+        self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
+
+        self.body = VSplit(
+            [
+                Frame(self.editor, title="Collection", width=D(weight=5)),
+                Frame(self.output, title="Output", width=D(weight=4)),
+            ],
+            height=D(),
         )
-
-        self.body = VSplit([self.editor, self.output_panel], height=D())
 
         self.menu = MenuContainer(
             self,
@@ -77,9 +81,7 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
-        self.layout = Layout(
-            self.menu, focused_element=self.body.get_children()[0]
-        )
+        self.layout = Layout(self.menu, focused_element=self.editor.side_menu,)
 
         self.app = Application(
             layout=self.layout,
@@ -142,16 +144,6 @@ class UI:
                 children=[MenuItem("(f)ind")],
             ),
         ]
-
-    def _init_document_panel(self) -> Tuple[TextArea, Frame]:
-        text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel = Frame(title="Workspace", body=text_area)
-        return text_area, panel
-
-    def _init_output_panel(self, width=None) -> Tuple[TextArea, Frame]:
-        text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
-        panel = Frame(text_area, title="Output", width=width)
-        return text_area, panel
 
     def _init_style(self) -> Style:
         return Style.from_dict(
