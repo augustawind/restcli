@@ -35,7 +35,7 @@ class MenuHandler(metaclass=abc.ABCMeta):
         return type(func.__name__, (cls,), {"__call__": func})()
 
 
-class BaseMenu(metaclass=abc.ABCMeta):
+class MenuItemsMixin(metaclass=abc.ABCMeta):
     def __init__(self, menu_items: Optional[List[MenuItem]] = None):
         if menu_items:
             self._item_map = AttrMap(
@@ -66,7 +66,7 @@ class BaseMenu(metaclass=abc.ABCMeta):
         return self._item_idx_map[name]
 
 
-class MenuContainer(_MenuContainer, BaseMenu):
+class MenuContainer(_MenuContainer, MenuItemsMixin):
     def __init__(
         self,
         ui: UI,
@@ -76,7 +76,7 @@ class MenuContainer(_MenuContainer, BaseMenu):
         key_bindings: Optional[KeyBindingsBase] = None,  # TODO: figure dis out
     ):
         super().__init__(body, menu_items, floats, key_bindings)
-        BaseMenu.__init__(self, menu_items)
+        MenuItemsMixin.__init__(self, menu_items)
 
         self.ui = ui
         self._breadcrumb = 0
@@ -113,7 +113,7 @@ class MenuContainer(_MenuContainer, BaseMenu):
         return selected
 
 
-class MenuItem(_MenuItem, BaseMenu):
+class MenuItem(_MenuItem, MenuItemsMixin):
     """Extends ``prompt_toolkit.widgets.MenuItem`` using :class:`BaseMenu`.
 
     Adds a ``name`` field which can be used to access child MenuItems with
@@ -140,7 +140,7 @@ class MenuItem(_MenuItem, BaseMenu):
         super().__init__(
             text=text, handler=handler, children=children, disabled=disabled,
         )
-        BaseMenu.__init__(self, children)
+        MenuItemsMixin.__init__(self, children)
 
     @property
     def items(self) -> List[MenuItem]:
