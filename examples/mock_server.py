@@ -25,55 +25,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def error_response(self, code: HTTPStatus, msg: Optional[str] = None):
-        self.send_response(code)
-        if msg:
-            self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        if msg:
-            self.write_json_body({"detail": msg})
-
-    def get_resource(self, detail=None) -> Optional[Resource]:
-        path = urllib.parse.urlparse(self.path).path.strip("/")
-        parts = path.split("/")
-        if len(parts) == 0 or not any(parts):
-            return self.error_response(HTTPStatus.NOT_FOUND)
-
-        model = parts[0]
-        try:
-            data = OBJECTS[model]
-        except KeyError:
-            data = OBJECTS[model] = {}
-
-        if len(parts) > 1 and parts[1]:
-            id_ = parts[1]
-            if detail is False:
-                return self.error_response(
-                    HTTPStatus.BAD_REQUEST, f"Unexpected resource id in path.",
-                )
-
-            try:
-                data = data[id_]
-            except KeyError:
-                return self.error_response(HTTPStatus.NOT_FOUND)
-        else:
-            if detail is True:
-                return self.error_response(
-                    HTTPStatus.BAD_REQUEST, "Missing resource id in path."
-                )
-
-            id_ = None
-
-        return Resource(model, id_, data)
-
     def do_GET(self):
         resource = self.get_resource()
         if not resource:
             return
 
-        self.send_response(HTTPStatus.CREATED)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
         self.write_json_body(resource.data)
 
     def do_POST(self):
@@ -130,6 +86,48 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
         self.write_json_body(obj)
 
+    def do_DELETE(self):
+        resource = self.get_resource(detail=True)
+        if not resource:
+            return
+
+        del OBJECTS[resource.model][resource.id]
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self.end_headers()
+
+    def get_resource(self, detail=None) -> Optional[Resource]:
+        path = urllib.parse.urlparse(self.path).path.strip("/")
+        parts = path.split("/")
+        if len(parts) == 0 or not any(parts):
+            return self.error_response(HTTPStatus.NOT_FOUND)
+
+        model = parts[0]
+        try:
+            data = OBJECTS[model]
+        except KeyError:
+            data = OBJECTS[model] = {}
+
+        if len(parts) > 1 and parts[1]:
+            id_ = parts[1]
+            if detail is False:
+                return self.error_response(
+                    HTTPStatus.BAD_REQUEST, f"Unexpected resource id in path.",
+                )
+
+            try:
+                data = data[id_]
+            except KeyError:
+                return self.error_response(HTTPStatus.NOT_FOUND)
+        else:
+            if detail is True:
+                return self.error_response(
+                    HTTPStatus.BAD_REQUEST, "Missing resource id in path."
+                )
+
+            id_ = None
+
+        return Resource(model, id_, data)
+
     def read_json_body(self):
         if not self.headers["Content-Length"]:
             return self.error_response(
@@ -148,14 +146,13 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         res_body = json.dumps(body).encode("utf-8")
         self.wfile.write(res_body)
 
-    def do_DELETE(self):
-        resource = self.get_resource(detail=True)
-        if not resource:
-            return
-
-        del OBJECTS[resource.model][resource.id]
-        self.send_response(HTTPStatus.NO_CONTENT)
+    def error_response(self, code: HTTPStatus, msg: Optional[str] = None):
+        self.send_response(code)
+        if msg:
+            self.send_header("Content-Type", "application/json")
         self.end_headers()
+        if msg:
+            self.write_json_body({"detail": msg})
 
 
 if __name__ == "__main__":
