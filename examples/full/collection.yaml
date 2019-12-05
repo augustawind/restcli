@@ -20,16 +20,15 @@ things:
       type: "{{ thing_type }}"
       measurement_system: "{{ measurement_system }}"
       properties:
-        weight: |
-          {% if measurement_system == "metric" %}
+        weight: {% if measurement_system == "metric" %}
             {{ thing_weight / 2.205 }}
           {% else %}
             {{ thing_weight }}
           {% endif %}
         alive: True
     script: |
-      assert_status(200)
-      env["thing_id"] = response.json()["id"]
+      assert_status(201)
+      env["thing_id"] = int(response.json()["id"])
 
   list:
     method: get
@@ -47,5 +46,3 @@ things:
   destroy:
     method: delete
     url: "{{ server }}/things/{{ thing_id }}"
-    script: |
-      env["thing_id"] = 0
