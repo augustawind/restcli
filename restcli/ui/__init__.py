@@ -84,6 +84,10 @@ class UI:
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
         self.menu.register_key_bindings(kb)
+
+        # TODO: this is here in case menu keybindings don't work during dev
+        kb.add("c-x")(lambda _: self.app.exit())
+
         return kb
 
     def _init_menu(self) -> MenuContainer:
