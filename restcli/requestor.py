@@ -81,7 +81,7 @@ class Requestor:
         kwargs = {
             **request,
             "method": request["method"],
-            "url": env.interpolate(request["url"]),
+            "url": cls.interpolate(request["url"], env),
             "query": {},
             "headers": {},
             "body": {},
@@ -89,20 +89,27 @@ class Requestor:
 
         body = request.get("body")
         if body:
-            kwargs["body"] = env.interpolate(body)
+            kwargs["body"] = cls.interpolate(body, env)
         headers = request.get("headers")
         if headers:
             kwargs["headers"] = {
-                k.lower(): env.interpolate(v) for k, v in headers.items()
+                k.lower(): cls.interpolate(v, env) for k, v in headers.items()
             }
         query = request.get("query")
         if query:
-            kwargs["query"] = env.interpolate(query)
+            kwargs["query"] = cls.interpolate(query, env)
 
         if updater:
             updater.apply(kwargs)
 
         return kwargs
+
+    @staticmethod
+    def interpolate(data: str, env: Environment) -> str:
+        """Render ``data`` with the Environment."""
+        tpl = jinja2.Template(data)
+        rendered = tpl.render(env)
+        return yaml.load(rendered)
 
     @contextmanager
     def override_env(self, env_args):

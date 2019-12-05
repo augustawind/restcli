@@ -218,12 +218,6 @@ class Environment(Document):
         """Return a copy of the raw data in the Environment."""
         return deepcopy(OrderedDict(self))
 
-    def interpolate(self, data: str) -> str:
-        """Render ``data`` with the Environment."""
-        tpl = jinja2.Template(data)
-        rendered = tpl.render(self)
-        return yaml.load(rendered)
-
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""
         for var in args:

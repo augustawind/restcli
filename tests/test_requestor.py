@@ -58,6 +58,32 @@ def test_prepare_request():
     assert actual == expected
 
 
+def test_interpolate():
+    """Test Requestor#interpolate()."""
+    actual = Requestor.interpolate(
+        data="""
+            number: 3
+            string: '{{ val0 }}'
+            boolean: True
+            'null': null
+            object: {'foo': 5, '{{ key1 }}': ['{{ val1 }}', null]}
+            array: ['foo', True, 5, null, {'key': {{ val2 }}}]
+        """,
+        env=Environment(
+            data={"val0": "xyz", "val1": "abc", "key1": "def", "val2": 89}
+        ),
+    )
+    expected = {
+        "number": 3,
+        "string": "xyz",
+        "boolean": True,
+        "null": None,
+        "object": {"foo": 5, "def": ["abc", None]},
+        "array": ["foo", True, 5, None, {"key": 89}],
+    }
+    assert actual == expected
+
+
 def test_parse_env_args():
     """Test Requestor#parse_env_args()."""
     env_args = [
