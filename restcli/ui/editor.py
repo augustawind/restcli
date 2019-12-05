@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import random
+from typing import List, Set
 
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
@@ -23,45 +23,19 @@ from restcli.workspace import Collection, GroupType, RequestType
 
 
 class Editor:
-    def _gen_dummy_data(self):
-        # Create some dummy data
-        for i, group_name in enumerate(("lions", "tigers", "bears",)):
-            self.menu_items.append(
-                Window(
-                    FormattedTextControl(
-                        self.make_group_nav(i, group_name, {}), focusable=True
-                    )
-                )
-            )
-            self.child_menu_items.append([])
-            for n in range(0, len(group_name) * 3, len(group_name)):
-
-                label = f"{group_name}{n}-{random.randint(11, 99)}"
-                self.child_menu_items[-1].append(
-                    Window(
-                        FormattedTextControl(
-                            self.make_request_nav(
-                                request_name=label,
-                                request={"reversed": "".join(reversed(label))},
-                            ),
-                            focusable=True,
-                        )
-                    )
-                )
-
     def __init__(self):
-        collection = Collection(source="examples/full/collection.yaml")
-
         self.text_area = TextArea(
             lexer=PygmentsLexer(YamlLexer),
             width=D(weight=2),
             focus_on_click=True,
             line_numbers=True,
         )
-        self.menu_items = []
-        self.child_menu_items = []
-        self.expanded_menu_indices = set()
-        self._gen_dummy_data()
+        self.menu_items: List[Window] = []
+        self.submenu_items: List[List[Window]] = []
+        self.expanded_menu_indices: Set[int] = set()
+
+        # TODO: remove this
+        self.load_collection(Collection("collection.yaml"))
         self.refresh()
 
     def __pt_container__(self) -> AnyContainer:
@@ -72,8 +46,8 @@ class Editor:
         for i, menu_item in enumerate(self.menu_items):
             menu_items.append(menu_item)
             if i in self.expanded_menu_indices:
-                child_menu_items = self.child_menu_items[i]
-                menu_items.extend(child_menu_items)
+                submenu_items = self.submenu_items[i]
+                menu_items.extend(submenu_items)
 
         self.side_menu = HSplit(
             menu_items, width=D(weight=1), align=VerticalAlign.TOP
@@ -82,9 +56,37 @@ class Editor:
             [self.side_menu, VerticalLine(), self.text_area]
         )
 
-    def make_group_nav(
+    def load_collection(self, collection: Collection):
+        self.menu_items.clear()
+        for idx, (group_name, group) in enumerate(collection.items()):
+            self.menu_items.append(
+                Window(
+                    FormattedTextControl(
+                        self._gen_menu_fragment(idx, group_name, group),
+                        focusable=True,
+                    )
+                )
+            )
+
+            submenu_items = []
+            self.submenu_items.append(submenu_items)
+            for request_name, request in group.items():
+                submenu_items.append(
+                    Window(
+                        FormattedTextControl(
+                            self._gen_submenu_fragment(request_name, request),
+                            focusable=True,
+                        )
+                    )
+                )
+
+        self.refresh()
+
+    def _gen_menu_fragment(
         self, index: int, group_name: str, group: GroupType
     ) -> StyleAndTextTuples:
+        """Generate a style/text/handler tuple for Groups in the sidebar."""
+
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.expanded_menu_indices.add(index)
@@ -94,7 +96,7 @@ class Editor:
 
         return [("#00ff00", group_name, handler)]
 
-    def make_request_nav(
+    def _gen_submenu_fragment(
         self, request_name: str, request: RequestType
     ) -> StyleAndTextTuples:
         def handler(event: MouseEvent):
@@ -104,5 +106,8 @@ class Editor:
             else:
                 return NotImplemented
 
-        text = (" " * 8) + request_name
-        return [("#00ff00", text, handler)]
+        return [
+            ("", " " * 8, handler),
+            ("[SetCursorPosition]", "", handler),
+            ("#00ff00", request_name, handler),
+        ]

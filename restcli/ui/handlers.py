@@ -73,7 +73,7 @@ class OpenFileDialog(Dialog):
         self.cancel_button = Button(cancel_text, self.handle_cancel)
 
         self.text_area = TextArea(
-            text="examples/full/collection.yaml",
+            text="collection.yaml",
             multiline=False,
             completer=PathCompleter(),
             accept_handler=self.handle_accept_text,
