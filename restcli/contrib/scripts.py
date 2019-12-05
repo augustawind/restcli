@@ -22,7 +22,7 @@ def define(response, env, *args, **kwargs):
                 response, f"expected status code '{expected_status}'"
             )
 
-    def set_env(status, var, path):
+    def set_env(var, path, status=200):
         """Shortcut for checking the status code and setting an env var."""
         if response.status_code == status:
             value = response.json()
