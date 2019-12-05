@@ -1,0 +1,51 @@
+---
+defaults:
+  headers:
+    Content-Type: "application/json"
+
+lib:
+  - restcli.contrib.scripts
+
+---
+things:
+
+  create:
+    method: post
+    url: "{{ server }}/things"
+    headers:
+      Accept: "application/json"
+    body: |
+      id: "{{ thing_id + 1 }}"
+      name: "{{ thing_name.title() }}"
+      type: "{{ thing_type }}"
+      measurement_system: "{{ measurement_system }}"
+      properties:
+        weight: |
+          {% if measurement_system == "metric" %}
+            {{ thing_weight / 2.205 }}
+          {% else %}
+            {{ thing_weight }}
+          {% endif %}
+        alive: True
+    script: |
+      assert_status(200)
+      env["thing_id"] = response.json()["id"]
+
+  list:
+    method: get
+    url: "{{ server }}/things"
+    query: "{{ list_filter_params }}"
+    headers:
+      Accept: "{{ response_mime_type }}"
+
+  retrieve:
+    method: get
+    url: "{{ server }}/things/{{ thing_id }}"
+    headers:
+      Accept: "{{ response_mime_type }}"
+
+  destroy:
+    method: delete
+    url: "{{ server }}/things/{{ thing_id }}"
+    script: |
+      env["thing_id"] = 0
