@@ -7,7 +7,9 @@ import random
 from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import Optional
+from typing import Any, Dict, Optional
+
+import jinja2
 
 from restcli import yaml_utils as yaml
 from restcli.exceptions import (
@@ -30,13 +32,25 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
 
     error_class = FileContentError
 
-    def __init__(self, source: Optional[str] = None):
+    def __init__(
+        self, source: Optional[str] = None, data: Optional[dict] = None
+    ):
         super().__init__()
+
+        if data:
+            self.import_data(data)
+
         self.source = source
-        self.load()
+        file_data = self.load()
+        if file_data:
+            self.import_data(file_data)
 
     @abc.abstractmethod
-    def load(self):
+    def import_data(self, data: Dict[str, Any]):
+        pass
+
+    @abc.abstractmethod
+    def load(self) -> Optional[OrderedDict]:
         pass
 
     def dump(self) -> str:
@@ -72,12 +86,55 @@ class Collection(Document):
 
     error_class = CollectionError
 
-    def __init__(self, source: Optional[str] = None):
+    def __init__(
+        self, source: Optional[str] = None, data: Optional[dict] = None
+    ):
         self.defaults = {}
         self.libs = []
-        super().__init__(source)
+        super().__init__(source, data=data)
 
-    def load(self):
+    def import_data(self, data: Dict[str, Any]):
+        """Import Collection data."""
+        new_collection = OrderedDict()
+        for group_name, group in data.items():
+            path = [group_name]
+            self.assert_mapping(group, "Group", path)
+            new_group = OrderedDict()
+
+            for req_name, request in group.items():
+                path.append("req_name")
+                self.assert_mapping(request, "Request", path)
+                new_req = OrderedDict()
+
+                for key, type_ in REQUEST_PARAMS.items():
+                    if key in request:
+                        new_req[key] = request[key]
+                    elif key in self.defaults:
+                        new_req[key] = self.defaults[key]
+                    # Check required parameters
+                    elif key in REQUIRED_REQUEST_PARAMS:
+                        self.raise_error(
+                            f'Required parameter "{key}" not found', path,
+                        )
+                    else:
+                        new_req[key] = type_()
+                        continue
+
+                    # Check type
+                    path.append(key)
+                    self.assert_type(
+                        obj=new_req[key],
+                        type_=type_,
+                        path=path,
+                        msg=f'Request "{key}" must be a {type_.__name__}',
+                    )
+
+                new_group[req_name] = new_req
+            new_collection[group_name] = new_group
+
+        self.update(new_collection)
+
+    def load(self) -> Optional[OrderedDict]:
         """Reload the current Collection from disk."""
         if self.source:
             with open(self.source) as handle:
@@ -95,7 +152,7 @@ class Collection(Document):
                 self.raise_error(msg, [])
 
             self.load_config(config)
-            self.load_collection(collection)
+            return collection
 
     def load_config(self, config):
         """Parse and validate Collection Config."""
@@ -125,71 +182,34 @@ class Collection(Document):
             self.defaults.clear()
             self.defaults.update(defaults)
 
-    def load_collection(self, collection):
-        """Parse and validate a Collection."""
-        new_collection = OrderedDict()
-        for group_name, group in collection.items():
-            path = [group_name]
-            self.assert_mapping(group, "Group", path)
-            new_group = OrderedDict()
-
-            for req_name, request in group.items():
-                path.append("req_name")
-                self.assert_mapping(request, "Request", path)
-                new_req = OrderedDict()
-
-                for key, type_ in REQUEST_PARAMS.items():
-                    if key in request:
-                        new_req[key] = request[key]
-                    elif key in self.defaults:
-                        new_req[key] = self.defaults[key]
-                    # Check required parameters
-                    elif key in REQUIRED_REQUEST_PARAMS:
-                        self.raise_error(
-                            f'Required parameter "{key}" not found', path,
-                        )
-                    else:
-                        new_req[key] = type_()
-                        continue
-
-                    # Check data type
-                    path.append(key)
-                    self.assert_type(
-                        obj=new_req[key],
-                        type_=type_,
-                        path=path,
-                        msg=f'Request "{key}" must be a {type_.__name__}',
-                    )
-
-                new_group[req_name] = new_req
-            new_collection[group_name] = new_group
-
-        self.clear()
-        self.update(new_collection)
-
 
 class Environment(Document):
     """An Env reader and parser."""
 
     error_class = EnvError
 
-    def load(self):
+    def import_data(self, data: Dict[str, Any]):
+        self.update(data)
+
+    def load(self) -> Optional[OrderedDict]:
         """Reload the current Environment, changing it to ``path`` if given."""
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle)
-                self.replace(data)
-        self["__rando__"] = random.randint(100000000, 999999999)
+
+            data["__rando__"] = random.randint(100000000, 999999999)
+            return data
 
     @property
     def data(self):
         """Return a copy of the raw data in the Environment."""
         return deepcopy(OrderedDict(self))
 
-    def replace(self, *args, **kwargs):
-        """Replace all data from the Environment with the given data."""
-        self.clear()
-        self.update(*args, **kwargs)
+    def interpolate(self, data: str) -> str:
+        """Render ``data`` with the Environment."""
+        tpl = jinja2.Template(data)
+        rendered = tpl.render(self)
+        return yaml.load(rendered)
 
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""
@@ -210,23 +230,15 @@ class Libs(Document):
 
     error_class = LibError
 
-    def load(self):
-        """Parse and validate a Libs list."""
-        self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
+    def import_data(self, data: Dict[str, object]):
+        """Validate and import a mapping of names to lib objects.
 
-        for i, module in enumerate(self.source):
-            path = ["lib", i]
-            try:
-                if not isinstance(module, str):
-                    raise TypeError
-                lib = importlib.import_module(module)
-            except (TypeError, ImportError):
-                self.raise_error(
-                    f'Failed to import lib "{module}"',
-                    path,
-                    source=inspect.getsourcefile(module),
-                )
-
+        When called from :method:`load`, this will be a mapping of module names
+        to modules. Otherwise, ``data`` can be any mapping of strings to
+        objects that implement the Lib interface.
+        """
+        for module, lib in data.values():
+            path = ["lib", module]
             sig = inspect.signature(lib.define)
             params = tuple(sig.parameters.values())
             if not all(
@@ -248,3 +260,25 @@ class Libs(Document):
                 )
 
             self[module] = lib
+
+    def load(self) -> OrderedDict:
+        """Parse and validate a Libs list."""
+        self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
+
+        data = OrderedDict()
+        for i, module in enumerate(self.source):
+            path = ["lib", i]
+            try:
+                if not isinstance(module, str):
+                    raise TypeError
+                lib = importlib.import_module(module)
+            except (TypeError, ImportError):
+                self.raise_error(
+                    f'Failed to import lib "{module}"',
+                    path,
+                    source=inspect.getsourcefile(module),
+                )
+
+            data[module] = lib
+
+        return data

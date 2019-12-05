@@ -75,7 +75,7 @@ class Requestor:
         kwargs = {
             **request,
             "method": request["method"],
-            "url": cls.interpolate(request["url"], env),
+            "url": env.interpolate(request["url"]),
             "query": {},
             "headers": {},
             "body": {},
@@ -83,15 +83,15 @@ class Requestor:
 
         body = request.get("body")
         if body:
-            kwargs["body"] = cls.interpolate(body, env)
+            kwargs["body"] = env.interpolate(body)
         headers = request.get("headers")
         if headers:
             kwargs["headers"] = {
-                k: cls.interpolate(v, env) for k, v in headers.items()
+                k: env.interpolate(v) for k, v in headers.items()
             }
         query = request.get("query")
         if query:
-            kwargs["query"] = cls.interpolate(query, env)
+            kwargs["query"] = env.interpolate(query)
 
         if updater:
             updater.apply(kwargs)
@@ -109,7 +109,8 @@ class Requestor:
 
         yield
 
-        self.env.replace(original)
+        self.env.clear()
+        self.env.update(original)
 
     def mod_env(self, env_args, save=False):
         """Modify an Environment with the given overrides."""
@@ -147,13 +148,6 @@ class Requestor:
             key, val = match.groups()
             set_env[key.strip()] = yaml.load(val)
         return set_env, del_env
-
-    @staticmethod
-    def interpolate(data, env):
-        """Given some ``data``, render it with the given ``env``."""
-        tpl = jinja2.Template(data)
-        rendered = tpl.render(env)
-        return yaml.load(rendered)
 
     @staticmethod
     def run_script(script, script_locals):
