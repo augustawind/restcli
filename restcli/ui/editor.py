@@ -23,6 +23,18 @@ from restcli.workspace import Collection, GroupType, RequestType
 
 
 class Editor:
+    """UI panel where :class:`Collection`s can be edited.
+
+    Attributes
+    ----------
+    text_area
+        Editable text area where Collection Requests are loaded.
+    side_menu
+        Collapsible menu where the current Collection's Groups and Requests are
+        listed hierarchically. Select a Request here to load it into the
+        ``text_area``.
+    """
+
     def __init__(self):
         self.text_area = TextArea(
             lexer=PygmentsLexer(YamlLexer),
@@ -30,10 +42,15 @@ class Editor:
             focus_on_click=True,
             line_numbers=True,
         )
+        self.side_menu: AnyContainer = None
+        self.container: AnyContainer = None
+
         self.menu_items: List[Window] = [Window(BufferControl())]
         self.submenu_items: List[List[Window]] = []
         self.expanded_menu_indices: Set[int] = set()
 
+        # TODO: remove this
+        self.load_collection(Collection("collection.yaml"))
         self.refresh()
 
     def __pt_container__(self) -> AnyContainer:
