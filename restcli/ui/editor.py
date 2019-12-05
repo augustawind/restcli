@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from prompt_toolkit.filters import Condition
-from prompt_toolkit.layout.containers import ConditionalContainer, HSplit, Window
+from prompt_toolkit.layout.containers import (
+    AnyContainer,
+    ConditionalContainer,
+    HSplit,
+    Window,
+)
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.mouse_events import MouseEventType
 from prompt_toolkit.widgets import Frame, TextArea
@@ -15,31 +19,27 @@ if TYPE_CHECKING:
     from restcli.ui import UI
 
 
-class Editor(Frame):
-
-    def __init__(self, ui: UI):
-        self.ui = ui
-
+class Editor:
+    def __init__(self):
         self.tab_arrangement = TabArrangement()
 
         self.tabs_toolbar = TabsToolbar(self)
         self.text_area = TextArea(lexer=PygmentsLexer(YamlLexer))
         self.content_panel = Frame(title="Workspace", body=self.text_area)
 
-        self.layout = Layout(HSplit([
-            self.tabs_toolbar,
-            self.content_panel,
-        ]))
+        self._container = HSplit([self.tabs_toolbar, self.content_panel,])
+
+    def __pt_container__(self) -> AnyContainer:
+        return self._container
 
 
 class TabArrangement:
-
     def __init__(self):
         self.tabs = []
         self.active_tab_idx = None
 
     @property
-    def active_tab(self) -> Optional[Tab]: 
+    def active_tab(self) -> Optional[Tab]:
         if self.active_tab_idx is not None:
             return self.tabs[self.active_tab_idx]
 
@@ -54,10 +54,10 @@ class TabArrangement:
             self.active_tab_idx = max(0, self.active_tab_idx - 1)
 
 
-class Tab(Window):
-
+class Tab:
     def __init__(self):
-        pass
+        # TODO: configure
+        self.pt_window = Window()
 
     def get_display_name(self) -> str:
         """Return the display name for this tab."""
@@ -72,6 +72,7 @@ class Tab(Window):
 
 class TabsToolbar(ConditionalContainer):
     """Container for the :class:`TabsControl`."""
+
     def __init__(self, editor: Editor):
         super(TabsToolbar, self).__init__(
             Window(TabsControl(editor), height=1),
@@ -120,7 +121,9 @@ class TabsControl(FormattedTextControl):
                         ("class:tabbar.tab.active", f" {caption} ", handler)
                     )
                 else:
-                    result.append(("class:tabbar.tab", f" {caption} ", handler))
+                    result.append(
+                        ("class:tabbar.tab", f" {caption} ", handler)
+                    )
                 result.append(("class:tabbar", " "))
 
             return result

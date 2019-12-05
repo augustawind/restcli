@@ -48,12 +48,11 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
-        self.document, self.document_panel = self._init_document_panel()
+        self.editor = Editor()
+
         self.output, self.output_panel = self._init_output_panel()
 
-        self.body = VSplit([self.document_panel, self.output_panel], height=D())
-
-        self.editor = Editor(self)
+        self.body = VSplit([self.editor, self.output_panel], height=D())
 
         self.menu = MenuContainer(
             self,
@@ -71,7 +70,9 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
-        self.layout = Layout(self.menu, focused_element=self.body.get_children()[0])
+        self.layout = Layout(
+            self.menu, focused_element=self.body.get_children()[0]
+        )
 
         self.app = Application(
             layout=self.layout,
@@ -92,7 +93,7 @@ class UI:
         elif isinstance(document, Environment):
             self.state.active_env = document
 
-        self.document.text = document.dump()
+        self.editor.text_area.text = document.dump()
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
@@ -123,9 +124,7 @@ class UI:
                     MenuItem("save as...", name="save_as"),
                     MenuItem("save all", name="save_all"),
                     MenuItem.SEPARATOR(),
-                    MenuItem(
-                        "close file <{key}>", key="c-w", name="close"
-                    ),
+                    MenuItem("close file <{key}>", key="c-w", name="close"),
                     MenuItem("close all", name="close_all"),
                     MenuItem.SEPARATOR(),
                     MenuItem(
