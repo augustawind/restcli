@@ -1,35 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Sequence
-
-from prompt_toolkit.application import Application
-from prompt_toolkit.application.current import get_app
-from prompt_toolkit.filters import Condition
-from prompt_toolkit.formatted_text import AnyFormattedText, StyleAndTextTuples
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.key_binding.key_processor import KeyPressEvent
+from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
     AnyContainer,
-    ConditionalContainer,
     HSplit,
     VerticalAlign,
     VSplit,
     Window,
-    WindowAlign,
 )
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
-from prompt_toolkit.layout.dimension import D, max_layout_dimensions
+from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.mouse_events import MouseEvent, MouseEventType
-from prompt_toolkit.widgets import Button, Frame, Label, TextArea, VerticalLine
+from prompt_toolkit.widgets import Frame, TextArea, VerticalLine
 from pygments.lexers.data import YamlLexer
 
 from restcli import yaml_utils as yaml
 from restcli.ui.menu import MenuContainer, MenuItem
-from restcli.workspace import Collection
-
-if TYPE_CHECKING:
-    from restcli.ui import UI
+from restcli.workspace import Collection, GroupType, RequestType
 
 
 class Editor:
@@ -45,8 +33,9 @@ class Editor:
             focus_on_click=True,
             line_numbers=True,
         )
-        self.menu_items = [Window(BufferControl())]
-        self.refresh()
+        self.menu_items = []
+        self.child_menu_items = []
+        self.expanded_menu_indices = set()
 
         def mktext(text: str):
             def handler(event: MouseEvent):
@@ -58,25 +47,36 @@ class Editor:
 
             return [("#00ff00", text, handler)]
 
-        self.menu_items = [
-            Window(FormattedTextControl(mktext("lions"), focusable=True)),
-            Window(FormattedTextControl(mktext("tigers"), focusable=True)),
-            Window(FormattedTextControl(mktext("bears"), focusable=True)),
-            Window(FormattedTextControl(mktext("lions"), focusable=True)),
-            Window(FormattedTextControl(mktext("tigers"), focusable=True)),
-            Window(FormattedTextControl(mktext("bears"), focusable=True)),
-            Window(FormattedTextControl(mktext("lions"), focusable=True)),
-            Window(FormattedTextControl(mktext("tigers"), focusable=True)),
-            Window(FormattedTextControl(mktext("bears"), focusable=True)),
-            Window(FormattedTextControl(mktext("lions"), focusable=True)),
-            Window(FormattedTextControl(mktext("tigers"), focusable=True)),
-            Window(FormattedTextControl(mktext("bears"), focusable=True)),
-        ]
+        # Create some dummy data
+        for i, group_name in enumerate(("lions", "tigers", "bears",)):
+            self.menu_items.append(
+                Window(
+                    FormattedTextControl(
+                        self.make_group_nav(i, group_name, {}), focusable=True
+                    )
+                )
+            )
+            self.child_menu_items.append([])
+            for n in range(0, len(group_name) * 3, len(group_name)):
+                label = f"{group_name}{n}"
+                self.child_menu_items[-1].append(
+                    Window(FormattedTextControl(mktext(label), focusable=True))
+                )
         self.refresh()
 
+    def __pt_container__(self) -> AnyContainer:
+        return self.container
+
     def refresh(self):
+        menu_items = []
+        for i, menu_item in enumerate(self.menu_items):
+            menu_items.append(menu_item)
+            if i in self.expanded_menu_indices:
+                child_menu_items = self.child_menu_items[i]
+                menu_items.extend(child_menu_items)
+
         self.side_menu = HSplit(
-            self.menu_items, width=D(weight=1), align=VerticalAlign.TOP
+            menu_items, width=D(weight=1), align=VerticalAlign.TOP,
         )
         self.container = Frame(
             VSplit([self.side_menu, VerticalLine(), self.text_area]),
@@ -85,5 +85,27 @@ class Editor:
             height=self.height,
         )
 
-    def __pt_container__(self) -> AnyContainer:
-        return self.container
+    def make_group_nav(
+        self, index: int, group_name: str, group: GroupType
+    ) -> StyleAndTextTuples:
+        def handler(event: MouseEvent):
+            if event.event_type == MouseEventType.MOUSE_UP:
+                self.expanded_menu_indices.add(index)
+                self.refresh()
+            else:
+                return NotImplemented
+
+        return [("#00ff00", group_name, handler)]
+
+    def make_request_nav(
+        self, request_name: str, request: RequestType
+    ) -> StyleAndTextTuples:
+        def handler(event: MouseEvent):
+            if event.event_type == MouseEventType.MOUSE_UP:
+                self.text_area.text = yaml.dump(request)
+                self.refresh()
+            else:
+                return NotImplemented
+
+        label_text = f"\t{request_name}"
+        return [("#00ff00", label_text, handler)]

@@ -8,6 +8,7 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any, Dict, Optional
+from typing import OrderedDict as OrderedDictT
 
 import jinja2
 
@@ -24,7 +25,10 @@ from restcli.params import (
     REQUIRED_REQUEST_PARAMS,
 )
 
-__all__ = ["Collection", "Environment"]
+__all__ = ["Collection", "Environment", "GroupType", "RequestType"]
+
+RequestType = OrderedDictT[str, Any]
+GroupType = OrderedDictT[str, RequestType]
 
 
 class Document(OrderedDict, metaclass=abc.ABCMeta):
