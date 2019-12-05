@@ -32,12 +32,12 @@ def toggle_focus(self, ui: UI, items: Sequence[MenuItem]):
             layout.has_focus(ui.menu.window)
             and ui.menu.selected_menu == selection
         ):
-            for _ in range(ui.menu._breadcrumb):
+            for _ in range(ui.menu.breadcrumb):
                 layout.focus_last()
         else:
             layout.focus(ui.menu.window)
             ui.menu.selected_menu[:] = selection
-            ui.menu._breadcrumb += 1
+            ui.menu.breadcrumb += 1
 
     return handler
 

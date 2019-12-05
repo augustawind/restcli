@@ -79,7 +79,7 @@ class MenuContainer(_MenuContainer, MenuItemsMixin):
         MenuItemsMixin.__init__(self, menu_items)
 
         self.ui = ui
-        self._breadcrumb = 0
+        self.breadcrumb = 0
         self._init_items(menu_items)
 
     @property
