@@ -25,10 +25,6 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def write_json_body(self, body: dict):
-        res_body = json.dumps(body).encode("utf-8")
-        self.wfile.write(res_body)
-
     def error_response(self, code: HTTPStatus, msg: Optional[str] = None):
         self.send_response(code)
         if msg:
@@ -80,6 +76,78 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.write_json_body(resource.data)
 
+    def do_POST(self):
+        resource = self.get_resource(detail=False)
+        if not resource:
+            return
+
+        data = self.read_json_body()
+        if not data:
+            return
+
+        id_ = data.get("id")
+        if not id_:
+            return self.error_response(
+                HTTPStatus.BAD_REQUEST, "Field 'id' is required."
+            )
+
+        OBJECTS[resource.model][id_] = data
+        self.write_json_body(data, status_code=HTTPStatus.CREATED)
+
+    def do_PATCH(self):
+        resource = self.get_resource(detail=True)
+        if not resource:
+            return
+
+        data = self.read_json_body()
+        if not data:
+            return
+
+        obj = OBJECTS[resource.model][resource.id]
+        for key, value in data.items():
+            if key in obj and key != "id":
+                obj[key] = value
+
+        self.write_json_body(obj)
+
+    def do_PUT(self):
+        resource = self.get_resource(detail=True)
+        if not resource:
+            return
+
+        data = self.read_json_body()
+        if not data:
+            return
+
+        obj = OBJECTS[resource.model][resource.id]
+        for key in obj:
+            if key not in data:
+                return self.error_response(
+                    HTTPStatus.BAD_REQUEST, f"Field '{key}' is missing'"
+                )
+            if key != "id":
+                obj[key] = data[key]
+
+        self.write_json_body(obj)
+
+    def read_json_body(self):
+        if not self.headers["Content-Length"]:
+            return self.error_response(
+                HTTPStatus.BAD_REQUEST, "Header 'Content-Length' is required."
+            )
+
+        content_length = int(self.headers["Content-Length"])
+        req_body = self.rfile.read(content_length)
+
+        return json.loads(req_body.decode("utf-8"))
+
+    def write_json_body(self, body: dict, status_code=HTTPStatus.OK):
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        res_body = json.dumps(body).encode("utf-8")
+        self.wfile.write(res_body)
+
     def do_DELETE(self):
         resource = self.get_resource(detail=True)
         if not resource:
@@ -88,32 +156,6 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         del OBJECTS[resource.model][resource.id]
         self.send_response(HTTPStatus.NO_CONTENT)
         self.end_headers()
-
-    def do_POST(self):
-        if not self.headers["Content-Length"]:
-            return self.error_response(
-                HTTPStatus.BAD_REQUEST, "Header 'Content-Length' is required."
-            )
-
-        content_length = int(self.headers["Content-Length"])
-        body = self.rfile.read(content_length)
-
-        obj = json.loads(body.decode("utf-8"))
-        id_ = obj.get("id")
-        if not id_:
-            return self.error_response(
-                HTTPStatus.BAD_REQUEST, "Field 'id' is required."
-            )
-
-        resource = self.get_resource(detail=False)
-        if not resource:
-            return
-
-        OBJECTS[resource.model][id_] = obj
-        self.send_response(201)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.write_json_body(obj)
 
 
 if __name__ == "__main__":
