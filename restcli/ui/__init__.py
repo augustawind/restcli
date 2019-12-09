@@ -60,8 +60,11 @@ class UI:
         )
 
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
+        self.output_frame = Frame(
+            self.output, title="Output", width=D(weight=4)
+        )
 
-        self._create_root_container()
+        self.root_container = self._init_root_container()
 
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
@@ -85,22 +88,20 @@ class UI:
     def run(self):
         self.app.run()
 
-    def refresh_layout(self, focus: Optional[FocusableElement] = None):
+    def redraw_layout(self, focus: Optional[FocusableElement] = None):
+        """Redraw the Layout and everything in it except the Editor.
+
+        TODO: figure out if the menu items need to be recreated (prob not)
+        """
         self.app.layout = Layout(
-            self._create_root_container(), focused_element=focus
+            self._init_root_container(), focused_element=focus
         )
 
     # noinspection PyTypeChecker
-    def _create_root_container(self) -> Container:
-        body = VSplit(
-            [
-                self.editor_frame,
-                Frame(self.output, title="Output", width=D(weight=4)),
-            ],
-            height=D(),
-        )
+    def _init_root_container(self) -> Container:
+        body = VSplit([self.editor_frame, self.output_frame,], height=D(),)
 
-        self.root_container = MenuContainer(
+        return MenuContainer(
             self,
             body=body,
             menu_items=self._init_menu_items(),
@@ -112,8 +113,6 @@ class UI:
                 )
             ],
         )
-
-        return self.root_container
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()

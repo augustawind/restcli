@@ -65,12 +65,12 @@ class Editor:
 
         self.ui = ui
 
-        self.refresh()
+        self.redraw()
 
     def __pt_container__(self) -> Container:
         return self.container
 
-    def refresh(self):
+    def redraw(self):
         menu_items = []
         for i, menu_item in enumerate(self.menu_items):
             menu_items.append(menu_item)
@@ -118,8 +118,10 @@ class Editor:
         else:
             self.ui.editor_frame.title = self.DEFAULT_TITLE
 
-        self.refresh()
-        self.ui.refresh_layout(focus=self.side_menu)
+        self.redraw()
+
+        # Layout must be redrawn for the side menu to function properly
+        self.ui.redraw_layout(focus=self.side_menu)
 
     def _side_menu_item(
         self, group_name: str, index: int
@@ -128,9 +130,16 @@ class Editor:
 
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
-                self.expanded_menu_indices.add(index)
-                self.refresh()
-                self.ui.refresh_layout(self.menu_items[index])
+                # Toggle submenu - expand if collapsed, collapse if expanded
+                if index in self.expanded_menu_indices:
+                    self.expanded_menu_indices.remove(index)
+                else:
+                    self.expanded_menu_indices.add(index)
+
+                self.redraw()
+
+                # Layout must be redrawn to display
+                self.ui.redraw_layout(self.menu_items[index])
             else:
                 return NotImplemented
 
@@ -142,7 +151,7 @@ class Editor:
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.text_area.text = yaml.dump(request)
-                self.refresh()
+                self.redraw()
             else:
                 return NotImplemented
 
