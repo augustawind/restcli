@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
-from urllib.parse import quote_plus
 
 
 class AttrSeq(Sequence):
@@ -38,8 +37,8 @@ class AttrMap(Mapping):
         *pairs: 2-tuples to create the mapping from.
     """
 
-    def __init__(self, *pairs):
-        self._dict = OrderedDict(pairs)
+    def __init__(self, *pairs, **kws):
+        self._dict = OrderedDict(pairs, **kws)
 
     def __getitem__(self, item):
         return self._dict[item]

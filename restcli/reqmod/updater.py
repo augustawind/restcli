@@ -2,7 +2,7 @@ import abc
 from dataclasses import dataclass
 from typing import Dict, List, Union
 
-from restcli.exceptions import ReqModKeyError
+from restcli.exceptions import ReqModKeyError, ReqModValueError
 from restcli.utils import AttrMap
 
 JsonValue = Union[
@@ -56,13 +56,15 @@ class Updater(metaclass=abc.ABCMeta):
             self.update_request(current_request_param)
         except KeyError:
             raise ReqModKeyError(value=self.key)
+        except (TypeError, ValueError):
+            raise ReqModValueError(value=self.value)
 
     @abc.abstractmethod
-    def update_request(self, request_param):
+    def update_request(self, param_value):
         """Update a Request Parameter.
 
         Args:
-            request_param: The value of the Request Parameter to update.
+            param_value: The value of the Request Parameter to update.
 
         Notes:
             Child classes must implement this method.
@@ -72,22 +74,22 @@ class Updater(metaclass=abc.ABCMeta):
 class AppendUpdater(Updater):
     """Appends a value to a Request Parameter field."""
 
-    def update_request(self, request_param):
-        request_param[self.key] += self.value
+    def update_request(self, param_value):
+        param_value[self.key] += self.value
 
 
 class AssignUpdater(Updater):
     """Sets a new value in a Request Parameter field."""
 
-    def update_request(self, request_param):
-        request_param[self.key] = self.value
+    def update_request(self, param_value):
+        param_value[self.key] = self.value
 
 
 class DeleteUpdater(Updater):
     """Deletes a field in a Request Parameter."""
 
-    def update_request(self, request_param):
-        del request_param[self.key]
+    def update_request(self, param_value):
+        del param_value[self.key]
 
 
 UPDATERS = AttrMap(

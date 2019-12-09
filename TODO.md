@@ -23,3 +23,4 @@
 - [ ] Implement localization using ugettext.
 - [ ] Automate grabbing --help output and inserting it into README.
 - [ ] Export Collections to/from Postman.
+- [ ] Support multiple locales.
