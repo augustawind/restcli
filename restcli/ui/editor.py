@@ -105,13 +105,7 @@ class TabbedRequestWindow:
             if tab.has_unsaved_changed:
                 text = f"+{text}"
 
-            def handler(event: MouseEvent):
-                if event.event_type == MouseEventType.MOUSE_UP:
-                    self.active_tab_idx = i
-                    self.editor.redraw()
-                    self.editor.ui.redraw_layout(self.active_tab)
-                else:
-                    return NotImplemented
+            handler = self._one_tab_handler(i)
 
             controls.append(
                 Window(
@@ -128,6 +122,17 @@ class TabbedRequestWindow:
             padding=D.exact(1),
             align=HorizontalAlign.LEFT,
         )
+
+    def _one_tab_handler(self, index: int):
+        def handler(event: MouseEvent):
+            if event.event_type == MouseEventType.MOUSE_UP:
+                self.active_tab_idx = index
+                self.editor.redraw()
+                self.editor.ui.redraw_layout(self.active_tab)
+            else:
+                return NotImplemented
+
+        return handler
 
     def add_tab(self, tab: RequestTab, active: bool = True):
         """Add the given tab.
