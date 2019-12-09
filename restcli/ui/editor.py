@@ -1,21 +1,25 @@
 from __future__ import annotations
 
 import os.path
-from typing import TYPE_CHECKING, List, Set
+from typing import TYPE_CHECKING, List, Optional, Set
 
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
+    ConditionalContainer,
     Container,
+    DynamicContainer,
+    HorizontalAlign,
     HSplit,
     VerticalAlign,
     VSplit,
     Window,
 )
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
-from prompt_toolkit.layout.dimension import D
+from prompt_toolkit.layout.dimension import AnyDimension, D
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.mouse_events import MouseEvent, MouseEventType
-from prompt_toolkit.widgets import TextArea, VerticalLine
+from prompt_toolkit.widgets import HorizontalLine, TextArea, VerticalLine
 from pygments.lexers.data import YamlLexer
 
 from restcli import yaml_utils as yaml
@@ -25,12 +29,135 @@ if TYPE_CHECKING:
     from restcli.ui import UI
 
 
+class RequestTab:
+
+    request_name: Optional[str]
+    request_body: Optional[RequestType]
+
+    DEFAULT_NAME = "[Empty]"
+
+    def __init__(
+        self,
+        request_name: Optional[str] = None,
+        request_body: Optional[RequestType] = None,
+        width: AnyDimension = None,
+    ):
+        self.saved_text = ""
+
+        self.text_area = TextArea(
+            width=width,
+            lexer=PygmentsLexer(YamlLexer),
+            line_numbers=True,
+            scrollbar=True,
+            focus_on_click=True,
+        )
+
+        if request_name or request_body:
+            assert request_name and request_body, "Incomplete data provided"
+            self.set_request(request_name, request_body)
+        else:
+            self.request_name = self.DEFAULT_NAME
+            self.request_body = None
+
+    def __pt_container__(self):
+        return self.text_area
+
+    def is_empty(self) -> bool:
+        return (
+            len(self.text_area.text.strip()) == 0 and len(self.saved_text) == 0
+        )
+
+    @property
+    def has_unsaved_changed(self) -> bool:
+        return bool(self.text_area.text.strip() != self.saved_text)
+
+    def set_request(self, request_name: str, request_body: RequestType):
+        self.request_name = request_name
+        self.request_body = request_body
+        self.text_area.text = yaml.dump(request_body)
+
+    def save_changes(self):
+        self.saved_text = self.text_area.text.strip()
+
+
+class TabbedRequestWindow:
+    def __init__(self, ui: UI, width: AnyDimension = None):
+        self.ui = ui
+        self.width = width
+
+        self.tabs = [RequestTab(width=width)]
+        self.active_tab_idx = 0
+
+        self.tab_bar = DynamicContainer(self.get_tab_controls)
+
+    def __pt_container__(self):
+        return HSplit([self.tab_bar, HorizontalLine(), self.active_tab])
+
+    @property
+    def active_tab(self) -> RequestTab:
+        return self.tabs[self.active_tab_idx]
+
+    def get_tab_controls(self) -> Container:
+        controls = []
+        for i, tab in enumerate(self.tabs):
+            style = "class:tabbar.tab"
+            if i == self.active_tab_idx:
+                style += ".active"
+
+            text = tab.request_name
+            if tab.has_unsaved_changed:
+                text = f"+ {text}"
+
+            def handler(event: MouseEvent):
+                if event.event_type == MouseEventType.MOUSE_UP:
+                    self.active_tab_idx = i
+                else:
+                    return NotImplemented
+
+            controls.append(
+                ConditionalContainer(
+                    Window(
+                        FormattedTextControl([(style, text, handler)]),
+                        width=D(min=3, preferred=len(text)),
+                    ),
+                    filter=Condition(lambda: len(self.tabs) > 1),
+                )
+            )
+        return VSplit(
+            controls, height=1, width=self.width, align=HorizontalAlign.LEFT
+        )
+
+    def add_tab(self, tab: RequestTab, active: bool = True):
+        """Add the given tab.
+
+        If `active` is True, make it the active tab.
+        """
+        # If there is only one tab and it's empty, replace it
+        if len(self.tabs) == 1 and self.active_tab.is_empty():
+            self.tabs[0] = tab
+        else:
+            self.tabs.append(tab)
+            if active:
+                self.active_tab_idx = len(self.tabs) - 1
+
+    def remove_tab(self, index: int) -> Optional[RequestTab]:
+        """Remove the tab at the given index.
+
+        If it was the active tab, make the next tab active. Returns the removed
+        tab, or None if there was no tab at that index.
+        """
+        try:
+            return self.tabs.pop(index)
+        except IndexError:
+            return None
+
+
 class Editor:
     """UI panel where :class:`Collection`s can be edited.
 
     Attributes
     ----------
-    text_area
+    content
         Editable text area where Collection Requests are loaded.
     side_menu
         Collapsible menu where the current Collection's Groups and Requests are
@@ -38,8 +165,7 @@ class Editor:
         ``text_area``.
     """
 
-    title_bar: Window
-    text_area: TextArea
+    content: TabbedRequestWindow
     side_menu: Container
     container: Container
 
@@ -52,12 +178,7 @@ class Editor:
     DEFAULT_TITLE = "Untitled collection"
 
     def __init__(self, ui: UI):
-        self.text_area = TextArea(
-            lexer=PygmentsLexer(YamlLexer),
-            width=D(weight=2),
-            focus_on_click=True,
-            line_numbers=True,
-        )
+        self.content = TabbedRequestWindow(ui, width=D(weight=2))
 
         self.menu_items = [Window(BufferControl())]
         self.submenu_items = []
@@ -67,7 +188,7 @@ class Editor:
 
         self.redraw()
 
-    def __pt_container__(self) -> Container:
+    def __pt_container__(self):
         return self.container
 
     def redraw(self):
@@ -81,9 +202,7 @@ class Editor:
         self.side_menu = HSplit(
             menu_items, width=D(weight=1), align=VerticalAlign.TOP
         )
-        self.container = VSplit(
-            [self.side_menu, VerticalLine(), self.text_area]
-        )
+        self.container = VSplit([self.side_menu, VerticalLine(), self.content])
 
     def load_collection(self, collection: Collection):
         self.menu_items.clear()
@@ -95,7 +214,7 @@ class Editor:
             self.menu_items.append(
                 Window(
                     FormattedTextControl(
-                        self._side_menu_item(group_name, idx), focusable=True,
+                        self._side_menu_item(group_name, idx), focusable=True
                     )
                 )
             )
@@ -150,7 +269,9 @@ class Editor:
     ) -> StyleAndTextTuples:
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
-                self.text_area.text = yaml.dump(request)
+                self.content.add_tab(
+                    RequestTab(request_name, request, width=D(weight=2))
+                )
                 self.redraw()
             else:
                 return NotImplemented

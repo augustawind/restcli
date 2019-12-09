@@ -175,5 +175,9 @@ class UI:
                 "radiolist focused": "noreverse",
                 "radiolist focused radio.selected": "reverse",
                 "button-bar": "bg:#aaaaff",
+                # Tabs
+                "tabbar": "noinherit reverse",
+                "tabbar.tab": "underline",
+                "tabbar.tab.active": "bold noinherit",
             }
         )
