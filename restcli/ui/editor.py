@@ -3,10 +3,8 @@ from __future__ import annotations
 import os.path
 from typing import TYPE_CHECKING, List, Optional, Set
 
-from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
     Container,
-    DynamicContainer,
     HorizontalAlign,
     HSplit,
     VerticalAlign,
@@ -78,7 +76,15 @@ class RequestTab:
 
 
 class TabbedRequestWindow:
-    def __init__(self, editor: Editor, width: AnyDimension = None):
+    editor: Editor
+    width: D
+    tabs: List[RequestTab]
+    active_tab_idx: int
+
+    tab_bar: Container
+    container: Container
+
+    def __init__(self, editor: Editor, width: D = None):
         self.editor = editor
         self.width = width
 
@@ -130,6 +136,7 @@ class TabbedRequestWindow:
         )
 
     def _one_tab_handler(self, index: int):
+        # noinspection PyTypeChecker
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.active_tab_idx = index

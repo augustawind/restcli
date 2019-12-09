@@ -41,3 +41,9 @@ class OpenFile(MenuHandler):
         if not document:
             return
         self.ui.editor.load_collection(document)
+
+
+class Save(MenuHandler):
+    def __call__(self, event=None):
+        self.ui.editor.content.active_tab.save_changes()
+        self.ui.editor.redraw()

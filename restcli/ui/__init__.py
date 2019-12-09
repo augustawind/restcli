@@ -125,7 +125,7 @@ class UI:
             MenuItem(
                 "File<{key}>",
                 key="f1",
-                name="File",
+                name="file",
                 handler=handlers.ToggleFocus,
                 children=[
                     MenuItem(
@@ -139,6 +139,12 @@ class UI:
                         key="c-o",
                         name="open",
                         handler=handlers.OpenFile,
+                    ),
+                    MenuItem(
+                        "Save Request <{key}>",
+                        key="c-s",
+                        name="save",
+                        handler=handlers.Save,
                     ),
                     MenuItem.SEPARATOR(),
                     MenuItem(
@@ -163,9 +169,10 @@ class UI:
                 name="edit",
                 handler=handlers.ToggleFocus,
                 children=[
+                    MenuItem("Undo <{key}>", key="c-z", name="undo"),
                     MenuItem(
                         "Find in Collection <{key}>", key="c-f", name="find"
-                    )
+                    ),
                 ],
             ),
         ]
