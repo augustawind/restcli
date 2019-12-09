@@ -1,7 +1,6 @@
 """Interactive TUI application for restcli."""
-import os.path
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.enums import EditingMode
@@ -10,9 +9,9 @@ from prompt_toolkit.key_binding.bindings.focus import (
     focus_next,
     focus_previous,
 )
-from prompt_toolkit.layout.containers import Float, VSplit
+from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
-from prompt_toolkit.layout.layout import Layout
+from prompt_toolkit.layout.layout import FocusableElement, Layout
 from prompt_toolkit.layout.menus import CompletionsMenu
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
@@ -43,38 +42,57 @@ class UI:
         UI component where data is edited by the user.
     output : :class:`prompt_toolkit.widgets.TextArea`
         UI component where various output is displayed.
-    body : :class:`prompt_toolkit.layout.containers.Container`
-        UI component where data will be displayed.
-    menu : :class:`MenuContainer`
+    root_container : :class:`MenuContainer`
         UI component that wraps `body` with a context menu.
     key_bindings : :class:`prompt_toolkit.key_binding.KeyBindings`
         Application-wide key bindings.
     style : :class:`prompt_toolkit.styles.Style`
         Styling information for display.
-    layout : :class:`prompt_toolkit.layout.Layout`
-        UI component that holds all other components.
     """
 
     # noinspection PyTypeChecker
     def __init__(self):
         self.state = AppState()
 
-        self.editor = Editor()
+        self.editor = Editor(self)
         self.editor_frame = Frame(
-            self.editor, title="Collection", width=D(weight=5)
+            self.editor, title=Editor.DEFAULT_TITLE, width=D(weight=5)
         )
-
-        def update_editor_title(collection: Collection):
-            self.editor_frame.title = os.path.basename(collection.source)
-
-        self.editor.update_title = update_editor_title
-        # TODO: this line is just for development
-        self.editor.load_collection(Collection("collection.yaml"))
-        self.editor.refresh()
 
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
 
-        self.body = VSplit(
+        self._create_root_container()
+
+        self.key_bindings = self._init_key_bindings()
+        self.style = self._init_style()
+
+        layout = Layout(
+            self.root_container, focused_element=self.editor.side_menu
+        )
+
+        self.app = Application(
+            layout=layout,
+            key_bindings=self.key_bindings,
+            style=self.style,
+            mouse_support=True,
+            full_screen=True,
+            editing_mode=EditingMode.VI,
+        )
+
+        # TODO: this line is just for development
+        self.editor.load_collection(Collection("collection.yaml"))
+
+    def run(self):
+        self.app.run()
+
+    def refresh_layout(self, focus: Optional[FocusableElement] = None):
+        self.app.layout = Layout(
+            self._create_root_container(), focused_element=focus
+        )
+
+    # noinspection PyTypeChecker
+    def _create_root_container(self) -> Container:
+        body = VSplit(
             [
                 self.editor_frame,
                 Frame(self.output, title="Output", width=D(weight=4)),
@@ -82,9 +100,9 @@ class UI:
             height=D(),
         )
 
-        self.menu = MenuContainer(
+        self.root_container = MenuContainer(
             self,
-            body=self.body,
+            body=body,
             menu_items=self._init_menu_items(),
             floats=[
                 Float(
@@ -95,26 +113,11 @@ class UI:
             ],
         )
 
-        self.key_bindings = self._init_key_bindings()
-        self.style = self._init_style()
-
-        self.layout = Layout(self.menu, focused_element=self.editor.side_menu)
-
-        self.app = Application(
-            layout=self.layout,
-            key_bindings=self.key_bindings,
-            style=self.style,
-            mouse_support=True,
-            full_screen=True,
-            editing_mode=EditingMode.VI,
-        )
-
-    def run(self):
-        self.app.run()
+        return self.root_container
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
-        self.menu.register_key_bindings(kb)
+        self.root_container.register_key_bindings(kb)
 
         kb.add("c-x")(lambda _: self.app.exit())
         kb.add("tab")(focus_next)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Set
+import os.path
+from typing import TYPE_CHECKING, List, Set
 
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
@@ -20,6 +21,9 @@ from pygments.lexers.data import YamlLexer
 from restcli import yaml_utils as yaml
 from restcli.workspace import Collection, RequestType
 
+if TYPE_CHECKING:
+    from restcli.ui import UI
+
 
 class Editor:
     """UI panel where :class:`Collection`s can be edited.
@@ -34,6 +38,7 @@ class Editor:
         ``text_area``.
     """
 
+    title_bar: Window
     text_area: TextArea
     side_menu: Container
     container: Container
@@ -42,7 +47,11 @@ class Editor:
     submenu_items: List[List[Window]]
     expanded_menu_indices: Set[int]
 
-    def __init__(self):
+    ui: UI
+
+    DEFAULT_TITLE = "Untitled collection"
+
+    def __init__(self, ui: UI):
         self.text_area = TextArea(
             lexer=PygmentsLexer(YamlLexer),
             width=D(weight=2),
@@ -53,6 +62,10 @@ class Editor:
         self.menu_items = [Window(BufferControl())]
         self.submenu_items = []
         self.expanded_menu_indices = set()
+
+        self.ui = ui
+
+        self.refresh()
 
     def __pt_container__(self) -> Container:
         return self.container
@@ -73,8 +86,11 @@ class Editor:
         )
 
     def load_collection(self, collection: Collection):
-        # Set sidebar menu items
         self.menu_items.clear()
+        self.submenu_items.clear()
+        self.expanded_menu_indices.clear()
+
+        # Set sidebar menu items
         for idx, (group_name, group) in enumerate(collection.items()):
             self.menu_items.append(
                 Window(
@@ -97,9 +113,13 @@ class Editor:
                 )
 
         # Set frame title
-        self.update_title(collection)
+        if collection.source:
+            self.ui.editor_frame.title = os.path.basename(collection.source)
+        else:
+            self.ui.editor_frame.title = self.DEFAULT_TITLE
 
         self.refresh()
+        self.ui.refresh_layout(focus=self.side_menu)
 
     def _side_menu_item(
         self, group_name: str, index: int
@@ -110,6 +130,7 @@ class Editor:
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.expanded_menu_indices.add(index)
                 self.refresh()
+                self.ui.refresh_layout(self.menu_items[index])
             else:
                 return NotImplemented
 

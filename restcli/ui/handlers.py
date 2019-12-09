@@ -24,20 +24,20 @@ class EndProgram(MenuHandler):
 
 class ToggleFocus(MenuHandler):
     def __call__(self, event=None):
-        layout = self.ui.layout
-        selection = self.ui.menu.get_menu_selection(
+        layout = self.ui.app.layout
+        selection = self.ui.root_container.get_menu_selection(
             item.name for item in self.items
         )
         if (
-            layout.has_focus(self.ui.menu.window)
-            and self.ui.menu.selected_menu == selection
+            layout.has_focus(self.ui.root_container.window)
+            and self.ui.root_container.selected_menu == selection
         ):
-            for _ in range(self.ui.menu.breadcrumb):
+            for _ in range(self.ui.root_container.breadcrumb):
                 layout.focus_last()
         else:
-            layout.focus(self.ui.menu.window)
-            self.ui.menu.selected_menu[:] = selection
-            self.ui.menu.breadcrumb += 1
+            layout.focus(self.ui.root_container.window)
+            self.ui.root_container.selected_menu[:] = selection
+            self.ui.root_container.breadcrumb += 1
 
 
 class OpenFile(MenuHandler):
@@ -115,19 +115,19 @@ class OpenFileDialog(Dialog):
         self.future.set_result(None)
 
     def handle_accept_text(self, buf):
-        self.ui.layout.focus(self.ok_button)
+        self.ui.app.layout.focus(self.ok_button)
         buf.complete_state = None
         return True
 
     async def run(self):
         float_ = Float(self)
-        self.ui.menu.floats.insert(0, float_)
+        self.ui.root_container.floats.insert(0, float_)
 
-        self.ui.layout.focus(self)
+        self.ui.app.layout.focus(self)
         result = await self.future
-        self.ui.layout.focus_last()
+        self.ui.app.layout.focus_last()
 
-        if float_ in self.ui.menu.floats:
-            self.ui.menu.floats.remove(float_)
+        if float_ in self.ui.root_container.floats:
+            self.ui.root_container.floats.remove(float_)
 
         return result
