@@ -173,11 +173,20 @@ class TabbedRequestWindow:
 
         return handler
 
-    def add_tab(self, tab: RequestTab, active: bool = True):
+    def add_tab(self, tab: RequestTab, active: bool = True) -> bool:
         """Add the given tab.
 
-        If `active` is True, make it the active tab.
+        If `active` is True, make it the active tab. Returns True if it was
+        added successfully. Returns False if a tab already exists with the same
+         `group_name` and `request_name`.
         """
+        if any(
+            (tab.group_name, tab.request_name)
+            == (t.group_name, t.request_name)
+            for t in self.tabs
+        ):
+            return False
+
         # Add hook to update state with changes saved in the tab
         tab.on_save = self.on_tab_save
 
@@ -188,6 +197,8 @@ class TabbedRequestWindow:
             self.tabs.append(tab)
             if active:
                 self.active_tab_idx = len(self.tabs) - 1
+
+        return True
 
     def remove_tab(self, index: int) -> Optional[RequestTab]:
         """Remove the tab at the given index.
