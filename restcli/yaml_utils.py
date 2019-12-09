@@ -74,7 +74,7 @@ def dump(data, stream=None, safe=False, many=False, **kwargs):
     kwargs.setdefault("default_flow_style", False)
     Dumper = SafeCustomDumper if safe else CustomDumper
     if not many:
-        data = [data]
+        return yaml.dump(data, stream, Dumper, **kwargs)
     return yaml.dump_all(data, stream, Dumper, **kwargs)
 
 

@@ -37,8 +37,8 @@ class AttrMap(Mapping):
         *pairs: 2-tuples to create the mapping from.
     """
 
-    def __init__(self, *pairs):
-        self._dict = OrderedDict(pairs)
+    def __init__(self, *pairs, **kws):
+        self._dict = OrderedDict(pairs, **kws)
 
     def __getitem__(self, item):
         return self._dict[item]

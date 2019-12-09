@@ -1,7 +1,7 @@
 import random
 import string
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Mapping, Optional, Sequence
 
 from restcli.utils import AttrMap, AttrSeq
 
@@ -16,28 +16,28 @@ def _range_args(a, b=None):
     return a, b
 
 
-def _random_len(a, b, min_len=1):
+def _len(a, b, min_len=1):
     a, b = _range_args(a, b)
     return max(min_len, random.randint(a, b))
 
 
-def random_str(population, a=15, b=None, length=None):
-    length = length or _random_len(a, b, min_len=3)
+def string(population, a=15, b=None, length=None):
+    length = length or _len(a, b, min_len=3)
     k = min(length, len(population))
     return "".join(random.sample(population, k))
 
 
-def random_alphanum(a=15, b=None, length=None):
+def alphanum(a=15, b=None, length=None):
     """Generate a random alphanumeric ASCII string."""
-    return random_str(ALPHANUMERIC_CHARS, a, b, length)
+    return string(ALPHANUMERIC_CHARS, a, b, length)
 
 
-def random_ascii(a=15, b=None, length=None):
+def ascii(a=15, b=None, length=None):
     """Generate a random ASCII string."""
-    return random_str(ASCII_CHARS, a, b, length)
+    return string(ASCII_CHARS, a, b, length)
 
 
-def random_unicode(a=15, b=None, length=None):
+def unicode(a=15, b=None, length=None):
     """Generate a random Unicode string."""
     include_ranges = [
         (0x0021, 0x0021),
@@ -59,15 +59,15 @@ def random_unicode(a=15, b=None, length=None):
         for start, end in include_ranges
         for code_point in range(start, end + 1)
     ]
-    return random_str(alphabet, a, b, length)
+    return string(alphabet, a, b, length)
 
 
-def random_urlsafe(a=15, b=None, length=None):
+def urlsafe(a=15, b=None, length=None):
     """Generate a random URL-safe string."""
-    return random_str(URLSAFE_CHARS, a, b, length)
+    return string(URLSAFE_CHARS, a, b, length)
 
 
-def random_number(a=99.999, b=None, int_chance=0.5):
+def number(a=99.999, b=None, int_chance=0.5):
     """Generate a random int or float."""
     a, b = _range_args(a, b)
     n = random.random() * (b - a) + a
@@ -76,22 +76,23 @@ def random_number(a=99.999, b=None, int_chance=0.5):
     return n
 
 
-def random_bool(p=0.5):
+def boolean(p=0.5):
     """Generate a random bool."""
     return random.random() > p
 
 
-def random_list(
-    gen_func: Callable[[], Any] = None,
+def sequence(
+    gen_item: Callable[[], Any] = None,
     min_len: int = 1,
     max_len: int = 5,
     depth: int = 0,
-) -> list:
+    cls: Callable[[list], Sequence] = list,
+) -> Sequence:
     r = []
     length = random.randint(min_len, max_len)
 
     for _ in range(length):
-        if gen_func is None:
+        if gen_item is None:
             if depth > 0:
                 possible_types = GEN_TYPES_COMPOUND
                 depth -= 1
@@ -99,39 +100,40 @@ def random_list(
                 possible_types = GEN_TYPES_SIMPLE
 
             gen_type = random.sample(possible_types)
-            gen_func = GEN_FUNCS[gen_type]
+            gen_item = GEN_FUNCS[gen_type]
 
             if gen_type is GEN_TYPES.list:
                 r.append(
-                    gen_func(
-                        gen_func=None,
+                    gen_item(
+                        gen_item=None,
                         min_len=min_len,
                         max_len=max_len,
                         depth=depth,
                     )
                 )
             else:
-                r.append(gen_func())
+                r.append(gen_item())
         else:
-            r.append(gen_func)
+            r.append(gen_item())
 
-    return r
+    return cls(r)
 
 
-def random_dict(
-    key_gen: Callable[[], Any] = partial(random_ascii, 5, 10),
-    value_gen: Optional[Callable[[], Any]] = None,
+def mapping(
+    gen_key: Callable[[], Any] = partial(ascii, 5, 10),
+    gen_value: Optional[Callable[[], Any]] = None,
     min_len: int = 1,
     max_len: int = 5,
     depth: int = 0,
-) -> dict:
+    cls: Callable[[dict], Mapping] = dict,
+) -> Mapping:
     r = {}
     length = random.randint(min_len, max_len)
 
     for _ in range(length):
-        key = key_gen()
+        key = gen_key()
 
-        if value_gen is None:
+        if gen_value is None:
             if depth > 0:
                 possible_types = GEN_TYPES_COMPOUND
                 depth -= 1
@@ -139,33 +141,33 @@ def random_dict(
                 possible_types = GEN_TYPES_SIMPLE
 
             gen_type = random.sample(possible_types)
-            gen_func = GEN_FUNCS[gen_type]
+            gen_value = GEN_FUNCS[gen_type]
 
             if gen_type is GEN_TYPES.dict:
-                r[key] = gen_func(
-                    key_gen=key_gen,
-                    value_gen=value_gen,
+                r[key] = gen_value(
+                    gen_key=gen_key,
+                    gen_value=None,
                     min_len=min_len,
                     max_len=max_len,
                     depth=depth,
                 )
             else:
-                r[key] = gen_func()
+                r[key] = gen_value(depth=depth)
         else:
-            r[key] = value_gen()
+            r[key] = gen_value()
 
-    return r
+    return cls(r)
 
 
 GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool")
 GEN_TYPES_COMPOUND = AttrSeq("list", "dict")
 GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND,)
 GEN_FUNCS = AttrMap(
-    (GEN_TYPES.num, random_number),
-    (GEN_TYPES.str, random_ascii),
-    (GEN_TYPES.bool, random_bool),
-    (GEN_TYPES.list, random_list),
-    (GEN_TYPES.dict, random_dict),
+    (GEN_TYPES.num, number),
+    (GEN_TYPES.str, ascii),
+    (GEN_TYPES.bool, boolean),
+    (GEN_TYPES.list, sequence),
+    (GEN_TYPES.dict, mapping),
 )
 
 

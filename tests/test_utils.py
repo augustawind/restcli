@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
+import tests.random_gen as gen
 from restcli import utils
 from restcli.reqmod import lexer
-
-from .random_gen import random_alphanum, random_unicode
 
 # Default value for function args where None doesn't make sense
 DEFAULT = type("DEFAULT", (object,), {})
@@ -50,10 +49,10 @@ def test_recursive_update():
 
 
 def test_is_ascii():
-    assert utils.is_ascii(random_unicode(50)) is False
-    assert utils.is_ascii(random_unicode(50)) is False
-    assert utils.is_ascii(random_unicode(50)) is False
+    assert utils.is_ascii(gen.unicode(50)) is False
+    assert utils.is_ascii(gen.unicode(50)) is False
+    assert utils.is_ascii(gen.unicode(50)) is False
 
-    assert utils.is_ascii(random_alphanum(50)) is True
-    assert utils.is_ascii(random_alphanum(50)) is True
-    assert utils.is_ascii(random_alphanum(50)) is True
+    assert utils.is_ascii(gen.alphanum(50)) is True
+    assert utils.is_ascii(gen.alphanum(50)) is True
+    assert utils.is_ascii(gen.alphanum(50)) is True
