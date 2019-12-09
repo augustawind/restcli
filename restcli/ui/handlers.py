@@ -123,10 +123,9 @@ class OpenFileDialog(Dialog):
         float_ = Float(self)
         self.ui.menu.floats.insert(0, float_)
 
-        focused_before = self.ui.layout.current_window
         self.ui.layout.focus(self)
         result = await self.future
-        self.ui.layout.focus(focused_before)
+        self.ui.layout.focus_last()
 
         if float_ in self.ui.menu.floats:
             self.ui.menu.floats.remove(float_)
