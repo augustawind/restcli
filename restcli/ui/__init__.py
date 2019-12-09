@@ -1,6 +1,6 @@
 """Interactive TUI application for restcli."""
 from dataclasses import dataclass
-from typing import Tuple
+from typing import List
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.enums import EditingMode
@@ -57,6 +57,7 @@ class UI:
 
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
 
+        # noinspection PyTypeChecker
         self.body = VSplit(
             [
                 Frame(self.editor, title="Collection", width=D(weight=5)),
@@ -105,7 +106,7 @@ class UI:
 
         return kb
 
-    def _init_menu_items(self) -> MenuContainer:
+    def _init_menu_items(self) -> List[MenuItem]:
         return [
             MenuItem(
                 "file<{key}>",

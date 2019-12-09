@@ -4,7 +4,7 @@ from typing import List, Set
 
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
-    AnyContainer,
+    Container,
     HSplit,
     VerticalAlign,
     VSplit,
@@ -14,12 +14,11 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.mouse_events import MouseEvent, MouseEventType
-from prompt_toolkit.widgets import Frame, TextArea, VerticalLine
+from prompt_toolkit.widgets import TextArea, VerticalLine
 from pygments.lexers.data import YamlLexer
 
 from restcli import yaml_utils as yaml
-from restcli.ui.menu import MenuContainer, MenuItem
-from restcli.workspace import Collection, GroupType, RequestType
+from restcli.workspace import Collection, RequestType
 
 
 class Editor:
@@ -35,6 +34,13 @@ class Editor:
         ``text_area``.
     """
 
+    text_area: TextArea
+    side_menu: Container
+    container: Container
+    menu_items: List[Window]
+    submenu_items: List[List[Window]]
+    expanded_menu_indices: Set[int]
+
     def __init__(self):
         self.text_area = TextArea(
             lexer=PygmentsLexer(YamlLexer),
@@ -42,18 +48,16 @@ class Editor:
             focus_on_click=True,
             line_numbers=True,
         )
-        self.side_menu: AnyContainer = None
-        self.container: AnyContainer = None
 
-        self.menu_items: List[Window] = [Window(BufferControl())]
-        self.submenu_items: List[List[Window]] = []
-        self.expanded_menu_indices: Set[int] = set()
+        self.menu_items = [Window(BufferControl())]
+        self.submenu_items = []
+        self.expanded_menu_indices = set()
 
         # TODO: remove this
         self.load_collection(Collection("collection.yaml"))
         self.refresh()
 
-    def __pt_container__(self) -> AnyContainer:
+    def __pt_container__(self) -> Container:
         return self.container
 
     def refresh(self):
@@ -77,8 +81,7 @@ class Editor:
             self.menu_items.append(
                 Window(
                     FormattedTextControl(
-                        self._gen_menu_fragment(idx, group_name, group),
-                        focusable=True,
+                        self._side_menu_item(group_name, idx), focusable=True,
                     )
                 )
             )
@@ -89,7 +92,7 @@ class Editor:
                 submenu_items.append(
                     Window(
                         FormattedTextControl(
-                            self._gen_submenu_fragment(request_name, request),
+                            self._side_menu_subitem(request_name, request),
                             focusable=True,
                         )
                     )
@@ -97,8 +100,8 @@ class Editor:
 
         self.refresh()
 
-    def _gen_menu_fragment(
-        self, index: int, group_name: str, group: GroupType
+    def _side_menu_item(
+        self, group_name: str, index: int
     ) -> StyleAndTextTuples:
         """Generate a style/text/handler tuple for Groups in the sidebar."""
 
@@ -111,7 +114,7 @@ class Editor:
 
         return [("#00ff00", group_name, handler)]
 
-    def _gen_submenu_fragment(
+    def _side_menu_subitem(
         self, request_name: str, request: RequestType
     ) -> StyleAndTextTuples:
         def handler(event: MouseEvent):

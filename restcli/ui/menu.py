@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Callable, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, List, Optional, Sequence, Type
 
-from prompt_toolkit.application.current import get_app
 from prompt_toolkit.key_binding import KeyBindings, KeyBindingsBase
 from prompt_toolkit.key_binding.key_processor import KeyPressEvent
-from prompt_toolkit.layout.containers import AnyContainer, Float
+from prompt_toolkit.layout.containers import Container, Float
 from prompt_toolkit.widgets import MenuContainer as _MenuContainer
 from prompt_toolkit.widgets import MenuItem as _MenuItem
 
@@ -78,7 +77,7 @@ class MenuItemsMixin(metaclass=abc.ABCMeta):
     def __getitem__(self, name: str) -> MenuItem:
         return self._item_map[name]
 
-    def index_of(self, name: str) -> MenuItem:
+    def index_of(self, name: str) -> int:
         return self._item_idx_map[name]
 
 
@@ -86,7 +85,7 @@ class MenuContainer(_MenuContainer, MenuItemsMixin):
     def __init__(
         self,
         ui: UI,
-        body: AnyContainer,
+        body: Container,
         menu_items: List[MenuItem],
         floats: Optional[List[Float]] = None,
         key_bindings: Optional[KeyBindingsBase] = None,  # TODO: figure dis out
@@ -110,13 +109,13 @@ class MenuContainer(_MenuContainer, MenuItemsMixin):
 
             # Instantiate MenuHandlers into normal handler funcs
             item_chain = chain + (item,)
-            if item.handler:
-                if not issubclass(item.handler, MenuHandler):
+            if item.menu_handler:
+                if not issubclass(item.menu_handler, MenuHandler):
                     raise TypeError(
                         f"{item}: MenuItem.handler must be a subclass of"
                         " MenuHandler"
                     )
-                item.handler = item.handler(self.ui, item_chain)
+                item.handler = item.menu_handler(self.ui, item_chain)
 
             # Initialize grandchildren
             self._init_items(item.items, chain=item_chain)
@@ -143,7 +142,7 @@ class MenuItem(_MenuItem, MenuItemsMixin):
         text: str = "",
         key: Optional[str] = None,
         name: Optional[str] = None,
-        handler: Optional[Union[MenuHandler, Callable[[], None]]] = None,
+        handler: Optional[Type[MenuHandler]] = None,
         children: Optional[List[MenuItem]] = None,
         disabled: bool = False,
         ui: Optional[UI] = None,
@@ -153,11 +152,10 @@ class MenuItem(_MenuItem, MenuItemsMixin):
             text = text.format(key=key)
         self.key = key
 
+        self.menu_handler = handler
         self.ui = ui
 
-        super().__init__(
-            text=text, handler=handler, children=children, disabled=disabled
-        )
+        super().__init__(text=text, children=children, disabled=disabled)
         MenuItemsMixin.__init__(self, children)
 
     @property

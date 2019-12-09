@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from asyncio import Future, ensure_future
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from prompt_toolkit.completion.filesystem import PathCompleter
 from prompt_toolkit.layout.containers import Float, HSplit
 from prompt_toolkit.layout.dimension import D
-from prompt_toolkit.shortcuts import input_dialog
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
-from restcli.ui.menu import MenuHandler, MenuItem
+from restcli.ui.menu import MenuHandler
 from restcli.workspace import Collection, Environment
 
 if TYPE_CHECKING:
@@ -53,6 +52,7 @@ class OpenFile(MenuHandler):
         self.ui.editor.load_collection(document)
 
 
+# noinspection PyTypeChecker
 class OpenFileDialog(Dialog):
     def __init__(
         self,
