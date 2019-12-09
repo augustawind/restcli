@@ -1,5 +1,7 @@
 import random
 import string
+from functools import partial
+from typing import Any, Callable, Optional
 
 from restcli.utils import AttrMap, AttrSeq
 
@@ -79,78 +81,84 @@ def random_bool(p=0.5):
     return random.random() > p
 
 
-def _random_iter(
-    a=5, b=None, length=None, max_depth=2, dict_kwargs=None, list_kwargs=None
-):
-    length = length or _random_len(a, b)
+def random_list(
+    gen_func: Callable[[], Any] = None,
+    min_len: int = 1,
+    max_len: int = 5,
+    depth: int = 0,
+) -> list:
+    r = []
+    length = random.randint(min_len, max_len)
 
-    dict_kwargs = dict_kwargs or {}
-    list_kwargs = list_kwargs or {}
+    for _ in range(length):
+        if gen_func is None:
+            if depth > 0:
+                possible_types = GEN_TYPES_COMPOUND
+                depth -= 1
+            else:
+                possible_types = GEN_TYPES_SIMPLE
 
-    # Iterate evenly through types but in random order
-    for i in random.sample(range(length), length):
-        # Get generate func and any args to pass through
-        if max_depth > 0:
-            types = GEN_TYPES_COMPOUND
+            gen_type = random.sample(possible_types)
+            gen_func = GEN_FUNCS[gen_type]
+
+            if gen_type is GEN_TYPES.list:
+                r.append(
+                    gen_func(
+                        gen_func=None,
+                        min_len=min_len,
+                        max_len=max_len,
+                        depth=depth,
+                    )
+                )
+            else:
+                r.append(gen_func())
         else:
-            types = GEN_TYPES_SIMPLE
-        gen_type = types[i % len(types)]
-        gen_func = GEN_FUNCS[gen_type]
+            r.append(gen_func)
 
-        # If generating a child list, use same params
-        if gen_type == GEN_TYPES.list:
-            max_depth -= 1
-            gen_kwargs = dict(
-                **list_kwargs, dict_kwargs=dict_kwargs, max_depth=max_depth
-            )
-        # If generating other compound type, give params for its child lists
-        elif gen_type == GEN_TYPES.dict:
-            max_depth -= 1
-            gen_kwargs = dict(
-                **dict_kwargs, list_kwargs=list_kwargs, max_depth=max_depth
-            )
-        # TODO: implement passing args for other types
-        else:
-            gen_kwargs = {}
-
-        yield gen_func(**gen_kwargs)
-
-
-def random_list(a=5, b=None, length=None, dict_kwargs=None, max_depth=2):
-    """Generate a random list."""
-    list_kwargs = dict(a=a, b=b, length=length)
-    return list(
-        _random_iter(a, b, length, max_depth, dict_kwargs, list_kwargs)
-    )
+    return r
 
 
 def random_dict(
-    a=5,
-    b=None,
-    length=None,
-    key_min=1,
-    key_max=5,
-    list_kwargs=None,
-    max_depth=2,
-):
-    """Generate a random dict."""
-    length = length or _random_len(a, b)
+    key_gen: Callable[[], Any] = partial(random_ascii, 5, 10),
+    value_gen: Optional[Callable[[], Any]] = None,
+    min_len: int = 1,
+    max_len: int = 5,
+    depth: int = 0,
+) -> dict:
+    r = {}
+    length = random.randint(min_len, max_len)
 
-    dict_kwargs = dict(
-        a=a, b=b, length=length, key_min=key_min, key_max=key_max
-    )
+    for _ in range(length):
+        key = key_gen()
 
-    gen_str = GEN_FUNCS.str
-    return {
-        gen_str(key_min, key_max): value
-        for value in _random_iter(
-            a, b, length, max_depth, dict_kwargs, list_kwargs
-        )
-    }
+        if value_gen is None:
+            if depth > 0:
+                possible_types = GEN_TYPES_COMPOUND
+                depth -= 1
+            else:
+                possible_types = GEN_TYPES_SIMPLE
+
+            gen_type = random.sample(possible_types)
+            gen_func = GEN_FUNCS[gen_type]
+
+            if gen_type is GEN_TYPES.dict:
+                r[key] = gen_func(
+                    key_gen=key_gen,
+                    value_gen=value_gen,
+                    min_len=min_len,
+                    max_len=max_len,
+                    depth=depth,
+                )
+            else:
+                r[key] = gen_func()
+        else:
+            r[key] = value_gen()
+
+    return r
 
 
-GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool",)
-GEN_TYPES_COMPOUND = AttrSeq("list", "dict",)
+GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool")
+GEN_TYPES_COMPOUND = AttrSeq("list", "dict")
 GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND,)
 GEN_FUNCS = AttrMap(
     (GEN_TYPES.num, random_number),
