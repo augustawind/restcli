@@ -40,7 +40,8 @@ def ascii(a=15, b=None, length=None):
 def unicode(a=15, b=None, length=None):
     """Generate a random Unicode string."""
     include_ranges = [
-        (0x0040, 0x007E),
+        (0x0040, 0x005B),
+        (0x005D, 0x007E),
         (0x00A1, 0x00AC),
         (0x00AE, 0x00FF),
         (0x0100, 0x017F),
