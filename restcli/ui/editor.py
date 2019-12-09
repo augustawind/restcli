@@ -3,10 +3,8 @@ from __future__ import annotations
 import os.path
 from typing import TYPE_CHECKING, List, Optional, Set
 
-from prompt_toolkit.filters import Condition
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
-    ConditionalContainer,
     Container,
     DynamicContainer,
     HorizontalAlign,
@@ -81,8 +79,8 @@ class RequestTab:
 
 
 class TabbedRequestWindow:
-    def __init__(self, ui: UI, width: AnyDimension = None):
-        self.ui = ui
+    def __init__(self, editor: Editor, width: AnyDimension = None):
+        self.editor = editor
         self.width = width
 
         self.tabs = [RequestTab(width=width)]
@@ -111,20 +109,25 @@ class TabbedRequestWindow:
             def handler(event: MouseEvent):
                 if event.event_type == MouseEventType.MOUSE_UP:
                     self.active_tab_idx = i
+                    self.editor.redraw()
+                    self.editor.ui.redraw_layout(self.active_tab)
                 else:
                     return NotImplemented
 
             controls.append(
-                ConditionalContainer(
-                    Window(
-                        FormattedTextControl([(style, text, handler)]),
-                        width=D(min=3, preferred=len(text)),
+                Window(
+                    FormattedTextControl(
+                        [(style, text, handler)], focusable=True
                     ),
-                    filter=Condition(lambda: len(self.tabs) > 1),
+                    width=D(min=3, max=len(text), preferred=len(text)),
                 )
             )
         return VSplit(
-            controls, height=1, width=self.width, align=HorizontalAlign.LEFT
+            controls,
+            height=1,
+            width=self.width,
+            padding=D.exact(1),
+            align=HorizontalAlign.LEFT,
         )
 
     def add_tab(self, tab: RequestTab, active: bool = True):
@@ -178,7 +181,7 @@ class Editor:
     DEFAULT_TITLE = "Untitled collection"
 
     def __init__(self, ui: UI):
-        self.content = TabbedRequestWindow(ui, width=D(weight=2))
+        self.content = TabbedRequestWindow(self, width=D(weight=2))
 
         self.menu_items = [Window(BufferControl())]
         self.submenu_items = []
@@ -200,7 +203,10 @@ class Editor:
                 menu_items.extend(submenu_items)
 
         self.side_menu = HSplit(
-            menu_items, width=D(weight=1), align=VerticalAlign.TOP
+            menu_items,
+            width=D(weight=1),
+            padding=D(max=1, preferred=1),
+            align=VerticalAlign.TOP,
         )
         self.container = VSplit([self.side_menu, VerticalLine(), self.content])
 
@@ -215,7 +221,8 @@ class Editor:
                 Window(
                     FormattedTextControl(
                         self._side_menu_item(group_name, idx), focusable=True
-                    )
+                    ),
+                    height=1,
                 )
             )
 
@@ -227,7 +234,8 @@ class Editor:
                         FormattedTextControl(
                             self._side_menu_subitem(request_name, request),
                             focusable=True,
-                        )
+                        ),
+                        height=1,
                     )
                 )
 
@@ -270,7 +278,7 @@ class Editor:
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.content.add_tab(
-                    RequestTab(request_name, request, width=D(weight=2))
+                    RequestTab(request_name, request, width=D())
                 )
                 self.redraw()
             else:
