@@ -123,28 +123,34 @@ class UI:
     def _init_menu_items(self) -> List[MenuItem]:
         return [
             MenuItem(
-                "file<{key}>",
+                "File<{key}>",
                 key="f1",
-                name="file",
+                name="File",
                 handler=handlers.ToggleFocus,
                 children=[
-                    MenuItem("new file <{key}>", key="c-n", name="new"),
                     MenuItem(
-                        "open file <{key}>",
+                        "New Collection <{key}>",
+                        key="c-n",
+                        name="new",
+                        # handler=handlers.NewCollection,
+                    ),
+                    MenuItem(
+                        "Open File <{key}>",
                         key="c-o",
                         name="open",
                         handler=handlers.OpenFile,
                     ),
                     MenuItem.SEPARATOR(),
-                    MenuItem("save <{key}>", key="c-s", name="save"),
-                    MenuItem("save as...", name="save_as"),
-                    MenuItem("save all", name="save_all"),
+                    MenuItem(
+                        "Export Collection",
+                        name="export",
+                        # handler=handlers.ExportCollection,
+                    ),
                     MenuItem.SEPARATOR(),
-                    MenuItem("close file <{key}>", key="c-w", name="close"),
-                    MenuItem("close all", name="close_all"),
+                    MenuItem("Close File <{key}>", key="c-w", name="close"),
                     MenuItem.SEPARATOR(),
                     MenuItem(
-                        "quit <{key}>",
+                        "Quit <{key}>",
                         key="c-q",
                         name="quit",
                         handler=handlers.EndProgram,
@@ -152,11 +158,15 @@ class UI:
                 ],
             ),
             MenuItem(
-                "edit<{key}>",
+                "Edit<{key}>",
                 key="f2",
                 name="edit",
                 handler=handlers.ToggleFocus,
-                children=[MenuItem("(f)ind")],
+                children=[
+                    MenuItem(
+                        "Find in Collection <{key}>", key="c-f", name="find"
+                    )
+                ],
             ),
         ]
 
