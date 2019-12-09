@@ -85,10 +85,16 @@ class TabbedRequestWindow:
         self.tabs = [RequestTab(width=width)]
         self.active_tab_idx = 0
 
-        self.tab_bar = DynamicContainer(self.get_tab_controls)
+        self.redraw()
 
     def __pt_container__(self):
-        return HSplit([self.tab_bar, HorizontalLine(), self.active_tab])
+        return self.container
+
+    def redraw(self):
+        self.tab_bar = self.get_tab_controls()
+        self.container = HSplit(
+            [self.tab_bar, HorizontalLine(), self.active_tab]
+        )
 
     @property
     def active_tab(self) -> RequestTab:
@@ -199,6 +205,8 @@ class Editor:
         return self.container
 
     def redraw(self):
+        self.content.redraw()
+
         menu_items = []
         for i, menu_item in enumerate(self.menu_items):
             menu_items.append(menu_item)
