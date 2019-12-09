@@ -64,9 +64,10 @@ class UI:
             self.output, title="Output", width=D(weight=4)
         )
 
+        self.key_bindings = self._init_key_bindings()
+
         self.root_container = self._init_root_container()
 
-        self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
         layout = Layout(
@@ -98,11 +99,9 @@ class UI:
 
     # noinspection PyTypeChecker
     def _init_root_container(self) -> Container:
-        body = VSplit([self.editor_frame, self.output_frame,], height=D(),)
-
-        return MenuContainer(
+        root_container = MenuContainer(
             self,
-            body=body,
+            body=VSplit([self.editor_frame, self.output_frame], height=D()),
             menu_items=self._init_menu_items(),
             floats=[
                 Float(
@@ -112,11 +111,11 @@ class UI:
                 )
             ],
         )
+        root_container.register_key_bindings(self.key_bindings)
+        return root_container
 
     def _init_key_bindings(self) -> KeyBindings:
         kb = KeyBindings()
-        self.root_container.register_key_bindings(kb)
-
         kb.add("c-x")(lambda _: self.app.exit())
         kb.add("tab")(focus_next)
         kb.add("s-tab")(focus_previous)
