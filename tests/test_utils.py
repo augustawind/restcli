@@ -3,7 +3,7 @@ from collections import OrderedDict
 from restcli import utils
 from restcli.reqmod import lexer
 
-from .helpers import random_alphanum, random_unicode
+from .random_gen import random_alphanum, random_unicode
 
 
 def test_tokenize():
