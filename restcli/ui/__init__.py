@@ -59,21 +59,27 @@ class UI:
     def __init__(self):
         self.state = AppState()
 
-        def update_editor_title(collection: Collection):
-            self._editor_frame.title = os.path.basename(collection.source)
-
-        self.editor = Editor(update_title=update_editor_title)
-        self._editor_frame = Frame(
+        self.editor = Editor()
+        self.editor_frame = Frame(
             self.editor, title="Collection", width=D(weight=5)
         )
 
+        def update_editor_title(collection: Collection):
+            self.editor_frame.title = os.path.basename(collection.source)
+
+        self.editor.update_title = update_editor_title
+        # TODO: this line is just for development
+        self.editor.load_collection(Collection("collection.yaml"))
+        self.editor.refresh()
+
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
-        self._output_frame = Frame(
-            self.output, title="Output", width=D(weight=4)
-        )
 
         self.body = VSplit(
-            [self._editor_frame, self._output_frame], height=D()
+            [
+                self.editor_frame,
+                Frame(self.output, title="Output", width=D(weight=4)),
+            ],
+            height=D(),
         )
 
         self.menu = MenuContainer(
@@ -102,9 +108,6 @@ class UI:
             full_screen=True,
             editing_mode=EditingMode.VI,
         )
-
-        # NOTE: this is here for convenience while developing
-        self.editor.load_collection(Collection("collection.yaml"))
 
     def run(self):
         self.app.run()

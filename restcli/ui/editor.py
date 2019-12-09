@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, List, Set
+from typing import List, Set
 
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.layout.containers import (
@@ -24,13 +24,6 @@ from restcli.workspace import Collection, RequestType
 class Editor:
     """UI panel where :class:`Collection`s can be edited.
 
-    Parameters
-    ----------
-    update_title : callable
-        A callable that takes a :class :`Collection` and sets the Editor's
-        title appropriately. This is necessary because the title is stored on
-        the Editor's parent container.
-
     Attributes
     ----------
     text_area
@@ -41,8 +34,6 @@ class Editor:
         ``text_area``.
     """
 
-    update_title: Callable[[Collection], None]
-
     text_area: TextArea
     side_menu: Container
     container: Container
@@ -51,9 +42,7 @@ class Editor:
     submenu_items: List[List[Window]]
     expanded_menu_indices: Set[int]
 
-    def __init__(self, update_title: Callable[[Collection], None]):
-        self.update_title = update_title
-
+    def __init__(self):
         self.text_area = TextArea(
             lexer=PygmentsLexer(YamlLexer),
             width=D(weight=2),
@@ -64,8 +53,6 @@ class Editor:
         self.menu_items = [Window(BufferControl())]
         self.submenu_items = []
         self.expanded_menu_indices = set()
-
-        self.refresh()
 
     def __pt_container__(self) -> Container:
         return self.container
