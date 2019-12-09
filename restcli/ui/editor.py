@@ -53,6 +53,7 @@ class RequestTab:
         if request_name or request_body:
             assert request_name and request_body, "Incomplete data provided"
             self.set_request(request_name, request_body)
+            self.save_changes()
         else:
             self.request_name = self.DEFAULT_NAME
             self.request_body = None
@@ -61,13 +62,11 @@ class RequestTab:
         return self.text_area
 
     def is_empty(self) -> bool:
-        return (
-            len(self.text_area.text.strip()) == 0 and len(self.saved_text) == 0
-        )
+        return len(self.text_area.text) == 0 and len(self.saved_text) == 0
 
     @property
     def has_unsaved_changed(self) -> bool:
-        return bool(self.text_area.text.strip() != self.saved_text)
+        return bool(self.text_area.text != self.saved_text)
 
     def set_request(self, request_name: str, request_body: RequestType):
         self.request_name = request_name
@@ -75,7 +74,7 @@ class RequestTab:
         self.text_area.text = yaml.dump(request_body)
 
     def save_changes(self):
-        self.saved_text = self.text_area.text.strip()
+        self.saved_text = self.text_area.text
 
 
 class TabbedRequestWindow:
