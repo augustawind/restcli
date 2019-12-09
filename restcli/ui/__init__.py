@@ -9,7 +9,7 @@ from prompt_toolkit.key_binding.bindings.focus import (
     focus_next,
     focus_previous,
 )
-from prompt_toolkit.layout.containers import Container, Float, VSplit, Window
+from prompt_toolkit.layout.containers import Float, VSplit
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.menus import CompletionsMenu
@@ -82,6 +82,7 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
+        # noinspection PyTypeChecker
         self.layout = Layout(self.menu, focused_element=self.editor.side_menu)
 
         self.app = Application(

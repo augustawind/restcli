@@ -3,14 +3,12 @@ from __future__ import annotations
 import abc
 import importlib
 import inspect
-import random
 from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any, Dict, Optional
-from typing import OrderedDict as OrderedDictT
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-import jinja2
+from requests import Response
 
 from restcli import yaml_utils as yaml
 from restcli.exceptions import (
@@ -25,10 +23,11 @@ from restcli.params import (
     REQUIRED_REQUEST_PARAMS,
 )
 
-__all__ = ["Collection", "Environment", "GroupType", "RequestType"]
+__all__ = ["Document", "Collection", "Environment", "GroupType", "RequestType"]
 
-RequestType = OrderedDictT[str, Any]
-GroupType = OrderedDictT[str, RequestType]
+# NOTE: these are OrderedDict, but Dict is necessary for type subscriptions
+RequestType = Dict[str, Any]
+GroupType = Dict[str, RequestType]
 
 
 class Document(OrderedDict, metaclass=abc.ABCMeta):
@@ -76,13 +75,15 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
 
     def copy(self) -> Document:
         """Override copy() so that ``source`` can be copied over."""
-        return self.__class__(self.source)
+        return type(self)(self.source)
 
-    def raise_error(self, msg, path, error_class=None, source=None, **kwargs):
+    def error(
+        self, msg, path, error_class=None, source=None, **kwargs
+    ) -> Exception:
         """Helper for raising an error for a Reader instance."""
         if not error_class:
             error_class = self.error_class
-        raise error_class(
+        return error_class(
             file=source or self.source, msg=msg, path=path, **kwargs
         )
 
@@ -90,7 +91,7 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
         self, obj, type_, path, msg, error_class=None, **err_kwargs
     ):
         if not isinstance(obj, type_):
-            self.raise_error(
+            raise self.error(
                 msg, path, error_class or self.error_class, **err_kwargs
             )
 
@@ -131,7 +132,7 @@ class Collection(Document):
                         new_req[key] = self.defaults[key]
                     # Check required parameters
                     elif key in REQUIRED_REQUEST_PARAMS:
-                        self.raise_error(
+                        raise self.error(
                             f'Required parameter "{key}" not found', path
                         )
                     else:
@@ -167,7 +168,7 @@ class Collection(Document):
                     msg = "Collection document not found"
                 else:
                     msg = "Too many documents; expected 1 or 2"
-                self.raise_error(msg, [])
+                raise self.error(msg, [])
 
             self.load_config(config)
             return collection
@@ -177,7 +178,7 @@ class Collection(Document):
         # Verify all fields are known
         for key in config.keys():
             if key not in CONFIG_PARAMS:
-                self.raise_error(f'Unexpected key in config: "{key}"', [])
+                raise self.error(f'Unexpected key in config: "{key}"', [])
 
         # Load libs
         lib = config.get("lib")
@@ -193,7 +194,7 @@ class Collection(Document):
 
             for key in defaults.keys():
                 if key not in REQUEST_PARAMS:
-                    self.raise_error(
+                    raise self.error(
                         f'Unexpected key in defaults "{key}"', path
                     )
 
@@ -236,12 +237,18 @@ class Environment(Document):
             return yaml.dump(self.data, handle)
 
 
+if TYPE_CHECKING:
+
+    class LibType:
+        define: Callable[[Response, Environment, ...], Dict[str, Any]]
+
+
 class Libs(Document):
     """A Libs reader and parser."""
 
     error_class = LibError
 
-    def import_data(self, data: Dict[str, object]):
+    def import_data(self, data: Dict[str, LibType]):
         """Validate and import a mapping of names to lib objects.
 
         When called from :method:`load`, this will be a mapping of module names
@@ -263,7 +270,7 @@ class Libs(Document):
                     params[3].kind == inspect.Parameter.VAR_KEYWORD,
                 )
             ):
-                self.raise_error(
+                raise self.error(
                     "lib must contain a function with the signature"
                     " `define(response, env, *args, **kwargs)`",
                     path,
@@ -284,7 +291,7 @@ class Libs(Document):
                     raise TypeError
                 lib = importlib.import_module(module)
             except (TypeError, ImportError):
-                self.raise_error(
+                raise self.error(
                     f'Failed to import lib "{module}"',
                     path,
                     source=inspect.getsourcefile(module),
