@@ -104,7 +104,7 @@ class TabbedRequestWindow:
 
             text = tab.request_name
             if tab.has_unsaved_changed:
-                text = f"+ {text}"
+                text = f"+{text}"
 
             def handler(event: MouseEvent):
                 if event.event_type == MouseEventType.MOUSE_UP:
@@ -181,7 +181,7 @@ class Editor:
     DEFAULT_TITLE = "Untitled collection"
 
     def __init__(self, ui: UI):
-        self.content = TabbedRequestWindow(self, width=D(weight=2))
+        self.content = TabbedRequestWindow(self, width=D(weight=3))
 
         self.menu_items = [Window(BufferControl())]
         self.submenu_items = []
@@ -203,10 +203,7 @@ class Editor:
                 menu_items.extend(submenu_items)
 
         self.side_menu = HSplit(
-            menu_items,
-            width=D(weight=1),
-            padding=D(max=1, preferred=1),
-            align=VerticalAlign.TOP,
+            menu_items, width=D(weight=1), align=VerticalAlign.TOP
         )
         self.container = VSplit([self.side_menu, VerticalLine(), self.content])
 
@@ -217,26 +214,13 @@ class Editor:
 
         # Set sidebar menu items
         for idx, (group_name, group) in enumerate(collection.items()):
-            self.menu_items.append(
-                Window(
-                    FormattedTextControl(
-                        self._side_menu_item(group_name, idx), focusable=True
-                    ),
-                    height=1,
-                )
-            )
+            self.menu_items.append(self._side_menu_item(group_name, idx))
 
             submenu_items = []
             self.submenu_items.append(submenu_items)
             for request_name, request in group.items():
                 submenu_items.append(
-                    Window(
-                        FormattedTextControl(
-                            self._side_menu_subitem(request_name, request),
-                            focusable=True,
-                        ),
-                        height=1,
-                    )
+                    self._side_menu_subitem(request_name, request)
                 )
 
         # Set frame title
@@ -250,10 +234,12 @@ class Editor:
         # Layout must be redrawn for the side menu to function properly
         self.ui.redraw_layout(focus=self.side_menu)
 
-    def _side_menu_item(
-        self, group_name: str, index: int
-    ) -> StyleAndTextTuples:
+    def _side_menu_item(self, group_name: str, index: int) -> Window:
         """Generate a style/text/handler tuple for Groups in the sidebar."""
+        if index in self.expanded_menu_indices:
+            text = f"{chr(0x25BC)} {group_name}"  # down triangle (expanded)
+        else:
+            text = f"{chr(0x25B6)} {group_name}"  # right triangle (collapsed)
 
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
@@ -263,6 +249,10 @@ class Editor:
                 else:
                     self.expanded_menu_indices.add(index)
 
+                self.menu_items[index] = self._side_menu_item(
+                    group_name, index
+                )
+
                 self.redraw()
 
                 # Layout must be redrawn to display
@@ -270,11 +260,14 @@ class Editor:
             else:
                 return NotImplemented
 
-        return [("#00ff00", group_name, handler)]
+        return Window(
+            FormattedTextControl([("#00ff00", text, handler)], focusable=True),
+            height=1,
+        )
 
     def _side_menu_subitem(
         self, request_name: str, request: RequestType
-    ) -> StyleAndTextTuples:
+    ) -> Window:
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.content.add_tab(
@@ -284,8 +277,14 @@ class Editor:
             else:
                 return NotImplemented
 
-        return [
-            ("", " " * 8, handler),
-            ("[SetCursorPosition]", "", handler),
-            ("#00ff00", request_name, handler),
-        ]
+        return Window(
+            FormattedTextControl(
+                [
+                    ("", " " * 4, handler),
+                    ("[SetCursorPosition]", "", handler),
+                    ("#00ff00", request_name, handler),
+                ],
+                focusable=True,
+            ),
+            height=1,
+        )

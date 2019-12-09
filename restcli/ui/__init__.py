@@ -58,7 +58,7 @@ class UI:
 
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
         self.output_frame = Frame(
-            self.output, title="Output", width=D(weight=4)
+            self.output, title="Output", width=D(weight=3)
         )
 
         self.key_bindings = self._init_key_bindings()
