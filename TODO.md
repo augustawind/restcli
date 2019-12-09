@@ -13,3 +13,4 @@
 - [ ] Implement localization using ugettext.
 - [ ] Write a terminal UI using `prompt_toolkit`.
 - [ ] Export Collections to/from Postman.
+- [ ] Support multiple locales.
