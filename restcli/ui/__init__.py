@@ -1,4 +1,5 @@
 """Interactive TUI application for restcli."""
+import asyncio
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -87,7 +88,7 @@ class UI:
         self.editor.load_collection(Collection("collection.yaml"))
 
     def run(self):
-        self.app.run()
+        asyncio.get_event_loop().run_until_complete(self.app.run_async())
 
     def redraw_layout(self, focus: Optional[FocusableElement] = None):
         """Redraw the Layout and everything in it except the Editor.
