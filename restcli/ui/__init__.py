@@ -6,10 +6,6 @@ from typing import List, Optional
 from prompt_toolkit.application import Application
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.key_binding.bindings.focus import (
-    focus_next,
-    focus_previous,
-)
 from prompt_toolkit.layout.containers import Container, Float, VSplit
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.layout import FocusableElement, Layout
@@ -19,7 +15,7 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Frame, TextArea
 from pygments.lexers.data import YamlLexer
 
-from restcli.ui import handlers
+from restcli.ui import handlers, keys
 from restcli.ui.editor import Editor
 from restcli.ui.menu import MenuContainer, MenuItem
 from restcli.workspace import Collection, Document, Environment
@@ -100,10 +96,14 @@ class UI:
 
     # noinspection PyTypeChecker
     def _init_root_container(self) -> Container:
+        key_bindings = KeyBindings()
+        keys.tab_focus(key_bindings)
+
         root_container = MenuContainer(
             self,
             body=VSplit([self.editor_frame, self.output_frame], height=D()),
             menu_items=self._init_menu_items(),
+            key_bindings=key_bindings,
             floats=[
                 Float(
                     xcursor=True,
@@ -116,12 +116,9 @@ class UI:
         return root_container
 
     def _init_key_bindings(self) -> KeyBindings:
-        kb = KeyBindings()
-        kb.add("c-x")(lambda _: self.app.exit())
-        kb.add("tab")(focus_next)
-        kb.add("s-tab")(focus_previous)
-
-        return kb
+        key_bindings = KeyBindings()
+        key_bindings.add("c-x")(lambda _: self.app.exit())
+        return key_bindings
 
     def _init_menu_items(self) -> List[MenuItem]:
         return [
