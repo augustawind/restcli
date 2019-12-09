@@ -1,4 +1,5 @@
 """Interactive TUI application for restcli."""
+import os.path
 from dataclasses import dataclass
 from typing import List
 
@@ -38,6 +39,10 @@ class UI:
     ----------
     state : :class:`AppState`
         Holds application state.
+    editor : :class:`Editor`
+        UI component where data is edited by the user.
+    output : :class:`prompt_toolkit.widgets.TextArea`
+        UI component where various output is displayed.
     body : :class:`prompt_toolkit.layout.containers.Container`
         UI component where data will be displayed.
     menu : :class:`MenuContainer`
@@ -50,20 +55,25 @@ class UI:
         UI component that holds all other components.
     """
 
+    # noinspection PyTypeChecker
     def __init__(self):
         self.state = AppState()
 
-        self.editor = Editor()
+        def update_editor_title(collection: Collection):
+            self._editor_frame.title = os.path.basename(collection.source)
+
+        self.editor = Editor(update_title=update_editor_title)
+        self._editor_frame = Frame(
+            self.editor, title="Collection", width=D(weight=5)
+        )
 
         self.output = TextArea(lexer=PygmentsLexer(YamlLexer), read_only=True)
+        self._output_frame = Frame(
+            self.output, title="Output", width=D(weight=4)
+        )
 
-        # noinspection PyTypeChecker
         self.body = VSplit(
-            [
-                Frame(self.editor, title="Collection", width=D(weight=5)),
-                Frame(self.output, title="Output", width=D(weight=4)),
-            ],
-            height=D(),
+            [self._editor_frame, self._output_frame], height=D()
         )
 
         self.menu = MenuContainer(
@@ -82,7 +92,6 @@ class UI:
         self.key_bindings = self._init_key_bindings()
         self.style = self._init_style()
 
-        # noinspection PyTypeChecker
         self.layout = Layout(self.menu, focused_element=self.editor.side_menu)
 
         self.app = Application(
@@ -93,6 +102,9 @@ class UI:
             full_screen=True,
             editing_mode=EditingMode.VI,
         )
+
+        # NOTE: this is here for convenience while developing
+        self.editor.load_collection(Collection("collection.yaml"))
 
     def run(self):
         self.app.run()
