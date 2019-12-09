@@ -5,6 +5,9 @@ from restcli.reqmod import lexer
 
 from .random_gen import random_alphanum, random_unicode
 
+# Default value for function args where None doesn't make sense
+DEFAULT = type("DEFAULT", (object,), {})
+
 
 def test_tokenize():
     s = r"""When I said "hi, foo", foo said 'hi, "hi, foo"' \a\1\3 \4."""

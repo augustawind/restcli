@@ -19,7 +19,7 @@ def _random_len(a, b, min_len=1):
     return max(min_len, random.randint(a, b))
 
 
-def _random_str(population, a=15, b=None, length=None):
+def random_str(population, a=15, b=None, length=None):
     length = length or _random_len(a, b, min_len=3)
     k = min(length, len(population))
     return "".join(random.sample(population, k))
@@ -27,12 +27,12 @@ def _random_str(population, a=15, b=None, length=None):
 
 def random_alphanum(a=15, b=None, length=None):
     """Generate a random alphanumeric ASCII string."""
-    return _random_str(ALPHANUMERIC_CHARS, a, b, length)
+    return random_str(ALPHANUMERIC_CHARS, a, b, length)
 
 
 def random_ascii(a=15, b=None, length=None):
     """Generate a random ASCII string."""
-    return _random_str(ASCII_CHARS, a, b, length)
+    return random_str(ASCII_CHARS, a, b, length)
 
 
 def random_unicode(a=15, b=None, length=None):
@@ -57,12 +57,12 @@ def random_unicode(a=15, b=None, length=None):
         for start, end in include_ranges
         for code_point in range(start, end + 1)
     ]
-    return _random_str(alphabet, a, b, length)
+    return random_str(alphabet, a, b, length)
 
 
 def random_urlsafe(a=15, b=None, length=None):
     """Generate a random URL-safe string."""
-    return _random_str(URLSAFE_CHARS, a, b, length)
+    return random_str(URLSAFE_CHARS, a, b, length)
 
 
 def random_number(a=99.999, b=None, int_chance=0.5):
@@ -80,7 +80,7 @@ def random_bool(p=0.5):
 
 
 def _random_iter(
-    a=5, b=None, length=None, dict_kwargs=None, list_kwargs=None, max_depth=2
+    a=5, b=None, length=None, max_depth=2, dict_kwargs=None, list_kwargs=None
 ):
     length = length or _random_len(a, b)
 
@@ -120,7 +120,7 @@ def random_list(a=5, b=None, length=None, dict_kwargs=None, max_depth=2):
     """Generate a random list."""
     list_kwargs = dict(a=a, b=b, length=length)
     return list(
-        _random_iter(a, b, length, dict_kwargs, list_kwargs, max_depth)
+        _random_iter(a, b, length, max_depth, dict_kwargs, list_kwargs)
     )
 
 
@@ -144,7 +144,7 @@ def random_dict(
     return {
         gen_str(key_min, key_max): value
         for value in _random_iter(
-            a, b, length, dict_kwargs, list_kwargs, max_depth
+            a, b, length, max_depth, dict_kwargs, list_kwargs
         )
     }
 

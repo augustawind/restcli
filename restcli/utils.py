@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
-from urllib.parse import quote_plus
 
 
 class AttrSeq(Sequence):

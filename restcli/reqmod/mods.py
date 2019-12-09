@@ -2,9 +2,10 @@ import abc
 import json
 import re
 import string
+from urllib.parse import quote_plus
 
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
-from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii, quote_plus
+from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii
 
 PARAM_TYPES = AttrSeq("json_field", "str_field", "header", "url_param",)
 

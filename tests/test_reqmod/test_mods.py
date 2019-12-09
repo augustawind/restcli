@@ -1,15 +1,13 @@
 import random
+from urllib.parse import quote_plus
 
 import pytest
 
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.reqmod import mods
 from restcli.reqmod.lexer import ACTIONS
-from restcli.utils import quote_plus
 from tests.random_gen import random_alphanum, random_unicode, random_urlsafe
-
-# Default value for function args where None doesn't make sense
-DEFAULT = type("DEFAULT", (object,), {})
+from tests.test_utils import DEFAULT
 
 
 class ModTypesTestMixin:
