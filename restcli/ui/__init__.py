@@ -93,9 +93,8 @@ class UI:
 
         TODO: figure out if the menu items need to be recreated (prob not)
         """
-        self.app.layout = Layout(
-            self._init_root_container(), focused_element=focus
-        )
+        self.root_container = self._init_root_container()
+        self.app.layout = Layout(self.root_container, focused_element=focus)
 
     # noinspection PyTypeChecker
     def _init_root_container(self) -> Container:
