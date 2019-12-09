@@ -118,7 +118,7 @@ def check(ctx):
     ctx.run("python setup.py check -rms", pty=True)
 
 
-@task(pre=(dependencies, check))
+@task(pre=(check,))
 def build(ctx, editable=False):
     """Safely build the app, running checks and installing."""
     install(ctx, editable)
