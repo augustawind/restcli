@@ -132,7 +132,7 @@ class Collection(Document):
                     # Check required parameters
                     elif key in REQUIRED_REQUEST_PARAMS:
                         self.raise_error(
-                            f'Required parameter "{key}" not found', path,
+                            f'Required parameter "{key}" not found', path
                         )
                     else:
                         new_req[key] = type_()

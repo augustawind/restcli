@@ -161,7 +161,7 @@ def mapping(
 
 GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool")
 GEN_TYPES_COMPOUND = AttrSeq("list", "dict")
-GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND,)
+GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND)
 GEN_FUNCS = AttrMap(
     (GEN_TYPES.num, number),
     (GEN_TYPES.str, ascii),

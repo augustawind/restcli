@@ -46,29 +46,19 @@ class TestJsonFieldMod(ModTypesTestMixin):
     mod_cls = mods.JsonFieldMod
 
     def test_bool(self):
-        self.run_mod_test(
-            input_val="true", expected_val=True,
-        )
+        self.run_mod_test(input_val="true", expected_val=True)
 
     def test_number_int(self):
-        self.run_mod_test(
-            input_val="11", expected_val=11,
-        )
+        self.run_mod_test(input_val="11", expected_val=11)
 
     def test_number_float(self):
-        self.run_mod_test(
-            input_val="26.5", expected_val=26.5,
-        )
+        self.run_mod_test(input_val="26.5", expected_val=26.5)
 
     def test_null(self):
-        self.run_mod_test(
-            input_val="null", expected_val=None,
-        )
+        self.run_mod_test(input_val="null", expected_val=None)
 
     def test_array(self):
-        self.run_mod_test(
-            input_val="[1, 2, 3]", expected_val=[1, 2, 3],
-        )
+        self.run_mod_test(input_val="[1, 2, 3]", expected_val=[1, 2, 3])
 
     def test_object(self):
         self.run_mod_test(
@@ -109,9 +99,7 @@ class TestURLParamMod(ModTypesTestMixin):
 
     def test_urlsafe(self):
         for _ in range(self.TEST_ITERATIONS):
-            self.run_mod_test(
-                input_val=gen.urlsafe(), input_key=gen.urlsafe(),
-            )
+            self.run_mod_test(input_val=gen.urlsafe(), input_key=gen.urlsafe())
 
     def test_unicode_value(self):
         for _ in range(self.TEST_ITERATIONS):
@@ -161,21 +149,21 @@ class TestHeaderMod(ModTypesTestMixin):
     def test_alphanum(self):
         for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=gen.alphanum(), input_key=gen.alphanum(),
+                input_val=gen.alphanum(), input_key=gen.alphanum()
             )
 
     def test_unicode_value(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises(ReqModValueError):
                 self.run_mod_test(
-                    input_val=gen.unicode(), input_key=gen.alphanum(),
+                    input_val=gen.unicode(), input_key=gen.alphanum()
                 )
 
     def test_unicode_key(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises((ReqModValueError, ReqModSyntaxError)):
                 self.run_mod_test(
-                    input_val=gen.alphanum(), input_key=gen.unicode(),
+                    input_val=gen.alphanum(), input_key=gen.unicode()
                 )
 
 
@@ -184,11 +172,7 @@ class TestStrFieldMod(ModTypesTestMixin):
     mod_cls = mods.StrFieldMod
 
     def test_alphanum(self):
-        self.run_mod_test(
-            input_val=gen.alphanum(), input_key=gen.alphanum(),
-        )
+        self.run_mod_test(input_val=gen.alphanum(), input_key=gen.alphanum())
 
     def test_unicode(self):
-        self.run_mod_test(
-            input_val=gen.unicode(), input_key=gen.unicode(),
-        )
+        self.run_mod_test(input_val=gen.unicode(), input_key=gen.unicode())

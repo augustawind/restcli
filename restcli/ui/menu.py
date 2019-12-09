@@ -156,7 +156,7 @@ class MenuItem(_MenuItem, MenuItemsMixin):
         self.ui = ui
 
         super().__init__(
-            text=text, handler=handler, children=children, disabled=disabled,
+            text=text, handler=handler, children=children, disabled=disabled
         )
         MenuItemsMixin.__init__(self, children)
 

@@ -48,7 +48,7 @@ setup(
     zip_safe=False,
     keywords="rest, http, api, client, cli, testing",
     packages=["restcli", "restcli.reqmod"],
-    package_dir={"restcli": "restcli", "restcli.reqmod": "restcli/reqmod",},
+    package_dir={"restcli": "restcli", "restcli.reqmod": "restcli/reqmod"},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -70,5 +70,5 @@ setup(
     restcli=restcli.cli:cli
     """,
     install_requires=requirements,
-    extras_require={"testing": ["pytest>=5.0.0"],},
+    extras_require={"testing": ["pytest>=5.0.0"]},
 )

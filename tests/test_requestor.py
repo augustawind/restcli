@@ -36,7 +36,7 @@ def test_prepare_request():
         """,
     }
     env = Environment(
-        data={"server": "http://foobar.org", "birthday": "11/14/1991",}
+        data={"server": "http://foobar.org", "birthday": "11/14/1991"}
     )
 
     actual = Requestor.prepare_request(request, env)

@@ -7,7 +7,7 @@ from urllib.parse import quote_plus
 from restcli.exceptions import ReqModSyntaxError, ReqModValueError
 from restcli.utils import AttrMap, AttrSeq, classproperty, is_ascii
 
-PARAM_TYPES = AttrSeq("json_field", "str_field", "header", "url_param",)
+PARAM_TYPES = AttrSeq("json_field", "str_field", "header", "url_param")
 
 
 def parse_mod(mod_str):
@@ -128,6 +128,6 @@ class UrlParamMod(Mod):
 MODS = AttrMap(
     *(
         (mod_cls.delimiter, mod_cls)
-        for mod_cls in (JsonFieldMod, UrlParamMod, HeaderMod, StrFieldMod,)
+        for mod_cls in (JsonFieldMod, UrlParamMod, HeaderMod, StrFieldMod)
     )
 )

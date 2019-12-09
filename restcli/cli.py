@@ -79,7 +79,7 @@ def cli(ctx, collection, env, save, quiet, raw_output):
 
 
 @cli.command(
-    help="Run a Request.", context_settings=dict(ignore_unknown_options=True,)
+    help="Run a Request.", context_settings=dict(ignore_unknown_options=True)
 )
 @click.argument("group")
 @click.argument("request")

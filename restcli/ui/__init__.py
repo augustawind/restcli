@@ -74,7 +74,7 @@ class UI:
                     xcursor=True,
                     ycursor=True,
                     content=CompletionsMenu(max_height=16, scroll_offset=1),
-                ),
+                )
             ],
         )
 

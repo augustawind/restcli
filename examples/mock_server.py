@@ -111,7 +111,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             id_ = parts[1]
             if detail is False:
                 return self.error_response(
-                    HTTPStatus.BAD_REQUEST, f"Unexpected resource id in path.",
+                    HTTPStatus.BAD_REQUEST, f"Unexpected resource id in path."
                 )
 
             try:

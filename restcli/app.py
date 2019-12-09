@@ -157,9 +157,7 @@ class App:
             group = self.r.collection[group_name]
         except KeyError:
             raise GroupNotFoundError(
-                file=self.r.collection.source,
-                action=action,
-                path=[group_name],
+                file=self.r.collection.source, action=action, path=[group_name]
             )
 
         if render:

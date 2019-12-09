@@ -66,7 +66,7 @@ class OpenFileDialog(Dialog):
         self.ui = ui
 
         self.radio_list = RadioList(
-            [(Collection, "Collection"), (Environment, "Environment"),]
+            [(Collection, "Collection"), (Environment, "Environment")]
         )
 
         self.ok_button = Button(ok_text, self.handle_ok)
