@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from asyncio import ensure_future
 
-from restcli.ui.dialogs import OpenDocumentDialog
+from restcli.ui.dialogs import NewFileDialog, OpenFileDialog
 from restcli.ui.menu import MenuHandler
 
 __all__ = ["EndProgram", "ToggleFocus", "OpenFile"]
@@ -31,19 +31,29 @@ class ToggleFocus(MenuHandler):
             self.ui.root_container.breadcrumb += 1
 
 
+class NewFile(MenuHandler):
+    def __call__(self, event=None):
+        ensure_future(self.run_dialog())
+
+    async def run_dialog(self):
+        dialog = NewFileDialog(self.ui)
+        document = await dialog.run()
+        self.ui.editor.load_collection(document)
+
+
 class OpenFile(MenuHandler):
     def __call__(self, event=None):
         ensure_future(self.run_dialog())
 
     async def run_dialog(self):
-        open_dialog = OpenDocumentDialog(self.ui)
+        open_dialog = OpenFileDialog(self.ui)
         document = await open_dialog.run()
         if not document:
             return
         self.ui.editor.load_collection(document)
 
 
-class Save(MenuHandler):
+class SaveActiveTab(MenuHandler):
     def __call__(self, event=None):
         self.ui.editor.content.active_tab.save_changes()
         self.ui.editor.redraw()

@@ -129,10 +129,10 @@ class UI:
                 handler=handlers.ToggleFocus,
                 children=[
                     MenuItem(
-                        "New Collection <{key}>",
+                        "New File <{key}>",
                         key="c-n",
                         name="new",
-                        # handler=handlers.NewCollection,
+                        handler=handlers.NewFile,
                     ),
                     MenuItem(
                         "Open File <{key}>",
@@ -144,7 +144,7 @@ class UI:
                         "Save Request <{key}>",
                         key="c-s",
                         name="save",
-                        handler=handlers.Save,
+                        handler=handlers.SaveActiveTab,
                     ),
                     MenuItem.SEPARATOR(),
                     MenuItem(

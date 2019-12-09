@@ -200,7 +200,7 @@ class Editor:
     def __init__(self, ui: UI):
         self.content = TabbedRequestWindow(self, width=D(weight=3))
 
-        self.menu_items = [Window(BufferControl())]
+        self.menu_items = []
         self.submenu_items = []
         self.expanded_menu_indices = set()
 
@@ -222,7 +222,9 @@ class Editor:
                 menu_items.extend(submenu_items)
 
         self.side_menu = HSplit(
-            menu_items, width=D(weight=1), align=VerticalAlign.TOP
+            menu_items or [Window(BufferControl())],  # placeholder
+            width=D(weight=1),
+            align=VerticalAlign.TOP,
         )
         self.container = VSplit([self.side_menu, VerticalLine(), self.content])
 
@@ -251,7 +253,7 @@ class Editor:
         self.redraw()
 
         # Layout must be redrawn for the side menu to function properly
-        self.ui.redraw_layout(focus=self.side_menu)
+        self.ui.redraw_layout(focus=self.content)
 
     def _side_menu_item(self, group_name: str, index: int) -> Window:
         """Generate a style/text/handler tuple for Groups in the sidebar."""
