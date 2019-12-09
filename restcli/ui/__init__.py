@@ -150,7 +150,7 @@ class UI:
                     MenuItem(
                         "Export Collection",
                         name="export",
-                        # handler=handlers.ExportCollection,
+                        handler=handlers.ExportCollection,
                     ),
                     MenuItem.SEPARATOR(),
                     MenuItem("Close File <{key}>", key="c-w", name="close"),

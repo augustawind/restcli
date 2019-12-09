@@ -69,9 +69,9 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
         self.clear()
         self.load()
 
-    def dump(self) -> str:
+    def dump(self, **kwargs) -> str:
         """Return a YAML-encoded str representation of the Document."""
-        return yaml.dump(OrderedDict(self))
+        return yaml.dump(OrderedDict(self), **kwargs)
 
     def copy(self) -> Document:
         """Override copy() so that ``source`` can be copied over."""
@@ -200,6 +200,12 @@ class Collection(Document):
 
             self.defaults.clear()
             self.defaults.update(defaults)
+
+    def save(self):
+        config = OrderedDict([("defaults", self.defaults), ("lib", self.libs)])
+        collection = OrderedDict(self)
+        with open(self.source, "w") as handle:
+            yaml.dump([config, collection], handle, many=True)
 
 
 class Environment(Document):

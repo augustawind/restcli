@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os.path
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set
 
 from prompt_toolkit.layout.containers import (
     Container,
@@ -19,7 +19,7 @@ from prompt_toolkit.widgets import HorizontalLine, TextArea, VerticalLine
 from pygments.lexers.data import YamlLexer
 
 from restcli import yaml_utils as yaml
-from restcli.workspace import Collection, RequestType
+from restcli.workspace import Collection, GroupType, RequestType
 
 if TYPE_CHECKING:
     from restcli.ui import UI
@@ -27,13 +27,16 @@ if TYPE_CHECKING:
 
 class RequestTab:
 
+    group_name: Optional[str]
     request_name: Optional[str]
     request_body: Optional[RequestType]
+    on_save: Optional[Callable[[RequestTab], None]]
 
     DEFAULT_NAME = "[Empty]"
 
     def __init__(
         self,
+        group_name: Optional[str] = None,
         request_name: Optional[str] = None,
         request_body: Optional[RequestType] = None,
         width: AnyDimension = None,
@@ -48,13 +51,16 @@ class RequestTab:
             focus_on_click=True,
         )
 
-        if request_name or request_body:
-            assert request_name and request_body, "Incomplete data provided"
-            self.set_request(request_name, request_body)
-            self.save_changes()
+        if group_name or request_name or request_body:
+            assert group_name and request_name and request_body
+            self.set_request(group_name, request_name, request_body)
+            self.saved_text = self.text_area.text
         else:
+            self.group_name = None
             self.request_name = self.DEFAULT_NAME
             self.request_body = None
+
+        self.on_save = None
 
     def __pt_container__(self):
         return self.text_area
@@ -63,16 +69,32 @@ class RequestTab:
         return len(self.text_area.text) == 0 and len(self.saved_text) == 0
 
     @property
+    def is_populated(self) -> bool:
+        return bool(
+            self.group_name
+            and self.request_name
+            and self.request_body
+            and self.on_save
+        )
+
+    @property
     def has_unsaved_changed(self) -> bool:
         return bool(self.text_area.text != self.saved_text)
 
-    def set_request(self, request_name: str, request_body: RequestType):
+    def set_request(
+        self, group_name: str, request_name: str, request_body: RequestType
+    ):
+        self.group_name = group_name
         self.request_name = request_name
         self.request_body = request_body
         self.text_area.text = yaml.dump(request_body)
 
     def save_changes(self):
+        assert self.is_populated
+
         self.saved_text = self.text_area.text
+        self.request_body = yaml.load(self.saved_text)
+        self.on_save(self)
 
 
 class TabbedRequestWindow:
@@ -80,6 +102,8 @@ class TabbedRequestWindow:
     width: D
     tabs: List[RequestTab]
     active_tab_idx: int
+
+    state: Dict[str, GroupType]
 
     tab_bar: Container
     container: Container
@@ -90,6 +114,8 @@ class TabbedRequestWindow:
 
         self.tabs = [RequestTab(width=width)]
         self.active_tab_idx = 0
+
+        self.state = {}
 
         self.redraw()
 
@@ -152,6 +178,9 @@ class TabbedRequestWindow:
 
         If `active` is True, make it the active tab.
         """
+        # Add hook to update state with changes saved in the tab
+        tab.on_save = self.on_tab_save
+
         # If there is only one tab and it's empty, replace it
         if len(self.tabs) == 1 and self.active_tab.is_empty():
             self.tabs[0] = tab
@@ -171,6 +200,12 @@ class TabbedRequestWindow:
         except IndexError:
             return None
 
+    def on_tab_save(self, tab: RequestTab):
+        """Called by RequestTabs to save changes to the Collection."""
+        group_state = self.state.setdefault(tab.group_name, {})
+        request_state = group_state.setdefault(tab.request_name, {})
+        request_state.update(tab.request_body)
+
 
 class Editor:
     """UI panel where :class:`Collection`s can be edited.
@@ -185,6 +220,8 @@ class Editor:
         ``text_area``.
     """
 
+    ui: UI
+
     content: TabbedRequestWindow
     side_menu: Container
     container: Container
@@ -193,18 +230,20 @@ class Editor:
     submenu_items: List[List[Window]]
     expanded_menu_indices: Set[int]
 
-    ui: UI
+    collection: Optional[Collection]
 
     DEFAULT_TITLE = "Untitled collection"
 
     def __init__(self, ui: UI):
+        self.ui = ui
+
         self.content = TabbedRequestWindow(self, width=D(weight=3))
 
         self.menu_items = []
         self.submenu_items = []
         self.expanded_menu_indices = set()
 
-        self.ui = ui
+        self.collection = None
 
         self.redraw()
 
@@ -241,7 +280,7 @@ class Editor:
             self.submenu_items.append(submenu_items)
             for request_name, request in group.items():
                 submenu_items.append(
-                    self._side_menu_subitem(request_name, request)
+                    self._side_menu_subitem(group_name, request_name, request)
                 )
 
         # Set frame title
@@ -249,6 +288,8 @@ class Editor:
             self.ui.editor_frame.title = os.path.basename(collection.source)
         else:
             self.ui.editor_frame.title = self.DEFAULT_TITLE
+
+        self.collection = collection
 
         self.redraw()
 
@@ -287,12 +328,12 @@ class Editor:
         )
 
     def _side_menu_subitem(
-        self, request_name: str, request: RequestType
+        self, group_name: str, request_name: str, request: RequestType
     ) -> Window:
         def handler(event: MouseEvent):
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.content.add_tab(
-                    RequestTab(request_name, request, width=D())
+                    RequestTab(group_name, request_name, request, width=D())
                 )
                 self.redraw()
             else:
