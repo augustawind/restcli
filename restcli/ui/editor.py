@@ -203,13 +203,26 @@ class TabbedRequestWindow:
     def remove_tab(self, index: int) -> Optional[RequestTab]:
         """Remove the tab at the given index.
 
-        If it was the active tab, make the next tab active. Returns the removed
-        tab, or None if there was no tab at that index.
+        If it was the active tab, make the next tab active. If there's only one
+        tab left, replace it with an empty tab. Returns the removed tab, or
+        None if there was no tab at that index.
         """
         try:
-            return self.tabs.pop(index)
+            tab = self.tabs.pop(index)
         except IndexError:
             return None
+
+        if len(self.tabs) == 0:
+            self.tabs.append(RequestTab(width=self.width))
+
+        if self.active_tab_idx == index:
+            self.active_tab_idx = min(index + 1, len(self.tabs) - 1)
+
+        return tab
+
+    def remove_active_tab(self) -> RequestTab:
+        """Remove and return the currently active tab."""
+        return self.remove_tab(self.active_tab_idx)
 
     def on_tab_save(self, tab: RequestTab):
         """Called by RequestTabs to save changes to the Collection."""

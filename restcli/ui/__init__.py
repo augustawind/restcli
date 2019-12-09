@@ -146,14 +146,18 @@ class UI:
                         name="save",
                         handler=handlers.SaveActiveTab,
                     ),
+                    MenuItem(
+                        "Close Tab <{key}>",
+                        key="c-w",
+                        name="close",
+                        handler=handlers.CloseActiveTab,
+                    ),
                     MenuItem.SEPARATOR(),
                     MenuItem(
                         "Export Collection",
                         name="export",
                         handler=handlers.ExportCollection,
                     ),
-                    MenuItem.SEPARATOR(),
-                    MenuItem("Close File <{key}>", key="c-w", name="close"),
                     MenuItem.SEPARATOR(),
                     MenuItem(
                         "Quit <{key}>",

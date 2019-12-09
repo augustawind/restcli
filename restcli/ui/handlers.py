@@ -59,6 +59,12 @@ class SaveActiveTab(MenuHandler):
         self.ui.editor.redraw()
 
 
+class CloseActiveTab(MenuHandler):
+    def __call__(self, event=None):
+        self.ui.editor.content.remove_active_tab()
+        self.ui.editor.redraw()
+
+
 class ExportCollection(MenuHandler):
     def __call__(self, event=None):
         ensure_future(self.run_dialog())
