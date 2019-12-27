@@ -117,7 +117,7 @@ class Requestor:
 
         On exit, the Env is returned to its previous state.
         """
-        original = self.env.data
+        original = self.env.export_data()
         self.mod_env(env_args)
 
         yield

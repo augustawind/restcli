@@ -25,31 +25,37 @@ class SafeCustomDumper(yaml.SafeDumper):
     pass
 
 
+def register_constructor(tag):
+    def decorator(constructor):
+        CustomLoader.add_constructor(tag, constructor)
+        SafeCustomLoader.add_constructor(tag, constructor)
+
+    return decorator
+
+
+def register_representer(data_type):
+    def decorator(representer):
+        CustomDumper.add_representer(data_type, representer)
+        SafeCustomDumper.add_representer(data_type, representer)
+
+    return decorator
+
+
 # OrderedDict support
 
 
+@register_constructor(BaseResolver.DEFAULT_MAPPING_TAG)
 def ordered_constructor(loader, node):
     loader.flatten_mapping(node)
     pairs = loader.construct_pairs(node)
     return OrderedDict(pairs)
 
 
-CustomLoader.add_constructor(
-    BaseResolver.DEFAULT_MAPPING_TAG, ordered_constructor
-)
-SafeCustomLoader.add_constructor(
-    BaseResolver.DEFAULT_MAPPING_TAG, ordered_constructor
-)
-
-
+@register_representer(OrderedDict)
 def dict_representer(dumper, data):
     return dumper.represent_mapping(
         BaseResolver.DEFAULT_MAPPING_TAG, data.items()
     )
-
-
-CustomDumper.add_representer(OrderedDict, dict_representer)
-SafeCustomDumper.add_representer(OrderedDict, dict_representer)
 
 
 # String literal style support ("|")
@@ -59,12 +65,19 @@ class YamlLiteralStr(str):
     pass
 
 
-def literal_unicode_representer(dumper, data):
-    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+@register_constructor(BaseResolver.DEFAULT_SCALAR_TAG)
+def unicode_literal_constructor(loader: yaml.Loader, node: yaml.ScalarNode):
+    scalar = loader.construct_scalar(node)
+    if node.style == "|":
+        return YamlLiteralStr(scalar)
+    return scalar
 
 
-CustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
-SafeCustomDumper.add_representer(YamlLiteralStr, literal_unicode_representer)
+@register_representer(YamlLiteralStr)
+def unicode_literal_representer(dumper, data):
+    return dumper.represent_scalar(
+        BaseResolver.DEFAULT_SCALAR_TAG, data, style="|"
+    )
 
 
 # Dump and load functions

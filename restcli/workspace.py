@@ -6,7 +6,7 @@ import inspect
 from collections import OrderedDict
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from requests import Response
 
@@ -49,6 +49,14 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def import_data(self, data: Dict[str, Any]):
         """Validate and process raw data to add to the Document."""
+
+    @abc.abstractmethod
+    def export_data(self) -> Any:
+        """Return a primitive representation of the Document.
+
+        The object returned should be suitable for serialization of the
+        Document back into YAML.
+        """
 
     @abc.abstractmethod
     def read(self) -> Optional[OrderedDict]:
@@ -153,6 +161,16 @@ class Collection(Document):
 
         self.update(new_collection)
 
+    def export_data(self) -> OrderedDict:
+        data = OrderedDict()
+        for group_name, group in self.items():
+            data[group_name] = OrderedDict()
+            for req_name, request in group.items():
+                data[group_name][req_name] = OrderedDict(
+                    (key, request[key]) for key in REQUEST_PARAMS
+                )
+        return data
+
     def read(self) -> Optional[OrderedDict]:
         """Read Collection data from :attr:`source`."""
         if self.source:
@@ -202,8 +220,10 @@ class Collection(Document):
             self.defaults.update(defaults)
 
     def save(self):
-        config = OrderedDict([("defaults", self.defaults), ("lib", self.libs)])
-        collection = OrderedDict(self)
+        config = OrderedDict(
+            [("defaults", self.defaults), ("lib", self.libs.export_data())]
+        )
+        collection = self.export_data()
         with open(self.source, "w") as handle:
             yaml.dump([config, collection], handle, many=True)
 
@@ -216,6 +236,9 @@ class Environment(Document):
     def import_data(self, data: Dict[str, Any]):
         self.update(data)
 
+    def export_data(self) -> OrderedDict:
+        return deepcopy(OrderedDict(self))
+
     def read(self) -> Optional[OrderedDict]:
         """Read Environment data from :attr:`source`."""
         if self.source:
@@ -223,11 +246,6 @@ class Environment(Document):
                 data = yaml.load(handle)
 
             return data
-
-    @property
-    def data(self):
-        """Return a copy of the raw data in the Environment."""
-        return deepcopy(OrderedDict(self))
 
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""
@@ -240,7 +258,7 @@ class Environment(Document):
     def save(self):
         """Save ``self.env`` to ``self.env_path``."""
         with open(self.source, "w") as handle:
-            return yaml.dump(self.data, handle)
+            return yaml.dump(self.export_data(), handle)
 
 
 if TYPE_CHECKING:
@@ -285,6 +303,9 @@ class Libs(Document):
 
             self[module] = lib
 
+    def export_data(self) -> List[str]:
+        return list(self.keys())
+
     def read(self) -> OrderedDict:
         """Read Libs data from :attr:`source`."""
         self.assert_type(self.source, list, ["lib"], '"lib" must be an array')
@@ -295,14 +316,12 @@ class Libs(Document):
             try:
                 if not isinstance(module, str):
                     raise TypeError
-                lib = importlib.import_module(module)
+                data[module] = importlib.import_module(module)
             except (TypeError, ImportError):
                 raise self.error(
                     f'Failed to import lib "{module}"',
                     path,
                     source=inspect.getsourcefile(module),
                 )
-
-            data[module] = lib
 
         return data
