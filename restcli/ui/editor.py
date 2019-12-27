@@ -30,7 +30,7 @@ class RequestTab:
     group_name: Optional[str]
     request_name: Optional[str]
     request_body: Optional[RequestType]
-    on_save: Optional[Callable[[RequestTab], None]]
+    on_save: Callable[[RequestTab], None]
 
     DEFAULT_NAME = "[Empty]"
 
@@ -60,7 +60,7 @@ class RequestTab:
             self.request_name = self.DEFAULT_NAME
             self.request_body = None
 
-        self.on_save = None
+        self.on_save = lambda _: None
 
     def __pt_container__(self):
         return self.text_area
@@ -114,6 +114,7 @@ class TabbedRequestWindow:
 
         self.tabs = [RequestTab(width=width)]
         self.active_tab_idx = 0
+        self.prepend_group_names = False
 
         self.state = {}
 
@@ -139,7 +140,10 @@ class TabbedRequestWindow:
             if i == self.active_tab_idx:
                 style += ".active"
 
-            text = tab.request_name
+            if self.prepend_group_names:
+                text = f"{tab.group_name}.{tab.request_name}"
+            else:
+                text = tab.request_name
             if tab.has_unsaved_changed:
                 text = f"+{text}"
 
@@ -147,9 +151,7 @@ class TabbedRequestWindow:
 
             controls.append(
                 Window(
-                    FormattedTextControl(
-                        [(style, text, handler)], focusable=True
-                    ),
+                    FormattedTextControl([(style, text, handler)]),
                     width=D(min=3, max=len(text), preferred=len(text)),
                 )
             )
@@ -167,7 +169,7 @@ class TabbedRequestWindow:
             if event.event_type == MouseEventType.MOUSE_UP:
                 self.active_tab_idx = index
                 self.editor.redraw()
-                self.editor.ui.redraw_layout(self.active_tab)
+                self.editor.ui.redraw_layout(focus=self.active_tab)
             else:
                 return NotImplemented
 
@@ -198,6 +200,12 @@ class TabbedRequestWindow:
             if active:
                 self.active_tab_idx = len(self.tabs) - 1
 
+        # Prepend Group names if more than one Group represented
+        if not self.prepend_group_names and any(
+            tab.group_name != t.group_name for t in self.tabs
+        ):
+            self.prepend_group_names = True
+
         return True
 
     def remove_tab(self, index: int) -> Optional[RequestTab]:
@@ -214,6 +222,10 @@ class TabbedRequestWindow:
 
         if len(self.tabs) == 0:
             self.tabs.append(RequestTab(width=self.width))
+        elif all(
+            t.group_name == self.tabs[0].group_name for t in self.tabs[1:]
+        ):
+            self.prepend_group_names = False
 
         if self.active_tab_idx == index:
             self.active_tab_idx = min(index + 1, len(self.tabs) - 1)
