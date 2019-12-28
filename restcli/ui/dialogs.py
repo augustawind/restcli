@@ -80,7 +80,9 @@ class BaseTextInputDialog(AsyncDialog, metaclass=abc.ABCMeta):
             completer=PathCompleter(),
             accept_handler=self.handle_accept_text,
         )
-        self.message_box = TextArea(read_only=True, style="color:#ff0000")
+        self.message_box = TextArea(
+            read_only=True, focusable=False, style="bg:#ffffff #ff0000"
+        )
 
         # noinspection PyTypeChecker
         super().__init__(
