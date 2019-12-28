@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import ensure_future
+import asyncio
 
 from restcli.ui.dialogs import ExportFileDialog, NewFileDialog, OpenFileDialog
 from restcli.ui.menu import MenuHandler
@@ -33,7 +33,7 @@ class ToggleFocus(MenuHandler):
 
 class NewFile(MenuHandler):
     def __call__(self, event=None):
-        ensure_future(self.run_dialog())
+        asyncio.create_task(self.run_dialog())
 
     async def run_dialog(self):
         dialog = NewFileDialog(self.ui)
@@ -43,7 +43,7 @@ class NewFile(MenuHandler):
 
 class OpenFile(MenuHandler):
     def __call__(self, event=None):
-        ensure_future(self.run_dialog())
+        asyncio.create_task(self.run_dialog())
 
     async def run_dialog(self):
         dialog = OpenFileDialog(self.ui)
@@ -67,7 +67,7 @@ class CloseActiveTab(MenuHandler):
 
 class ExportCollection(MenuHandler):
     def __call__(self, event=None):
-        ensure_future(self.run_dialog())
+        asyncio.create_task(self.run_dialog())
 
     async def run_dialog(self):
         dialog = ExportFileDialog(self.ui, title="Export Collection")

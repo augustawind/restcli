@@ -275,9 +275,9 @@ class Libs(Document):
     def import_data(self, data: Dict[str, LibType]):
         """Validate and import a mapping of names to lib objects.
 
-        When called from :method:`load`, this will be a mapping of module names
-        to modules. Otherwise, ``data`` can be any mapping of strings to
-        objects that implement the Lib interface.
+        When called from :method:`load`, this will be a mapping of
+        module names to modules. Otherwise, ``data`` can be any mapping
+        of strings to objects that implement the Lib interface.
         """
         for module, lib in data.items():
             path = ["lib", module]

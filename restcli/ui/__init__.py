@@ -62,15 +62,12 @@ class UI:
         )
 
         self.key_bindings = self._init_key_bindings()
-
         self.root_container = self._init_root_container()
-
         self.style = self._init_style()
 
         layout = Layout(
             self.root_container, focused_element=self.editor.side_menu
         )
-
         self.app = Application(
             layout=layout,
             key_bindings=self.key_bindings,
@@ -80,17 +77,18 @@ class UI:
             editing_mode=EditingMode.VI,
         )
 
-        # TODO: this line is just for development
+        # TODO devonly
         self.editor.load_collection(Collection("collection.yaml"))
 
+    def debug(self, *lines):
+        # TODO devonly
+        self.output.text += ">> " + "".join(f"   {line}\n" for line in lines)
+
     def run(self):
-        asyncio.get_event_loop().run_until_complete(self.app.run_async())
+        asyncio.run(self.app.run_async())
 
     def redraw_layout(self, focus: Optional[FocusableElement] = None):
-        """Redraw the Layout and everything in it except the Editor.
-
-        TODO: figure out if the menu items need to be recreated (prob not)
-        """
+        """Redraw the Layout and everything in it except the Editor."""
         self.root_container = self._init_root_container()
         self.app.layout = Layout(self.root_container, focused_element=focus)
 
