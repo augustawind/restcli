@@ -27,7 +27,7 @@ def expect(*exceptions):
     try:
         yield
     except exceptions as exc:
-        raise click.ClickException(exc.show())
+        raise click.ClickException(str(exc))
 
 
 class Error(Exception):
@@ -40,7 +40,7 @@ class Error(Exception):
         self.action = action
         self.msg = msg
 
-    def show(self):
+    def __str__(self):
         msg = self._fmt_label(self.base_msg, self.msg).format(**vars(self))
         if self.action:
             return self._fmt_label(self.action, msg)
@@ -95,32 +95,32 @@ class ReqModKeyError(ReqModError):
 class FileContentError(Error):
     """Exception for invalid file data."""
 
-    base_msg = "Invalid content"
-    file_type = "CONTENT"
+    base_msg = "Error in file"
+    file_type = "content"
 
-    def __init__(self, file, msg="", path=None, action=None):
+    def __init__(self, file="", msg="", path=None, action=None):
         super().__init__(msg, action)
         self.file = file
         self.path = path
 
-    def show(self):
-        line = self.file
+    def __str__(self):
+        s = f"{super().__str__()}\n{'':4}"
         if self.path:
-            line = f"{line} => {self._fmt_path(self.path)}"
-        return f"{line}\n{super().show()}"
+            s += f"at {self._fmt_path()} "
+        s += f"in {self.file_type.title()}"
+        if self.file:
+            s += f" <{self.file}>"
+        return s
 
     @property
     def name(self):
         return self.path[-1]
 
-    def _fmt_path(self, path):
-        text = ""
-        for item in path:
-            if type(item) is str:
-                text += f".{item}"
-            else:
-                text += f"[{item}]"
-        return f"{self.file_type}{text}"
+    def _fmt_path(self):
+        text = repr(self.path[0])
+        for item in self.path[1:]:
+            text += f".{repr(item)}"
+        return text.replace("'", '"')
 
 
 class NotFoundError(FileContentError):
@@ -132,8 +132,8 @@ class NotFoundError(FileContentError):
 class CollectionError(FileContentError):
     """Exception for invalid Collection files."""
 
-    base_msg = "Invalid collection"
-    file_type = "COLLECTION"
+    file_type = "collection"
+    base_msg = f"Error in {file_type.title()}"
 
 
 class GroupNotFoundError(CollectionError):
@@ -154,12 +154,12 @@ class ParameterNotFoundError(CollectionError):
 class EnvError(FileContentError):
     """Exception for invalid Env files."""
 
-    base_msg = "Invalid env"
-    file_type = "ENV"
+    file_type = "env"
+    base_msg = f"Error in {file_type.title()}"
 
 
 class LibError(FileContentError):
     """Exception for invalid Libs files."""
 
-    base_msg = "Invalid lib(s)"
-    file_type = "LIB"
+    file_type = "lib"
+    base_msg = f"Invalid {file_type.title()}/s"

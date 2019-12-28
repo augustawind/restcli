@@ -20,6 +20,7 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
 from restcli import yaml_utils as yaml
+from restcli.exceptions import FileContentError
 from restcli.workspace import Collection, Environment
 
 if TYPE_CHECKING:
@@ -186,10 +187,14 @@ class OpenFileDialog(BaseDocumentInputDialog):
 
     def handle_ok(self):
         """Load the Document of the selected type (Collection or Env)."""
-        # TODO: handle bad paths here
         document_cls = self.radio_list.current_value
         source = self.text_area.text
-        self.future.set_result(document_cls(source))
+        try:
+            document = document_cls(source)
+        except FileContentError as exc:
+            self.set_message(str(exc))
+        else:
+            self.future.set_result(document)
 
 
 class ExportFileDialog(BaseTextInputDialog):
@@ -199,9 +204,11 @@ class ExportFileDialog(BaseTextInputDialog):
     def handle_ok(self):
         """Save the file to the filesystem."""
         # Assimilate saved changes into the Collection
-        for group_name, group_data in self.ui.editor.content.state.items():
-            group = self.ui.editor.collection.setdefault(group_name, {})
-            group.update(group_data)
+        try:
+            self.ui.editor.collection.import_data(self.ui.editor.content.state)
+        except FileContentError as exc:
+            self.set_message(str(exc))
+            return
 
         path = Path(self.text_area.text.strip())
 
@@ -227,8 +234,9 @@ class ExportFileDialog(BaseTextInputDialog):
                     self.do_export(path)
 
             task.add_done_callback(do_if_confirmed)
-        else:
-            self.do_export(path)
+            return
+
+        self.do_export(path)
 
     def do_export(self, path: Path):
         """Save the Collection to the given path."""

@@ -124,14 +124,19 @@ class Collection(Document):
         """Import Collection data."""
         new_collection = OrderedDict()
         for group_name, group in data.items():
-            path = [group_name]
-            self.assert_mapping(group, "Group", path)
+            self.assert_mapping(group, "Group", [group_name])
             new_group = OrderedDict()
 
             for req_name, request in group.items():
-                path.append("req_name")
+                path = [group_name, req_name]
                 self.assert_mapping(request, "Request", path)
                 new_req = OrderedDict()
+
+                for key in request:
+                    if key not in REQUEST_PARAMS:
+                        raise self.error(
+                            f'"{key}" is not a valid parameter', path
+                        )
 
                 for key, type_ in REQUEST_PARAMS.items():
                     if key in request:
@@ -148,11 +153,10 @@ class Collection(Document):
                         continue
 
                     # Check type
-                    path.append(key)
                     self.assert_type(
                         obj=new_req[key],
                         type_=type_,
-                        path=path,
+                        path=path + [key],
                         msg=f'Request "{key}" must be a {type_.__name__}',
                     )
 
