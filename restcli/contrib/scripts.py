@@ -1,14 +1,17 @@
+# pylint: disable=possibly-unused-variable,unused-argument
 def define(response, env, *args, **kwargs):
 
+    # pylint: disable=import-outside-toplevel
     from pprint import pformat
 
     class UnexpectedResponse(Exception):
         """An error raised when the response is not as expected.
-        
+
         TODO: make this a first-class citizen available to all scripts.
         """
 
         def __init__(self, response, msg="unexpected response"):
+            super().__init__(response, msg)
             self.response = response
             self.msg = msg
 
@@ -19,7 +22,8 @@ def define(response, env, *args, **kwargs):
         """Raise an error if response status code is not `expected_status`."""
         if response.status_code != expected_status:
             raise UnexpectedResponse(
-                response, f"expected status code '{expected_status}'"
+                response,
+                msg=error_msg or f"expected status code '{expected_status}'",
             )
 
     def set_env(var, path, status=200):

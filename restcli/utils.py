@@ -75,6 +75,7 @@ class MultiAttrMap(AttrMap):
         super().__init__(*expanded_pairs)
 
 
+# pylint: disable=invalid-name
 class classproperty:
     """Like the @property decorator but for class methods."""
 
@@ -111,3 +112,4 @@ def select_first(*args):
     for arg in args:
         if arg is not None:
             return arg
+    return None

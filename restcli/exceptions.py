@@ -1,4 +1,3 @@
-import inspect
 from contextlib import contextmanager
 
 import click
@@ -36,6 +35,7 @@ class Error(Exception):
     base_msg = ""
 
     def __init__(self, msg="", action=None):
+        super().__init__(msg, action)
         # TODO: determine if `action` is still needed (I think no)
         self.action = action
         self.msg = msg

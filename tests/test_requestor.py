@@ -2,7 +2,7 @@ import io
 from types import SimpleNamespace
 
 import pytest
-import pytest_mock  # noqa: F401
+import pytest_mock
 
 from restcli.requestor import Requestor
 from restcli.workspace import Environment
@@ -28,7 +28,9 @@ def test_prepare_request():
     request = {
         "method": "post",
         "url": "{{ server }}/authors",
-        "headers": {"Accept": "application/json"},
+        "headers": {
+            "Content-Type": "application/json",
+        },
         "body": """
             id: 1
             name: Bartholomew McNozzleWafer
@@ -42,10 +44,7 @@ def test_prepare_request():
     actual = Requestor.prepare_request(request, env)
     expected = {
         "method": "post",
-        "headers": {
-            "accept": "application/json",
-            "content-type": "application/json",
-        },
+        "headers": {"content-type": "application/json"},
         "url": "http://foobar.org/authors",
         "json": {
             "id": 1,

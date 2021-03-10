@@ -1,12 +1,14 @@
+# pylint: disable=invalid-name,redefined-builtin
+
 import random
-import string
 from functools import partial
+from string import ascii_letters, digits, punctuation
 from typing import Any, Callable, Mapping, Optional, Sequence
 
 from restcli.utils import AttrMap, AttrSeq
 
-ALPHANUMERIC_CHARS = string.ascii_letters + string.digits
-ASCII_CHARS = ALPHANUMERIC_CHARS + string.punctuation
+ALPHANUMERIC_CHARS = ascii_letters + digits
+ASCII_CHARS = ALPHANUMERIC_CHARS + punctuation
 URLSAFE_CHARS = ALPHANUMERIC_CHARS + "_.-"
 
 
@@ -96,7 +98,7 @@ def sequence(
             else:
                 possible_types = GEN_TYPES_SIMPLE
 
-            gen_type = random.sample(possible_types)
+            gen_type = random.sample(possible_types, 1)[0]
             gen_item = GEN_FUNCS[gen_type]
 
             if gen_type is GEN_TYPES.list:
@@ -137,7 +139,7 @@ def mapping(
             else:
                 possible_types = GEN_TYPES_SIMPLE
 
-            gen_type = random.sample(possible_types)
+            gen_type = random.sample(possible_types, 1)[0]
             gen_value = GEN_FUNCS[gen_type]
 
             if gen_type is GEN_TYPES.dict:
@@ -158,7 +160,10 @@ def mapping(
 
 GEN_TYPES_SIMPLE = AttrSeq("num", "str", "bool")
 GEN_TYPES_COMPOUND = AttrSeq("list", "dict")
-GEN_TYPES = AttrSeq(*GEN_TYPES_SIMPLE, *GEN_TYPES_COMPOUND)
+GEN_TYPES = AttrSeq(
+    *GEN_TYPES_SIMPLE,
+    *GEN_TYPES_COMPOUND,
+)
 GEN_FUNCS = AttrMap(
     (GEN_TYPES.num, number),
     (GEN_TYPES.str, ascii),

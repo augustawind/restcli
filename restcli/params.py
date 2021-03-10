@@ -1,6 +1,9 @@
 from restcli.utils import AttrMap
 
-REQUIRED_REQUEST_PARAMS = AttrMap(("method", str), ("url", str))
+REQUIRED_REQUEST_PARAMS = AttrMap(
+    ("method", str),
+    ("url", str),
+)
 REQUEST_PARAMS = AttrMap(
     *REQUIRED_REQUEST_PARAMS.items(),
     ("query", str),
@@ -8,4 +11,7 @@ REQUEST_PARAMS = AttrMap(
     ("body", str),
     ("script", str),
 )
-CONFIG_PARAMS = AttrMap(("defaults", dict), ("lib", list))
+CONFIG_PARAMS = AttrMap(
+    ("defaults", dict),
+    ("lib", list),
+)

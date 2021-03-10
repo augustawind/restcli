@@ -29,16 +29,37 @@ def test_recursive_update():
     d0 = OrderedDict(
         (
             ("foo", "quux"),
-            ("bar", OrderedDict((("age", 25), ("is_cool", True)))),
+            (
+                "bar",
+                OrderedDict(
+                    (
+                        ("age", 25),
+                        ("is_cool", True),
+                    )
+                ),
+            ),
             ("baz", [1, 2, 4, 7, 11]),
         )
     )
-    updates = {"baz": [5], "bar": {"age": 89}}
+    updates = {
+        "baz": [5],
+        "bar": {
+            "age": 89,
+        },
+    }
     utils.recursive_update(d0, updates)
     expected = OrderedDict(
         (
             ("foo", "quux"),
-            ("bar", OrderedDict((("age", 89), ("is_cool", True)))),
+            (
+                "bar",
+                OrderedDict(
+                    (
+                        ("age", 89),
+                        ("is_cool", True),
+                    )
+                ),
+            ),
             ("baz", [5]),
         )
     )

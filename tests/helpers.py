@@ -1,3 +1,6 @@
+# pylint: disable=invalid-name
+
+
 def contents_equal(*seqs):
     """Return True if the contents of each sequence are equal.
 
@@ -7,8 +10,7 @@ def contents_equal(*seqs):
     """
     if len(seqs) < 2:
         raise TypeError(
-            "contents_equal expected at least 2 arguments,"
-            " got %s" % (len(seqs))
+            f"contents_equal expected at least 2 arguments, got {len(seqs)}"
         )
 
     head = seqs[0]
