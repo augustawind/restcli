@@ -63,7 +63,7 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
         """Read document data from :attr:`source`.
 
         This should simply read the raw data and return it; use
-        :method:`import_data` for data validation and processing.
+        :meth:`import_data` for data validation and processing.
         """
 
     def load(self):
@@ -73,7 +73,7 @@ class Document(OrderedDict, metaclass=abc.ABCMeta):
             self.import_data(data)
 
     def reload(self):
-        """Like :method:`load`, but clears existing data first."""
+        """Like :meth:`load`, but clears existing data first."""
         self.clear()
         self.load()
 
