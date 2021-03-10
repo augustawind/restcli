@@ -168,7 +168,7 @@ class MenuItem(_MenuItem, MenuItemsMixin):
             if value:
                 fields += f", {attr}={value}"
         if self.disabled:
-            fields += f", disabled=True"
+            fields += ", disabled=True"
         return f"{type(self).__name__}({fields})"
 
     @classmethod
