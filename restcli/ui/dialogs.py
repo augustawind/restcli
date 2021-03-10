@@ -4,9 +4,8 @@ import abc
 import asyncio
 from asyncio import Future
 from contextlib import asynccontextmanager
-from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from prompt_toolkit.completion.filesystem import PathCompleter
 from prompt_toolkit.filters import Condition
@@ -19,7 +18,6 @@ from prompt_toolkit.layout.containers import (
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.widgets import Button, Dialog, Label, RadioList, TextArea
 
-from restcli import yaml_utils as yaml
 from restcli.exceptions import FileContentError
 from restcli.workspace import Collection, Environment
 
@@ -112,9 +110,8 @@ class BaseTextInputDialog(AsyncDialog, metaclass=abc.ABCMeta):
     def handle_ok(self):
         """What to do when the OK button is pressed.
 
-        This should perform any validation required, and if successful
-        it should call `self.future.set_result` with the result of the
-        Dialog.
+        This should perform any validation required, and if successful it
+        should call `self.future.set_result` with the result of the Dialog.
         """
 
     def handle_cancel(self):

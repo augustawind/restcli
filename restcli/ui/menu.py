@@ -41,12 +41,11 @@ class MenuHandler(metaclass=abc.ABCMeta):
     def __call__(self, event: Optional[KeyPressEvent] = None):
         """Execute the handler.
 
-        This function be used to respond to clicks (if mouse is enabled) and
-        to key presses (if a keyboard shortcut is provided). Implementors
-        must _optionally_ accept a single :class:`KeyPressEvent` parameter.
-        It must be optional so that it can respond to both mouse clicks
-        _and_ key presses, since only key presses generate a
-        ``KeyPressEvent``.
+        This function be used to respond to clicks (if mouse is enabled) and to
+        key presses (if a keyboard shortcut is provided). Implementors must
+        _optionally_ accept a single :class:`KeyPressEvent` parameter. It must
+        be optional so that it can respond to both mouse clicks _and_ key
+        presses, since only key presses generate a ``KeyPressEvent``.
         """
 
 

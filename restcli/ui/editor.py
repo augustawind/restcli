@@ -180,7 +180,7 @@ class TabbedRequestWindow:
 
         If `active` is True, make it the active tab. Returns True if it was
         added successfully. Returns False if a tab already exists with the same
-         `group_name` and `request_name`.
+        `group_name` and `request_name`.
         """
         if any(
             (tab.group_name, tab.request_name)
