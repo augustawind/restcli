@@ -65,6 +65,7 @@ pass_app = click.make_pass_decorator(App)
     help="Don't color or format output.",
 )
 @click.pass_context
+# pylint: disable=redefined-outer-name
 def cli(ctx, collection, env, save, quiet, raw_output):
     if not ctx.obj:
         with expect(CollectionError, EnvError, LibError):
@@ -78,7 +79,10 @@ def cli(ctx, collection, env, save, quiet, raw_output):
 
 
 @cli.command(
-    help="Run a Request.", context_settings=dict(ignore_unknown_options=True,)
+    help="Run a Request.",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
 )
 @click.argument("group")
 @click.argument("request")
@@ -109,12 +113,14 @@ line in the file should specify args for a single "run" invocation:
 )
 @click.argument("file", type=click.File())
 @click.pass_context
+# pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+# pylint: disable=redefined-builtin
 def exec(ctx, file):
     for line in file:
         line = line.strip()
         if line.startswith("#"):
             continue
-        click.echo(">>> run %s" % line)
+        click.echo(f">>> run {line}")
         args = shlex.split(line)
         try:
             run(args, prog_name="restcli", parent=ctx)
@@ -157,6 +163,7 @@ def env(app, args):
 
 @cli.command(help="Start an interactive prompt.")
 @click.pass_context
+# pylint: disable=unused-variable
 def repl(ctx):
     # Define REPL-only commands here.
     # --------------------------------------------

@@ -9,7 +9,11 @@ from restcli.utils import AttrSeq
 QUOTES = "\"'"
 ESCAPES = "\\"
 
-ACTIONS = AttrSeq("append", "assign", "delete",)
+ACTIONS = AttrSeq(
+    "append",
+    "assign",
+    "delete",
+)
 
 Lexeme = namedtuple("Lexeme", ["action", "value"])
 

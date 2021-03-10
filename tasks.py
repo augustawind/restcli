@@ -25,15 +25,14 @@ def clean(ctx):
 def fmt(ctx, check=False):
     """Run the formatters."""
     opts = check and " --check" or ""
-    cmd = "black%s --line-length=79 --exclude='docs' ." % opts
+    cmd = f"black{opts} --line-length=79 --exclude='docs' ."
     ctx.run(cmd, pty=True)
 
     opts = check and " --check-only" or ""
     cmd = (
-        "isort%s --recursive --trailing-comma --use-parentheses"
-        " --line-width=79 --force-grid-wrap=0 --multi-line=3 --skip=docs"
-        " --skip=setup.py ."
-    ) % opts
+        f"isort{opts} --trailing-comma --use-parentheses --line-width=79"
+        " --force-grid-wrap=0 --multi-line=3 --skip=docs --skip=setup.py ."
+    )
     ctx.run(cmd, pty=True)
 
 
@@ -41,7 +40,7 @@ def fmt(ctx, check=False):
 def lint(ctx, verbose=False):
     """Run the linter(s)."""
     opts = " -v" if verbose else ""
-    cmd = "pylint%s %s" % (opts, PKG)
+    cmd = f"pylint{opts} {PKG}"
     ctx.run(cmd, pty=True)
 
 
@@ -49,14 +48,14 @@ def lint(ctx, verbose=False):
 def test(ctx, verbose=False):
     """Run unit tests."""
     opts = " -v" if verbose else ""
-    cmd = "pytest%s" % opts
+    cmd = f"pytest{opts}"
     ctx.run(cmd, pty=True)
 
 
 @task(aliases=("cov",))
 def coverage(ctx, html=False):
     """Run unit tests and generate a coverage report."""
-    ctx.run("pytest --cov=%s" % PKG, pty=True)
+    ctx.run(f"pytest --cov={PKG}", pty=True)
     if html:
         ctx.run("coverage html", pty=True)
 
@@ -67,7 +66,7 @@ def coverage(ctx, html=False):
 
 @task()
 def docs(ctx, target="html"):
-    cmd = "cd docs && make %s" % target
+    cmd = f"cd docs && make {target}"
     ctx.run(cmd, pty=True)
 
 
@@ -82,8 +81,8 @@ def install(ctx, editable=False):
 
     If the --editable option is given, install it with the -e flag.
     """
-    opts = "-e" if editable else ""
-    cmd = "pip install %s ." % opts
+    opts = " -e" if editable else ""
+    cmd = f"pip install{opts} ."
     ctx.run(cmd, pty=True)
 
 
@@ -93,16 +92,16 @@ def install(ctx, editable=False):
 
 @task(iterable=["arg"])
 def docker(ctx, arg, clean=False):
-    opts = clean and "--force-rm --no-cache" or ""
-    build_args = " ".join(f"--build-arg {a}" for a in arg)
-    cmd = "docker build %s %s -t %s ." % (opts, build_args, TAG)
+    opts = clean and " --force-rm --no-cache" or ""
+    build_args = "".join(f" --build-arg {a}" for a in arg)
+    cmd = f"docker build{opts}{build_args} -t {TAG} ."
     ctx.run(cmd, pty=True)
 
 
 @task(iterable=["env"])
 def run(ctx, run_cmd, env):
-    env_args = " ".join(f"--env {e}" for e in env)
-    cmd = "docker run %s -it %s %s" % (env_args, TAG, run_cmd)
+    env_args = "".join(f" --env {e}" for e in env)
+    cmd = f"docker run{env_args} -it {TAG} {run_cmd}"
     ctx.run(cmd, pty=True)
 
 

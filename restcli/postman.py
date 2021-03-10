@@ -105,7 +105,7 @@ def parse_formdata(formdata):
 
 def normalize(text):
     text = text.lower()
-    text = re.sub("\s+", "-", text)
+    text = re.sub(r"\s+", "-", text)
     text = re.sub("[{}]", "", text)
     return text
 
@@ -125,7 +125,7 @@ def main():
     output = re.sub(r"^([^\s].*)$", "\n\\1", output, flags=re.MULTILINE)
     for var in re.findall(r"{{([^{}]+)}}", output):
         output = output.replace("{{%s}}" % var, "{{ %s }}" % var.lower())
-    output = "---\n%s" % output
+    output = f"---\n{output}"
     print(output, file=args.outfile)
 
 

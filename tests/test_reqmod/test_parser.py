@@ -16,14 +16,16 @@ def req(pytestconfig):
     """Generate a semi-random request object."""
     req = OrderedDict()
     req["method"] = random.choice(("get", "post", "put", "delete"))
-    req["url"] = "%s.org" % "".join(random.sample(string.ascii_lowercase, 10))
+    req["url"] = "{}.org".format(
+        "".join(random.sample(string.ascii_lowercase, 10))
+    )
     req["headers"] = OrderedDict(
         (("Content-Type", "application/json"), ("Accept", "application/json"))
     )
 
     # Add body if method supports writes
     if req["method"] in ("post", "put"):
-        name = "Fr%snken Fr%snkenfrank" % (
+        name = "Fr{}nken Fr{}nkenfrank".format(
             "a" * random.randint(1, 6),
             "a" * random.randint(1, 6),
         )

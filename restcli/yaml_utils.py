@@ -82,5 +82,4 @@ def load(stream, safe=False, many=False):
     Loader = SafeCustomLoader if safe else CustomLoader
     if many:
         return tuple(yaml.load_all(stream, Loader))
-    else:
-        return yaml.load(stream, Loader)
+    return yaml.load(stream, Loader)

@@ -47,27 +47,32 @@ class TestJsonFieldMod(ModTypesTestMixin):
 
     def test_bool(self):
         self.run_mod_test(
-            input_val="true", expected_val=True,
+            input_val="true",
+            expected_val=True,
         )
 
     def test_number_int(self):
         self.run_mod_test(
-            input_val="11", expected_val=11,
+            input_val="11",
+            expected_val=11,
         )
 
     def test_number_float(self):
         self.run_mod_test(
-            input_val="26.5", expected_val=26.5,
+            input_val="26.5",
+            expected_val=26.5,
         )
 
     def test_null(self):
         self.run_mod_test(
-            input_val="null", expected_val=None,
+            input_val="null",
+            expected_val=None,
         )
 
     def test_array(self):
         self.run_mod_test(
-            input_val="[1, 2, 3]", expected_val=[1, 2, 3],
+            input_val="[1, 2, 3]",
+            expected_val=[1, 2, 3],
         )
 
     def test_object(self):
@@ -110,7 +115,8 @@ class TestURLParamMod(ModTypesTestMixin):
     def test_urlsafe(self):
         for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=gen.urlsafe(), input_key=gen.urlsafe(),
+                input_val=gen.urlsafe(),
+                input_key=gen.urlsafe(),
             )
 
     def test_unicode_value(self):
@@ -133,12 +139,12 @@ class TestURLParamMod(ModTypesTestMixin):
 
     def test_delimiter(self):
         inputs = (
-            "\\=\\=%s" % gen.urlsafe(),
-            "%s\\=\\=" % gen.urlsafe(),
-            "%s\\=\\=%s" % (gen.urlsafe(), gen.urlsafe()),
-            "%s\\=" % gen.urlsafe(),
-            "=%s" % gen.urlsafe(),
-            "%s=%s" % (gen.urlsafe(), gen.urlsafe()),
+            "\\=\\={}".format(gen.urlsafe()),
+            "{}\\=\\=".format(gen.urlsafe()),
+            "{}\\=\\={}".format(gen.urlsafe(), gen.urlsafe()),
+            "{}\\=".format(gen.urlsafe()),
+            "={}".format(gen.urlsafe()),
+            "{}={}".format(gen.urlsafe(), gen.urlsafe()),
         )
         for item in inputs:
             self.run_mod_test(
@@ -161,21 +167,24 @@ class TestHeaderMod(ModTypesTestMixin):
     def test_alphanum(self):
         for _ in range(self.TEST_ITERATIONS):
             self.run_mod_test(
-                input_val=gen.alphanum(), input_key=gen.alphanum(),
+                input_val=gen.alphanum(),
+                input_key=gen.alphanum(),
             )
 
     def test_unicode_value(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises(ReqModValueError):
                 self.run_mod_test(
-                    input_val=gen.unicode(), input_key=gen.alphanum(),
+                    input_val=gen.unicode(),
+                    input_key=gen.alphanum(),
                 )
 
     def test_unicode_key(self):
         for _ in range(self.TEST_ITERATIONS):
             with pytest.raises((ReqModValueError, ReqModSyntaxError)):
                 self.run_mod_test(
-                    input_val=gen.alphanum(), input_key=gen.unicode(),
+                    input_val=gen.alphanum(),
+                    input_key=gen.unicode(),
                 )
 
 
@@ -185,10 +194,12 @@ class TestStrFieldMod(ModTypesTestMixin):
 
     def test_alphanum(self):
         self.run_mod_test(
-            input_val=gen.alphanum(), input_key=gen.alphanum(),
+            input_val=gen.alphanum(),
+            input_key=gen.alphanum(),
         )
 
     def test_unicode(self):
         self.run_mod_test(
-            input_val=gen.unicode(), input_key=gen.unicode(),
+            input_val=gen.unicode(),
+            input_key=gen.unicode(),
         )

@@ -2,7 +2,7 @@ import io
 from types import SimpleNamespace
 
 import pytest
-import pytest_mock  # noqa: F401
+import pytest_mock
 
 from restcli.requestor import Requestor
 
@@ -27,7 +27,9 @@ def test_prepare_request():
     request = {
         "method": "post",
         "url": "{{ server }}/authors",
-        "headers": {"Content-Type": "application/json",},
+        "headers": {
+            "Content-Type": "application/json",
+        },
         "body": """
             id: 1
             name: Bartholomew McNozzleWafer
@@ -42,7 +44,9 @@ def test_prepare_request():
     actual = Requestor.prepare_request(request, env)
     expected = {
         "method": "post",
-        "headers": {"Content-Type": "application/json",},
+        "headers": {
+            "Content-Type": "application/json",
+        },
         "url": "http://foobar.org/authors",
         "json": {
             "id": 1,
@@ -89,7 +93,12 @@ def test_interpolate():
             object: {'foo': 5, '{{ key1 }}': ['{{ val1 }}', null]}
             array: ['foo', True, 5, null, {'key': {{ val2 }}}]
         """,
-        env={"val0": "xyz", "val1": "abc", "key1": "def", "val2": 89,},
+        env={
+            "val0": "xyz",
+            "val1": "abc",
+            "key1": "def",
+            "val2": 89,
+        },
     )
     expected = {
         "number": 3,

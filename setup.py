@@ -48,7 +48,10 @@ setup(
     zip_safe=False,
     keywords="rest, http, api, client, cli, testing",
     packages=["restcli", "restcli.reqmod"],
-    package_dir={"restcli": "restcli", "restcli.reqmod": "restcli/reqmod",},
+    package_dir={
+        "restcli": "restcli",
+        "restcli.reqmod": "restcli/reqmod",
+    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -57,10 +60,8 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     ],
@@ -70,5 +71,7 @@ setup(
     restcli=restcli.cli:cli
     """,
     install_requires=requirements,
-    extras_require={"testing": ["pytest>=5.0.0"],},
+    extras_require={
+        "testing": ["pytest>=5.0.0"],
+    },
 )
