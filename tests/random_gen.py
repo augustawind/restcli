@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name,redefined-builtin
+# pylint: disable=redefined-builtin
 
 import random
 from functools import partial

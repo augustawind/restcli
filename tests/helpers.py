@@ -1,6 +1,3 @@
-# pylint: disable=invalid-name
-
-
 def contents_equal(*seqs):
     """Return True if the contents of each sequence are equal.
 

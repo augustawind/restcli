@@ -75,7 +75,6 @@ class MultiAttrMap(AttrMap):
         super().__init__(*expanded_pairs)
 
 
-# pylint: disable=invalid-name
 class classproperty:
     """Like the @property decorator but for class methods."""
 
