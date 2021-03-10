@@ -38,6 +38,8 @@ class NewFile(MenuHandler):
     async def run_dialog(self):
         dialog = NewFileDialog(self.ui)
         document = await dialog.run()
+        if not document:
+            return
         self.ui.editor.load_collection(document)
 
 

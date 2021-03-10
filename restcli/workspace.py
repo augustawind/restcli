@@ -248,8 +248,8 @@ class Environment(Document):
         if self.source:
             with open(self.source) as handle:
                 data = yaml.load(handle)
-
             return data
+        return None
 
     def remove(self, *args):
         """Remove each of the given vars from the Environment."""
@@ -325,7 +325,7 @@ class Libs(Document):
                 raise self.error(
                     f'Failed to import lib "{module}"',
                     path,
-                    source=inspect.getsourcefile(module),
+                    source=module,
                 )
 
         return data

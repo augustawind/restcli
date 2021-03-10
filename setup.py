@@ -47,10 +47,12 @@ setup(
     license="Apache",
     zip_safe=False,
     keywords="rest, http, api, client, cli, testing",
-    packages=["restcli", "restcli.reqmod"],
+    packages=["restcli", "restcli.reqmod", "restcli.ui", "restcli.contrib"],
     package_dir={
         "restcli": "restcli",
         "restcli.reqmod": "restcli/reqmod",
+        "restcli.ui": "restcli/ui",
+        "restcli.contrib": "restcli/contrib",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
