@@ -22,16 +22,17 @@ Features
 CLI Usage
 =========
 
-Command-line usage is documented in the `Usage manual <docs/usage.rst>`_.
+Command-line usage is documented in the
+`Usage manual <https://restcli.readthedocs.io/en/latest/usage.rst>`_.
 
 
 Documentation
 =============
 
-* `Overview <docs/overview.rst>`_
-* `Usage <docs/usage.rst>`_
-* `Making Requests <docs/requests.rst>`_
-* `Tutorial <docs/tutorial.rst>`_
+* `Overview <https://restcli.readthedocs.io/en/latest/overview.rst>`_
+* `Usage <https://restcli.readthedocs.io/en/latest/usage.rst>`_
+* `Making Requests <https://restcli.readthedocs.io/en/latest/requests.rst>`_
+* `Tutorial <https://restcli.readthedocs.io/en/latest/tutorial.rst>`_
 
 
 Installation
