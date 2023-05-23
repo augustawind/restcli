@@ -4,4 +4,4 @@ Jinja2==2.11.3
 prompt_toolkit==3.0.16
 Pygments==2.8.1
 PyYAML==5.4.1
-requests==2.25.1
+requests==2.31.0
