@@ -2,6 +2,6 @@ click==7.1.2
 click-repl==0.1.6
 Jinja2==2.11.3
 prompt_toolkit==3.0.16
-Pygments==2.8.1
+Pygments==2.15.0
 PyYAML==5.4.1
 requests==2.25.1
